@@ -65,7 +65,7 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
         }
         OAuthToken token;
         try {
-            token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getName());
+            token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getId());
         } catch (IOException e) {
             LOG.error("Can't get token", e);
             return false;

@@ -42,7 +42,7 @@ import java.util.regex.Pattern;
  */
 @Singleton
 public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
-    private static      String  OAUTH_PROVIDER_NAME = "wso2";
+    private static String OAUTH_PROVIDER_NAME = "wso2";
     public final Pattern WSO_2_URL_PATTERN;
 
     private static final Logger LOG   = LoggerFactory.getLogger(WSO2OAuthCredentialsProvider.class);
@@ -134,8 +134,10 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
             User user = new Wso2User();
             user.setEmail(userValue.getElement("http://wso2.org/claims/emailaddress").getStringValue());
             user.setName(userValue.getElement("http://wso2.org/claims/fullname").getStringValue());
+            LOG.info(" Name {} , email {}", user.getName(), user.getEmail());
             return user;
         } catch (JsonParseException | IOException e) {
+            LOG.error(e.getLocalizedMessage(), e);
             throw new OAuthAuthenticationException(e.getMessage(), e);
         }
     }

@@ -113,7 +113,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
-                onRefreshClicked();
+
             }
 
             @Override

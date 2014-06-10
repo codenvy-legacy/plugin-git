@@ -43,10 +43,7 @@ import java.util.regex.Pattern;
 @Singleton
 public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
     private static      String  OAUTH_PROVIDER_NAME = "wso2";
-    public static final String  WSO_2_URL_STRING    =
-            "(http|https)://((([0-9a-fA-F]{32}(:x-oauth-basic)?)|([0-9a-zA-Z-_.]+))@)?git\\.cloudpreview\\.wso2\\.com" +
-            "(:[0-9]{1,5})?/.+\\.git";
-    public static final Pattern WSO_2_URL_PATTERN   = Pattern.compile(WSO_2_URL_STRING);
+    public final Pattern WSO_2_URL_PATTERN;
 
     private static final Logger LOG   = LoggerFactory.getLogger(WSO2OAuthCredentialsProvider.class);
     private static final String SCOPE = "openid";
@@ -54,9 +51,11 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
     private final String             userUri;
 
     @Inject
-    public WSO2OAuthCredentialsProvider(OAuthTokenProvider tokenProvider, @Named("oauth.wso2.useruri") String userUri) {
+    public WSO2OAuthCredentialsProvider(OAuthTokenProvider tokenProvider, @Named("oauth.wso2.useruri") String userUri,
+                                        @Named("oauth.wso2.git.pattern") String gitPattern) {
         this.tokenProvider = tokenProvider;
         this.userUri = userUri;
+        this.WSO_2_URL_PATTERN = Pattern.compile(gitPattern);
     }
 
     @Override

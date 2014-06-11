@@ -100,6 +100,10 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
             return false;
         }
 
+        if (token == null) {
+            return false;
+        }
+
         User user;
         try {
             user = getUser(token);

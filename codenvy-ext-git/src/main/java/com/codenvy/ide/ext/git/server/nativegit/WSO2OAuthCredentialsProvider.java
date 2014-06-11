@@ -88,8 +88,8 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
     }
 
     @Override
-    public boolean getUser(String oauthProviderName, CredentialItem... items) throws GitException {
-        if (!oauthProviderName.equals(OAUTH_PROVIDER_NAME)) {
+    public boolean getUser(String url, CredentialItem... items) throws GitException {
+        if (!WSO_2_URL_PATTERN.matcher(url).matches()) {
             return false;
         }
 

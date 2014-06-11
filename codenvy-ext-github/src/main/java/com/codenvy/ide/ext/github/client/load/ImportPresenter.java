@@ -15,28 +15,30 @@ import com.codenvy.api.user.shared.dto.User;
 import com.codenvy.ide.Constants;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.resources.ProjectTypeDescriptorRegistry;
 import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.ide.api.resources.model.Project;
+import com.codenvy.ide.api.resources.model.ResourceNameValidator;
+import com.codenvy.ide.api.ui.wizard.ProjectWizard;
+import com.codenvy.ide.api.ui.wizard.WizardContext;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.RepoInfo;
 import com.codenvy.ide.ext.github.client.GitHubClientService;
 import com.codenvy.ide.ext.github.client.GitHubSshKeyProvider;
 import com.codenvy.ide.ext.github.client.marshaller.AllRepositoriesUnmarshaller;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
-import com.codenvy.ide.projecttype.SelectProjectTypePresenter;
-import com.codenvy.ide.api.resources.ProjectTypeDescriptorRegistry;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.resources.model.ResourceNameValidator;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
+import com.codenvy.ide.wizard.project.NewProjectWizardPresenter;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
@@ -56,22 +58,22 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  */
 @Singleton
 public class ImportPresenter implements ImportView.ActionDelegate {
-    private final DtoFactory                         dtoFactory;
-    private final DtoUnmarshallerFactory             dtoUnmarshallerFactory;
-    private final ProjectServiceClient               projectServiceClient;
-    private final SelectProjectTypePresenter         selectProjectTypePresenter;
-    private       ImportView                         view;
-    private       GitHubClientService                service;
-    private       GitServiceClient                   gitService;
-    private       EventBus                           eventBus;
-    private       StringMap<Array<GitHubRepository>> repositories;
-    private       ProjectData                        selectedRepository;
-    private       GitLocalizationConstant            gitConstant;
-    private       ResourceProvider                   resourceProvider;
-    private       NotificationManager                notificationManager;
-    private       Notification                       notification;
-    private       GitHubSshKeyProvider               gitHubSshKeyProvider;
-    private       ProjectTypeDescriptorRegistry      projectTypeDescriptorRegistry;
+    private final DtoFactory             dtoFactory;
+    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final ProjectServiceClient   projectServiceClient;
+    private NewProjectWizardPresenter wizardPresenter;
+    private ImportView                         view;
+    private GitHubClientService                service;
+    private GitServiceClient                   gitService;
+    private EventBus                           eventBus;
+    private StringMap<Array<GitHubRepository>> repositories;
+    private ProjectData                        selectedRepository;
+    private GitLocalizationConstant            gitConstant;
+    private ResourceProvider                   resourceProvider;
+    private NotificationManager                notificationManager;
+    private Notification                       notification;
+    private GitHubSshKeyProvider               gitHubSshKeyProvider;
+    private ProjectTypeDescriptorRegistry      projectTypeDescriptorRegistry;
 
     /**
      * Create presenter.
@@ -88,7 +90,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
      * @param dtoUnmarshallerFactory
      * @param projectTypeDescriptorRegistry
      * @param projectServiceClient
-     * @param selectProjectTypePresenter
+     * @param wizardPresenter
      */
     @Inject
     public ImportPresenter(ImportView view,
@@ -103,13 +105,13 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                            ProjectTypeDescriptorRegistry projectTypeDescriptorRegistry,
                            ProjectServiceClient projectServiceClient,
-                           SelectProjectTypePresenter selectProjectTypePresenter) {
+                           NewProjectWizardPresenter wizardPresenter) {
         this.view = view;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectTypeDescriptorRegistry = projectTypeDescriptorRegistry;
         this.projectServiceClient = projectServiceClient;
-        this.selectProjectTypePresenter = selectProjectTypePresenter;
+        this.wizardPresenter = wizardPresenter;
         this.view.setDelegate(this);
         this.service = service;
         this.gitService = gitService;
@@ -280,33 +282,15 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                 notification.setStatus(FINISHED);
                 notification.setMessage(gitConstant.cloneSuccess(gitRepositoryInfo.getRemoteUri()));
                 if (result.getDescription().getProjectTypeId().equals(Constants.NAMELESS_ID)) {
-                    selectProjectTypePresenter.showDialog(result, new AsyncCallback<Project>() {
-                        @Override
-                        public void onFailure(Throwable caught) {
-
-                        }
-
-                        @Override
-                        public void onSuccess(Project result) {
-
-                        }
-                    });
+                    WizardContext context = new WizardContext();
+                    context.putData(ProjectWizard.PROJECT, result);
+                    wizardPresenter.show(context);
                 }
             }
 
             @Override
             public void onFailure(Throwable caught) {
-                selectProjectTypePresenter.showDialog(project, new AsyncCallback<Project>() {
-                    @Override
-                    public void onSuccess(Project result) {
-                        onCloneSuccess(gitRepositoryInfo, project);
-                    }
-
-                    @Override
-                    public void onFailure(Throwable caught) {
-                        Log.error(ImportPresenter.class, "can not set type for project " + project.getName());
-                    }
-                });
+                Log.error(ImportPresenter.class, "can not set type for project " + project.getName());
             }
         });
     }

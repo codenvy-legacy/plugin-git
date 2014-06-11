@@ -135,11 +135,15 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
         try {
             getUserUrL = new URL(String.format("%s?schema=%s", userUri, SCOPE));
             JsonValue userValue = doRequest(getUserUrL, params);
-            User user = new Wso2User();
-            user.setEmail(userValue.getElement("http://wso2.org/claims/emailaddress").getStringValue());
-            user.setName(userValue.getElement("http://wso2.org/claims/fullname").getStringValue());
-            LOG.info(" Name {} , email {}", user.getName(), user.getEmail());
-            return user;
+            if (userValue != null) {
+                User user = new Wso2User();
+                user.setEmail(userValue.getElement("http://wso2.org/claims/emailaddress").getStringValue());
+                user.setName(userValue.getElement("http://wso2.org/claims/fullname").getStringValue());
+                LOG.info(" Name {} , email {}", user.getName(), user.getEmail());
+                return user;
+            } else {
+                return null;
+            }
         } catch (JsonParseException | IOException e) {
             LOG.error(e.getLocalizedMessage(), e);
             throw new OAuthAuthenticationException(e.getMessage(), e);

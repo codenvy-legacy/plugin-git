@@ -10,7 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client.load;
 
+import com.codenvy.api.core.rest.shared.dto.ServiceError;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.user.shared.dto.User;
 import com.codenvy.ide.Constants;
 import com.codenvy.ide.api.notification.Notification;
@@ -25,6 +28,7 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
+import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -50,6 +54,7 @@ import javax.validation.constraints.NotNull;
 import static com.codenvy.ide.api.notification.Notification.Status.FINISHED;
 import static com.codenvy.ide.api.notification.Notification.Status.PROGRESS;
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
+import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 
 /**
  * Presenter for importing user's GitHub project to IDE.
@@ -58,22 +63,22 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  */
 @Singleton
 public class ImportPresenter implements ImportView.ActionDelegate {
-    private final DtoFactory             dtoFactory;
-    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final ProjectServiceClient   projectServiceClient;
-    private NewProjectWizardPresenter wizardPresenter;
-    private ImportView                         view;
-    private GitHubClientService                service;
-    private GitServiceClient                   gitService;
-    private EventBus                           eventBus;
-    private StringMap<Array<GitHubRepository>> repositories;
-    private ProjectData                        selectedRepository;
-    private GitLocalizationConstant            gitConstant;
-    private ResourceProvider                   resourceProvider;
-    private NotificationManager                notificationManager;
-    private Notification                       notification;
-    private GitHubSshKeyProvider               gitHubSshKeyProvider;
-    private ProjectTypeDescriptorRegistry      projectTypeDescriptorRegistry;
+    private final DtoFactory                         dtoFactory;
+    private final DtoUnmarshallerFactory             dtoUnmarshallerFactory;
+    private final ProjectServiceClient               projectServiceClient;
+    private       NewProjectWizardPresenter          wizardPresenter;
+    private       ImportView                         view;
+    private       GitHubClientService                service;
+    private       GitServiceClient                   gitService;
+    private       EventBus                           eventBus;
+    private       StringMap<Array<GitHubRepository>> repositories;
+    private       ProjectData                        selectedRepository;
+    private       GitLocalizationConstant            gitConstant;
+    private       ResourceProvider                   resourceProvider;
+    private       NotificationManager                notificationManager;
+    private       Notification                       notification;
+    private       GitHubSshKeyProvider               gitHubSshKeyProvider;
+    private       ProjectTypeDescriptorRegistry      projectTypeDescriptorRegistry;
 
     /**
      * Create presenter.
@@ -213,28 +218,85 @@ public class ImportPresenter implements ImportView.ActionDelegate {
 
                 notification = new Notification(gitConstant.cloneStarted(projectName, remoteUri), PROGRESS);
                 notificationManager.showNotification(notification);
-
                 final String finalRemoteUri = remoteUri;
-                projectServiceClient.createFolder(projectName, new AsyncRequestCallback<Void>() {
-                    @Override
-                    protected void onSuccess(Void result) {
-                        Project project = new Project(null, null, null, null);
-                        project.setName(projectName);
-                        cloneRepository(finalRemoteUri, projectName, project);
-                    }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        String errorMessage = (exception.getMessage() != null && exception.getMessage().length() > 0)
-                                              ? exception.getMessage() : gitConstant.cloneFailed(finalRemoteUri);
-                        notification.setStatus(FINISHED);
-                        notification.setType(ERROR);
-                        notification.setMessage(errorMessage);
-                    }
-                });
+
+                doImport(finalRemoteUri);
+//
             }
         }
     }
+
+
+    /** {@inheritDoc} */
+    public void doImport(final String url) {
+//        String url = view.getUri();
+        String importer = "git";
+        final String projectName = view.getProjectName();
+        view.close();
+        ImportSourceDescriptor importSourceDescriptor =
+                dtoFactory.createDto(ImportSourceDescriptor.class).withType(importer).withLocation(url);
+        projectServiceClient.importProject(projectName, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>() {
+            @Override
+            protected void onSuccess(ProjectDescriptor result) {
+                resourceProvider.getProject(projectName, new AsyncCallback<Project>() {
+                    @Override
+                    public void onSuccess(Project result) {
+                        Notification notification = new Notification(gitConstant.cloneSuccess(url), INFO);
+                        notificationManager.showNotification(notification);
+                        WizardContext context = new WizardContext();
+                        context.putData(ProjectWizard.PROJECT, result);
+                        wizardPresenter.show(context);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        Log.error(ImportPresenter.class, "can not get project " + projectName);
+
+                        Notification notification = new Notification(caught.getMessage(), ERROR);
+                        notificationManager.showNotification(notification);
+                    }
+                });
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                if (exception instanceof UnauthorizedException) {
+                    ServiceError serverError =
+                            dtoFactory.createDtoFromJson(((UnauthorizedException)exception).getResponse().getText(), ServiceError.class);
+                    Notification notification = new Notification(serverError.getMessage(), ERROR);
+                    notificationManager.showNotification(notification);
+                } else {
+                    Log.error(ImportPresenter.class, "can not import project: " + exception);
+                    Notification notification = new Notification(exception.getMessage(), ERROR);
+                    notificationManager.showNotification(notification);
+                }
+                deleteFolder(projectName);
+            }
+        });
+    }
+
+    private void deleteFolder(String name) {
+        resourceProvider.getProject(name, new AsyncCallback<Project>() {
+            @Override
+            public void onSuccess(Project result) {
+                resourceProvider.delete(result, new AsyncCallback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
+                    }
+
+                    @Override
+                    public void onFailure(Throwable caught) {
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable caught) {
+            }
+        });
+    }
+
 
     /**
      * Get the necessary parameters values and clone repository (over WebSocket or HTTP).

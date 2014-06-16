@@ -27,6 +27,8 @@ public interface Revision {
      */
     boolean isFake();
 
+    void setFake(boolean fake);
+
     /** @return branch name */
     String getBranch();
     

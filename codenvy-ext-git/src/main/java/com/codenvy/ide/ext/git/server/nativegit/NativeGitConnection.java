@@ -279,6 +279,7 @@ public class NativeGitConnection implements GitConnection {
             return rev;
         } catch (Exception e) {
             revision.setMessage(e.getMessage());
+            revision.setFake(true);
         }
         return revision;
     }

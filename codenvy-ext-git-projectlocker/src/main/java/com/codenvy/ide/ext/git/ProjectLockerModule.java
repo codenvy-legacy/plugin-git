@@ -10,13 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git;
 
-import com.codenvy.api.project.server.ProjectImporter;
-import com.codenvy.ide.ext.git.server.GitConfigurationChecker;
-import com.codenvy.ide.ext.git.server.GitProjectImporter;
-import com.codenvy.ide.ext.git.server.commons.GitRepositoryPrivacyChecker;
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
-import com.codenvy.ide.ext.git.server.nativegit.WSO2OAuthCredentialsProvider;
-import com.codenvy.ide.ext.git.server.rest.GitExceptionMapper;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;

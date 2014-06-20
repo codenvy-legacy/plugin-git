@@ -73,7 +73,7 @@ public class ProjectLockerOAuthCredentialProvider implements CredentialsProvider
         if (token != null) {
             for (CredentialItem item : items) {
                 if (item instanceof CredentialItem.Password) {
-                    ((CredentialItem.Password)item).setValue("x-oauth-basic");
+                    ((CredentialItem.Password)item).setValue("x");
                     continue;
                 }
                 if (item instanceof CredentialItem.Username) {

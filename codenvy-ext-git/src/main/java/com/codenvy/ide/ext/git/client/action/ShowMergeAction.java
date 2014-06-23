@@ -23,17 +23,18 @@ import com.google.inject.Singleton;
 
 /** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
 @Singleton
-public class ShowMergeAction extends Action {
+public class ShowMergeAction extends GitAction {
     private final MergePresenter       presenter;
-    private final ResourceProvider     resourceProvider;
     private final AnalyticsEventLogger eventLogger;
 
     @Inject
-    public ShowMergeAction(MergePresenter presenter, ResourceProvider resourceProvider, GitResources resources,
-                           GitLocalizationConstant constant, AnalyticsEventLogger eventLogger) {
-        super(constant.mergeControlTitle(), constant.mergeControlPrompt(), null, resources.merge());
+    public ShowMergeAction(MergePresenter presenter,
+                           ResourceProvider resourceProvider,
+                           GitResources resources,
+                           GitLocalizationConstant constant,
+                           AnalyticsEventLogger eventLogger) {
+        super(constant.mergeControlTitle(), constant.mergeControlPrompt(), null, resources.merge(), resourceProvider);
         this.presenter = presenter;
-        this.resourceProvider = resourceProvider;
         this.eventLogger = eventLogger;
     }
 
@@ -47,13 +48,7 @@ public class ShowMergeAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        Project activeProject = resourceProvider.getActiveProject();
-
-        e.getPresentation().setVisible(activeProject != null);
-
-        if (activeProject != null) {
-//            boolean isGitRepository = activeProject.getProperty(GIT_REPOSITORY_PROP) != null;
-            e.getPresentation().setEnabled(true);
-        }
+        e.getPresentation().setVisible(getActiveProject() != null);
+        e.getPresentation().setEnabled(isGitRepository());
     }
 }

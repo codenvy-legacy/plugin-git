@@ -12,8 +12,6 @@ package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.action.Action;
 import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
@@ -25,9 +23,8 @@ import com.google.inject.Singleton;
 
 /** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
 @Singleton
-public class DeleteRepositoryAction extends Action {
+public class DeleteRepositoryAction extends GitAction {
     private final DeleteRepositoryPresenter presenter;
-    private final ResourceProvider          resourceProvider;
     private       GitLocalizationConstant   constant;
     private final AnalyticsEventLogger      eventLogger;
 
@@ -37,9 +34,8 @@ public class DeleteRepositoryAction extends Action {
                                   GitResources resources,
                                   GitLocalizationConstant constant,
                                   AnalyticsEventLogger eventLogger) {
-        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo());
+        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), resourceProvider);
         this.presenter = presenter;
-        this.resourceProvider = resourceProvider;
         this.constant = constant;
         this.eventLogger = eventLogger;
     }
@@ -49,25 +45,20 @@ public class DeleteRepositoryAction extends Action {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log("IDE: Git delete repository");
         Ask ask = new Ask(constant.deleteGitRepositoryTitle(),
-                          constant.deleteGitRepositoryQuestion(resourceProvider.getActiveProject().getPath()), new AskHandler() {
+                          constant.deleteGitRepositoryQuestion(getActiveProject().getPath()), new AskHandler() {
             @Override
             public void onOk() {
                 presenter.deleteRepository();
             }
-        });
+        }
+        );
         ask.show();
     }
 
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        Project activeProject = resourceProvider.getActiveProject();
-
-        e.getPresentation().setVisible(activeProject != null);
-
-        if (activeProject != null) {
-//            boolean isGitRepository = activeProject.getProperty(GIT_REPOSITORY_PROP) != null;
-            e.getPresentation().setEnabled(true);
-        }
+        e.getPresentation().setVisible(getActiveProject() != null);
+        e.getPresentation().setEnabled(isGitRepository());
     }
 }

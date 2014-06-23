@@ -20,9 +20,11 @@ import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import com.google.web.bindery.event.shared.EventBus;
 
 import javax.validation.constraints.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -35,11 +37,10 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  */
 @Singleton
 public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegate {
-    private InitRepositoryView view;
+    private InitRepositoryView      view;
     private GitServiceClient        service;
     private Project                 project;
     private ResourceProvider        resourceProvider;
-    private EventBus                eventBus;
     private GitLocalizationConstant constant;
     private NotificationManager     notificationManager;
 
@@ -49,7 +50,6 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
      * @param view
      * @param service
      * @param resourceProvider
-     * @param eventBus
      * @param constant
      * @param notificationManager
      */
@@ -57,14 +57,12 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
     public InitRepositoryPresenter(InitRepositoryView view,
                                    GitServiceClient service,
                                    ResourceProvider resourceProvider,
-                                   EventBus eventBus,
                                    GitLocalizationConstant constant,
                                    NotificationManager notificationManager) {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
         this.resourceProvider = resourceProvider;
-        this.eventBus = eventBus;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
@@ -89,6 +87,10 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
             service.init(projectId, projectName, false, new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
+                    List<String> vcsProvider = new ArrayList<>();
+                    vcsProvider.add("git");
+                    project.getAttributes().put("vcs.provider.name", vcsProvider);
+
                     Notification notification = new Notification(constant.initSuccess(), INFO);
                     notificationManager.showNotification(notification);
                 }

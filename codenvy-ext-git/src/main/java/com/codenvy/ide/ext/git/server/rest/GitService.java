@@ -451,15 +451,6 @@ public class GitService {
         String path2gitFolder = project.getPath() + "/.git";
         Item gitItem = vfs.getItemByPath(path2gitFolder, null, false, PropertyFilter.NONE_FILTER);
         vfs.delete(gitItem.getId(), null);
-        List<Property> properties = project.getProperties();
-        List<Property> propertiesNew = new ArrayList<Property>(properties.size() - 1);
-        for (Property property : properties) {
-            if (property.getName().equalsIgnoreCase("isGitRepository")) {
-                property.setValue(null);
-            }
-            propertiesNew.add(property);
-        }
-        vfs.updateItem(project.getId(), propertiesNew, null);
     }
 
     // TODO: this is temporary method

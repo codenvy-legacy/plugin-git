@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.project.server.ProjectImporter;
+import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.ide.ext.git.server.commons.GitRepositoryPrivacyChecker;
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
 import com.codenvy.ide.ext.git.server.nativegit.WSO2OAuthCredentialsProvider;
@@ -35,5 +36,8 @@ public class GitModule extends AbstractModule {
         bind(GitExceptionMapper.class).toInstance(new GitExceptionMapper());
         bind(GitConfigurationChecker.class).toInstance(new GitConfigurationChecker());
         bind(GitRepositoryPrivacyChecker.class);
+
+        Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
+        multiBinder.addBinding().to(IsGitRepositoryValueProviderFactory.class);
     }
 }

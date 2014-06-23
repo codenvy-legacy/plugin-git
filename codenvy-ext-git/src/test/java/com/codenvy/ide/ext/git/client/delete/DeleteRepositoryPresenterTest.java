@@ -23,6 +23,8 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -61,6 +63,10 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
 
     @Test
     public void testDeleteRepositoryWhenDeleteRepositoryIsSuccessful() throws Exception {
+        Map attributes = mock(Map.class);
+        List vcsProvider = mock (List.class);
+        when(project.getAttributes()).thenReturn(attributes);
+        when(attributes.get("vcs.provider.name")).thenReturn(vcsProvider);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -78,6 +84,9 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         verify(service).deleteRepository(eq(PROJECT_ID), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).deleteGitRepositorySuccess();
+        verify(project).getAttributes();
+        verify(attributes).get(anyString());
+        verify(vcsProvider).clear();
     }
 
     @Test

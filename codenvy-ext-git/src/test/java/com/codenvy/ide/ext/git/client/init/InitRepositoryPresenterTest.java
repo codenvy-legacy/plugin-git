@@ -46,7 +46,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new InitRepositoryPresenter(view, service, resourceProvider, eventBus, constant, notificationManager);
+        presenter = new InitRepositoryPresenter(view, service, resourceProvider, constant, notificationManager);
 
         when(project.getName()).thenReturn(PROJECT_NAME);
     }

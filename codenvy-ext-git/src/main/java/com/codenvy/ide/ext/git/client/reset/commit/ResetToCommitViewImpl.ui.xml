@@ -51,7 +51,9 @@
             </g:DockLayoutPanel>
         </g:south>
         <g:center>
-            <p1:CellTable width="100%" ui:field="commits" focus="false"/>
+            <g:ScrollPanel>
+                <p1:CellTable width="100%" ui:field="commits" focus="false"/>
+            </g:ScrollPanel>
         </g:center>
     </g:DockLayoutPanel>
 </ui:UiBinder>

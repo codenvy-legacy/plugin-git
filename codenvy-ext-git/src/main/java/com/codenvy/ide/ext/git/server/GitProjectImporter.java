@@ -97,7 +97,7 @@ public class GitProjectImporter implements ProjectImporter {
             if (!baseFolder.isProjectFolder()) {
                 String propertyFileContent = "{\"type\":\"" + Constants.NAMELESS_ID + "\"}";
                 FolderEntry projectMetaFolder = baseFolder.createFolder(".codenvy");
-                projectMetaFolder.createFile("project", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
+                projectMetaFolder.createFile("project.json", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
             }
 
         } catch (NotAuthorizedException e) {

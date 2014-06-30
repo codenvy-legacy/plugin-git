@@ -483,24 +483,87 @@ public class PullPresenterTest extends BaseTest {
 
     @Test
     public void testOnPullClickedWhenPullWSRequestIsFailed() throws Exception {
+        final Throwable exception = mock(Throwable.class);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
-                onFailure.invoke(callback, mock(Throwable.class));
+                onFailure.invoke(callback, exception);
                 return callback;
             }
         }).when(service).pull((Project)anyObject(), anyString(), anyString(), (RequestCallback<String>)anyObject());
+        when(exception.getMessage()).thenReturn("error Message");
 
         presenter.showDialog();
         presenter.onPullClicked();
 
         verify(service).pull(eq(project), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
         verify(view).close();
-        verify(constant).pullFail(eq(REMOTE_URI));
         verify(notificationManager).showNotification((Notification)anyObject());
+    }
+
+    @Test
+    public void testOnPullClickedWhenMergeConflictHappenedAndRefreshProjectIsSuccessful() throws Exception {
+        final Throwable exception = mock(Throwable.class);
+        when(exception.getMessage()).thenReturn("Merge conflict");
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
+                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
+                onFailure.invoke(callback, exception);
+                return callback;
+            }
+        }).when(service).pull((Project)anyObject(), anyString(), anyString(), (RequestCallback<String>)anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
+                callback.onSuccess(project);
+                return callback;
+            }
+        }).when(project).refreshChildren((AsyncCallback<Project>)anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
+                callback.onSuccess(file);
+                return callback;
+            }
+        }).when(project).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncCallback<File> callback = (AsyncCallback<File>)arguments[1];
+                callback.onSuccess(file);
+                return callback;
+            }
+        }).when(project).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
+
+        presenter.showDialog();
+        presenter.onPullClicked();
+
+        verify(service).pull(eq(project), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(view).close();
+        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(resourceProvider).getActiveProject();
+        verify(project).refreshChildren((AsyncCallback<Project>)anyObject());
+        verify(partPresenter, times(2)).getEditorInput();
+        verify(editorInput).getFile();
+        verify(project).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
+        verify(project).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
+        verify(editorInput).setFile((File)anyObject());
+        verify(partPresenter).init((EditorInput)anyObject());
     }
 
     @Test

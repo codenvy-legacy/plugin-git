@@ -17,7 +17,6 @@ import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.exceptions.VirtualFileSystemException;
 import com.codenvy.api.vfs.shared.PropertyFilter;
 import com.codenvy.api.vfs.shared.dto.Item;
-import com.codenvy.api.vfs.shared.dto.Property;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
@@ -46,7 +45,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 /** @author andrew00x */

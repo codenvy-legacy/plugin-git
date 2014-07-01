@@ -122,25 +122,7 @@ public class ProjectLockerOAuthCredentialProvider implements CredentialsProvider
     }
 
     private User getUser(OAuthToken accessToken) throws OAuthAuthenticationException {
-//        URL getUserUrL;
-//        Map<String, String> params = new HashMap<>();
-//        params.put("Authorization", "Bearer " + accessToken.getToken());
-//        try {
-//            getUserUrL = new URL(String.format("%s?schema=%s", userUri, SCOPE));
-//            JsonValue userValue = doRequest(getUserUrL, params);
-//            if (userValue != null) {
-//                User user = new Wso2User();
-//                user.setEmail(userValue.getElement("http://wso2.org/claims/emailaddress").getStringValue());
-//                user.setName(userValue.getElement("http://wso2.org/claims/fullname").getStringValue());
-//                LOG.info(" Name {} , email {}", user.getName(), user.getEmail());
-//                return user;
-//            } else {
-//                return null;
-//            }
-//        } catch (JsonParseException | IOException e) {
-//            LOG.error(e.getLocalizedMessage(), e);
-//            throw new OAuthAuthenticationException(e.getMessage(), e);
-//        }
+        // Not implemented
         return null;
     }
 }

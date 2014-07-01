@@ -52,13 +52,26 @@ public class GitExtension {
     public static final String HISTORY_GROUP_MAIN_MENU    = "GitHistoryGroup";
 
     @Inject
-    public GitExtension(GitResources resources, ActionManager actionManager,
-                        InitRepositoryAction initAction, DeleteRepositoryAction deleteAction, AddToIndexAction addToIndexAction,
-                        ResetToCommitAction resetToCommitAction, RemoveFromIndexAction removeFromIndexAction, CommitAction commitAction,
-                        ShowBranchesAction showBranchesAction, ShowMergeAction showMergeAction, ResetFilesAction resetFilesAction,
-                        ShowStatusAction showStatusAction, ShowGitUrlAction showGitUrlAction, ShowRemoteAction showRemoteAction,
-                        PushAction pushAction, FetchAction fetchAction, PullAction pullAction, GitLocalizationConstant constant,
+    public GitExtension(GitResources resources,
+                        ActionManager actionManager,
+                        InitRepositoryAction initAction,
+                        DeleteRepositoryAction deleteAction,
+                        AddToIndexAction addToIndexAction,
+                        ResetToCommitAction resetToCommitAction,
+                        RemoveFromIndexAction removeFromIndexAction,
+                        CommitAction commitAction,
+                        ShowBranchesAction showBranchesAction,
+                        ShowMergeAction showMergeAction,
+                        ResetFilesAction resetFilesAction,
+                        ShowStatusAction showStatusAction,
+                        ShowGitUrlAction showGitUrlAction,
+                        ShowRemoteAction showRemoteAction,
+                        PushAction pushAction,
+                        FetchAction fetchAction,
+                        PullAction pullAction,
+                        GitLocalizationConstant constant,
                         HistoryAction historyAction) {
+
         resources.gitCSS().ensureInjected();
 
         DefaultActionGroup mainMenu = (DefaultActionGroup)actionManager.getAction(GROUP_MAIN_MENU);

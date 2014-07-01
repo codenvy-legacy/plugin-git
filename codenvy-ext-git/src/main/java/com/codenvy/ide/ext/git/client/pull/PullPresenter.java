@@ -240,6 +240,9 @@ public class PullPresenter implements PullView.ActionDelegate {
 
                 @Override
                 protected void onFailure(Throwable exception) {
+                    if(exception.getMessage().contains("Merge conflict")) {
+                        refreshProject(openedEditors);
+                    }
                     handleError(exception, remoteUrl);
                 }
             });

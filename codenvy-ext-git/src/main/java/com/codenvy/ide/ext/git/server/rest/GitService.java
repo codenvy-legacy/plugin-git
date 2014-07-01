@@ -17,7 +17,6 @@ import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.server.exceptions.VirtualFileSystemException;
 import com.codenvy.api.vfs.shared.PropertyFilter;
 import com.codenvy.api.vfs.shared.dto.Item;
-import com.codenvy.api.vfs.shared.dto.Property;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
@@ -46,7 +45,6 @@ import javax.ws.rs.core.UriInfo;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
 
 /** @author andrew00x */
@@ -451,15 +449,6 @@ public class GitService {
         String path2gitFolder = project.getPath() + "/.git";
         Item gitItem = vfs.getItemByPath(path2gitFolder, null, false, PropertyFilter.NONE_FILTER);
         vfs.delete(gitItem.getId(), null);
-        List<Property> properties = project.getProperties();
-        List<Property> propertiesNew = new ArrayList<Property>(properties.size() - 1);
-        for (Property property : properties) {
-            if (property.getName().equalsIgnoreCase("isGitRepository")) {
-                property.setValue(null);
-            }
-            propertiesNew.add(property);
-        }
-        vfs.updateItem(project.getId(), propertiesNew, null);
     }
 
     // TODO: this is temporary method

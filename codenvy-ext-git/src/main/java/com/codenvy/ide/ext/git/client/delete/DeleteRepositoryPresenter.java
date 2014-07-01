@@ -68,6 +68,8 @@ public class DeleteRepositoryPresenter {
         service.deleteRepository(project.getId(), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
+                project.getAttributes().get("vcs.provider.name").clear();
+
                 Notification notification = new Notification(constant.deleteGitRepositorySuccess(), INFO);
                 notificationManager.showNotification(notification);
             }

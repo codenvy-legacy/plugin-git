@@ -12,8 +12,6 @@ package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.action.Action;
 import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
@@ -23,18 +21,18 @@ import com.google.inject.Singleton;
 
 /** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
 @Singleton
-public class InitRepositoryAction extends Action {
+public class InitRepositoryAction extends GitAction {
     private final InitRepositoryPresenter presenter;
-    private final ResourceProvider        resourceProvider;
     private final AnalyticsEventLogger    eventLogger;
 
     @Inject
-    public InitRepositoryAction(InitRepositoryPresenter presenter, GitResources resources,
+    public InitRepositoryAction(InitRepositoryPresenter presenter,
+                                GitResources resources,
                                 GitLocalizationConstant constant,
-                                ResourceProvider resourceProvider, AnalyticsEventLogger eventLogger) {
-        super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo());
+                                ResourceProvider resourceProvider,
+                                AnalyticsEventLogger eventLogger) {
+        super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo(), resourceProvider);
         this.presenter = presenter;
-        this.resourceProvider = resourceProvider;
         this.eventLogger = eventLogger;
     }
 
@@ -48,14 +46,7 @@ public class InitRepositoryAction extends Action {
     /** {@inheritDoc} */
     @Override
     public void update(ActionEvent e) {
-        Project activeProject = resourceProvider.getActiveProject();
-
-        e.getPresentation().setVisible(activeProject != null);
-
-        if (activeProject != null) {
-//            boolean isGitRepository = activeProject.getProperty(GIT_REPOSITORY_PROP) != null;
-//            e.getPresentation().setEnabled(!isGitRepository);
-            e.getPresentation().setEnabled(true);
-        }
+        e.getPresentation().setVisible(getActiveProject() != null);
+        e.getPresentation().setEnabled(!isGitRepository());
     }
 }

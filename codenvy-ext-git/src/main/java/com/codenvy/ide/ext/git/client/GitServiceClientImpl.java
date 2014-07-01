@@ -11,11 +11,11 @@
 package com.codenvy.ide.ext.git.client;
 
 import com.codenvy.ide.MimeType;
+import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.git.client.add.AddRequestHandler;
 import com.codenvy.ide.ext.git.client.clone.CloneRequestStatusHandler;
-import com.codenvy.ide.ext.git.client.commit.CommitRequestHandler;
 import com.codenvy.ide.ext.git.client.fetch.FetchRequestHandler;
 import com.codenvy.ide.ext.git.client.init.InitRequestStatusHandler;
 import com.codenvy.ide.ext.git.client.pull.PullRequestHandler;
@@ -47,7 +47,6 @@ import com.codenvy.ide.ext.git.shared.ResetRequest;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.ext.git.shared.RmRequest;
 import com.codenvy.ide.ext.git.shared.Status;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
 import com.codenvy.ide.rest.HTTPHeader;

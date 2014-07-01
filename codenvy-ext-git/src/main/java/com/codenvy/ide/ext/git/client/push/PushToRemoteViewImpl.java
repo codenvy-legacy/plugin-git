@@ -48,8 +48,8 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     ListBox localBranch;
     @UiField
     ListBox remoteBranch;
-    Button  btnPush;
-    Button  btnCancel;
+    Button btnPush;
+    Button btnCancel;
     @UiField(provided = true)
     final   GitResources            res;
     @UiField(provided = true)
@@ -71,7 +71,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
 
         this.setTitle(locale.pushViewTitle());
         this.setWidget(widget);
-        
+
         btnCancel = createButton(locale.buttonCancel(), "git-remotes-push-cancel", new ClickHandler() {
 
             @Override

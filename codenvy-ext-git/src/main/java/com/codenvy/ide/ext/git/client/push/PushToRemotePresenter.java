@@ -22,6 +22,7 @@ import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.Window;
@@ -105,7 +106,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                    Window.alert(errorMessage);
                                    view.setEnablePushButton(false);
                                }
-                           });
+                           }
+                          );
     }
 
     /**
@@ -121,27 +123,28 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
-                                   if(!LIST_REMOTE.equals(remoteMode)) {
+                                   if (!LIST_REMOTE.equals(remoteMode)) {
                                        Array<String> localBranches = getLocalBranchesToDisplay(result);
                                        view.setLocalBranches(localBranches);
 
                                        for (Branch branch : result.asIterable()) {
-                                            if (branch.isActive()) {
-                                                view.selectLocalBranch(branch.getDisplayName());
-                                                break;
-                                            }
-                                        }
+                                           if (branch.isActive()) {
+                                               view.selectLocalBranch(branch.getDisplayName());
+                                               break;
+                                           }
+                                       }
                                        getBranches(projectId, LIST_REMOTE);
-                                    } else {
+                                   } else {
                                        Array<String> remoteBranches = getRemoteBranchesToDisplay(view.getRepository(), result);
                                        // Need to add the current local branch in the list of remote branches
                                        // to be able to push changes to the remote branch  with same name
                                        String currentBranch = view.getLocalBranch();
-                                           if (!remoteBranches.contains(currentBranch)) {
-                                               remoteBranches.add(currentBranch);
-                                           }
+                                       if (!remoteBranches.contains(currentBranch)) {
+                                           remoteBranches.add(currentBranch);
+                                       }
                                        view.setRemoteBranches(remoteBranches);
-                                    }
+                                       view.selectRemoteBranch(currentBranch);
+                                   }
                                }
 
                                @Override
@@ -153,7 +156,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                    notificationManager.showNotification(notification);
                                    view.setEnablePushButton(false);
                                }
-                           });
+                           }
+                          );
     }
 
     /**

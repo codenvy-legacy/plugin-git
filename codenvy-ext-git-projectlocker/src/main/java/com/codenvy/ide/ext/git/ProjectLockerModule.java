@@ -18,7 +18,7 @@ import com.google.inject.multibindings.Multibinder;
 /**
  * The module that contains configuration of the server side part of the Git extension.
  *
- * @author andrew00x
+ * @author Max Shaposhnik
  */
 @DynaModule
 public class ProjectLockerModule extends AbstractModule {

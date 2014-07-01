@@ -167,7 +167,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         verify(view).selectLocalBranch(anyString());
 
         presenter.onLocalBranchChanged();
-        verify(view).selectRemoteBranch(anyString());
+        verify(view, times(2)).selectRemoteBranch(anyString());
     }
 
     @Test

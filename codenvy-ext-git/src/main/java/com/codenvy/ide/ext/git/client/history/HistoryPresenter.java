@@ -42,6 +42,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
+import org.vectomatic.dom.svg.ui.SVGResource;
+
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
@@ -428,6 +430,12 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
 
     /** {@inheritDoc} */
     @Override
+    public SVGResource getTitleSVGImage() {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public String getTitleToolTip() {
         return constant.historyTitle();
     }
@@ -468,7 +476,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         // and change a dedicated resource with the history-window open
 
         Selection<?> sel = activePart.getSelection();
-        if(sel != null && sel.getFirstElement() instanceof Resource) {
+        if (sel != null && sel.getFirstElement() instanceof Resource) {
             selection = (Selection<Resource>)sel;
         }
     }

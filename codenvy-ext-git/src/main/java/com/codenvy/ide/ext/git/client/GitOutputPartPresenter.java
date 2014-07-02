@@ -21,11 +21,13 @@ import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.vectomatic.dom.svg.ui.SVGResource;
+
 
 /**
  * Git output View Part.
  *
- *  @author Vitaly Parfonov
+ * @author Vitaly Parfonov
  */
 @Singleton
 public class GitOutputPartPresenter extends BasePresenter implements GitOutputPartView.ActionDelegate, ConsolePart {
@@ -49,6 +51,12 @@ public class GitOutputPartPresenter extends BasePresenter implements GitOutputPa
     /** {@inheritDoc} */
     @Override
     public ImageResource getTitleImage() {
+        return null;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public SVGResource getTitleSVGImage() {
         return null;
     }
 
@@ -97,7 +105,7 @@ public class GitOutputPartPresenter extends BasePresenter implements GitOutputPa
     public void onClearClicked() {
         clear();
     }
-    
+
     /** {@inheritDoc} */
     @Override
     public void onOpen() {

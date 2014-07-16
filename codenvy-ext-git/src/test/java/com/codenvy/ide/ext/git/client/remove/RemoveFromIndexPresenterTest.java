@@ -15,9 +15,7 @@ import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.api.resources.model.File;
 import com.codenvy.ide.api.resources.model.Folder;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -124,7 +122,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.onRemoveClicked();
 
         verify(service)
-                .remove(eq(PROJECT_ID), (List<String>)anyObject(), eq(REMOVED),
+                .remove(eq(PROJECT_PATH), (List<String>)anyObject(), eq(REMOVED),
                         (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).removeFilesSuccessfull();
@@ -151,7 +149,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.onRemoveClicked();
 
         verify(service)
-                .remove(eq(PROJECT_ID), (List<String>)anyObject(), eq(REMOVED),
+                .remove(eq(PROJECT_PATH), (List<String>)anyObject(), eq(REMOVED),
                         (AsyncRequestCallback<String>)anyObject());
         verify(constant).removeFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

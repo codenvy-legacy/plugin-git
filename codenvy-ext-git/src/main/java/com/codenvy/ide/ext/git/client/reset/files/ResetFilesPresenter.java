@@ -82,7 +82,7 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
     public void showDialog() {
         project = resourceProvider.getActiveProject();
 
-        service.status(project.getId(),
+        service.status(project.getPath(),
                        new AsyncRequestCallback<Status>(dtoUnmarshallerFactory.newUnmarshaller(Status.class)) {
                            @Override
                            protected void onSuccess(Status result) {
@@ -136,9 +136,9 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
             return;
         }
         view.close();
-        String projectId = project.getId();
+        String projectPath = project.getPath();
 
-        service.reset(projectId, "HEAD", ResetType.MIXED, new AsyncRequestCallback<Void>() {
+        service.reset(projectPath, "HEAD", ResetType.MIXED, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 Notification notification = new Notification(constant.resetFilesSuccessfully(), INFO);

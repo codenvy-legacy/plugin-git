@@ -77,7 +77,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).status(eq(PROJECT_ID), (AsyncRequestCallback<Status>)anyObject());
+        verify(service).status(eq(PROJECT_PATH), (AsyncRequestCallback<Status>)anyObject());
         verify(view).setIndexedFiles((Array<IndexFile>)anyObject());
         verify(view).showDialog();
     }
@@ -98,7 +98,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).status(eq(PROJECT_ID), (AsyncRequestCallback<Status>)anyObject());
+        verify(service).status(eq(PROJECT_PATH), (AsyncRequestCallback<Status>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).statusFailed();
     }
@@ -126,7 +126,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service, never()).reset(eq(PROJECT_ID), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service, never()).reset(eq(PROJECT_PATH), anyString(), (ResetRequest.ResetType)anyObject(),
                                        (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).nothingToReset();
@@ -167,7 +167,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service).reset(eq(PROJECT_ID), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(PROJECT_PATH), anyString(), (ResetRequest.ResetType)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).resetFilesSuccessfully();
@@ -207,7 +207,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onResetClicked();
 
-        verify(service).reset(eq(PROJECT_ID), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(PROJECT_PATH), anyString(), (ResetRequest.ResetType)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(constant).resetFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

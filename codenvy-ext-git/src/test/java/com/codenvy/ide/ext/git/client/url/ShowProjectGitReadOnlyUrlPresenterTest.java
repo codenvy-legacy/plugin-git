@@ -62,7 +62,7 @@ public class ShowProjectGitReadOnlyUrlPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).getGitReadOnlyUrl(eq(PROJECT_ID), (AsyncRequestCallback<String>)anyObject());
+        verify(service).getGitReadOnlyUrl(eq(PROJECT_PATH), (AsyncRequestCallback<String>)anyObject());
         verify(view).setUrl(eq(REMOTE_URI));
     }
 
@@ -82,7 +82,7 @@ public class ShowProjectGitReadOnlyUrlPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).getGitReadOnlyUrl(eq(PROJECT_ID), (AsyncRequestCallback<String>)anyObject());
+        verify(service).getGitReadOnlyUrl(eq(PROJECT_PATH), (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).initFailed();
     }

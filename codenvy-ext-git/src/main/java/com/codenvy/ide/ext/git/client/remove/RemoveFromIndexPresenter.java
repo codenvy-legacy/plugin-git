@@ -111,7 +111,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     /** {@inheritDoc} */
     @Override
     public void onRemoveClicked() {
-        service.remove(project.getId(), getFilePatterns(), view.isRemoved(),
+        service.remove(project.getPath(), getFilePatterns(), view.isRemoved(),
                        new AsyncRequestCallback<String>() {
                            @Override
                            protected void onSuccess(String result) {
@@ -135,8 +135,6 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      */
     @NotNull
     private List<String> getFilePatterns() {
-        String projectPath = project.getPath();
-
         Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
         Resource element;
         if (selection == null) {
@@ -145,7 +143,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
             element = selection.getFirstElement();
         }
 
-        String pattern = element.getPath().replaceFirst(projectPath, "");
+        String pattern = element.getPath().replaceFirst(project.getPath(), "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<String>(Arrays.asList(".")) : new ArrayList<String>(Arrays.asList(pattern));

@@ -135,7 +135,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     /** Show dialog. */
     public void showDialog() {
         Project project = resourceProvider.getActiveProject();
-        getCommitsLog(project.getId());
+        getCommitsLog(project.getPath());
         selectedRevision = null;
 
         view.selectProjectChangesButton(true);
@@ -161,8 +161,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     }
 
     /** Get the log of the commits. If successfully received, then display in revision grid, otherwise - show error in output panel. */
-    private void getCommitsLog(@NotNull String projectId) {
-        service.log(projectId, false,
+    private void getCommitsLog(@NotNull String projectPath) {
+        service.log(projectPath, false,
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
                         protected void onSuccess(LogResponse result) {
@@ -222,7 +222,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             view.setCommitBRevision("");
         } else {
             DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-            view.setCommitBDate(formatter.format(new Date((long)revision.getCommitTime())));
+            view.setCommitBDate(formatter.format(new Date(revision.getCommitTime())));
             view.setCommitBRevision(revision.getId());
         }
         view.setCommitBPanelVisible(!isEmpty);
@@ -232,7 +232,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     @Override
     public void onRefreshClicked() {
         Project project = resourceProvider.getActiveProject();
-        getCommitsLog(project.getId());
+        getCommitsLog(project.getPath());
     }
 
     /** {@inheritDoc} */
@@ -309,7 +309,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     private void update() {
         getDiff();
         Project project = resourceProvider.getActiveProject();
-        getCommitsLog(project.getId());
+        getCommitsLog(project.getPath());
     }
 
     /** Get the changes between revisions. On success - display diff in text format, otherwise - show the error message in output panel. */
@@ -354,8 +354,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             return;
         }
 
-        String projectId = resourceProvider.getActiveProject().getId();
-        service.diff(projectId, filePatterns, RAW, false, 0, revision.getId(), isCached,
+        String projectPath = resourceProvider.getActiveProject().getPath();
+        service.diff(projectPath, filePatterns, RAW, false, 0, revision.getId(), isCached,
                      new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                          @Override
                          protected void onSuccess(String result) {
@@ -391,8 +391,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         int index = revisions.indexOf(revisionB);
         if (index + 1 < revisions.size()) {
             final Revision revisionA = revisions.get(index + 1);
-            String projectId = resourceProvider.getActiveProject().getId();
-            service.diff(projectId, filePatterns, RAW, false, 0, revisionA.getId(),
+            String projectPath = resourceProvider.getActiveProject().getPath();
+            service.diff(projectPath, filePatterns, RAW, false, 0, revisionA.getId(),
                          revisionB.getId(),
                          new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                              @Override

@@ -62,8 +62,8 @@ public class GitService {
 
     @PathParam("ws-id")
     private String vfsId;
-    @QueryParam("projectid")
-    private String projectId;
+    @QueryParam("projectPath")
+    private String projectPath;
 
     @Path("add")
     @POST
@@ -222,7 +222,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void init(final InitRequest request) throws GitException, VirtualFileSystemException {
-        request.setWorkingDir(resolveLocalPath(projectId));
+        request.setWorkingDir(resolveLocalPathByPath(projectPath));
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.init(request);
@@ -426,7 +426,7 @@ public class GitService {
     @GET
     public String readOnlyGitUrl(@Context UriInfo uriInfo) throws VirtualFileSystemException {
         VirtualFileSystem vfs = vfsRegistry.getProvider(vfsId).newInstance(null);
-        return gitUrlResolver.resolve(uriInfo, vfs, projectId);
+        return gitUrlResolver.resolve(uriInfo, vfs, projectPath);
     }
 
     @GET
@@ -445,7 +445,7 @@ public class GitService {
     @Path("delete-repository")
     public void deleteRepository(@Context UriInfo uriInfo) throws VirtualFileSystemException {
         VirtualFileSystem vfs = vfsRegistry.getProvider(vfsId).newInstance(null);
-        Item project = getGitProject(vfs, projectId);
+        Item project = getGitProjectByPath(vfs, projectPath);
         String path2gitFolder = project.getPath() + "/.git";
         Item gitItem = vfs.getItemByPath(path2gitFolder, null, false, PropertyFilter.NONE_FILTER);
         vfs.delete(gitItem.getId(), null);
@@ -478,10 +478,8 @@ public class GitService {
         }
         Item gitProject = getGitProjectByPath(vfs, folderPath);
 
-        projectId = gitProject.getId();
-
         final MountPoint mountPoint = vfs.getMountPoint();
-        final VirtualFile virtualFile = mountPoint.getVirtualFileById(gitProject.getId());
+        final VirtualFile virtualFile = mountPoint.getVirtualFile(gitProject.getPath());
         return localPathResolver.resolve(virtualFile);
     }
 
@@ -498,6 +496,6 @@ public class GitService {
     }
 
     protected GitConnection getGitConnection() throws GitException, VirtualFileSystemException {
-        return gitConnectionFactory.getConnection(resolveLocalPath(projectId));
+        return gitConnectionFactory.getConnection(resolveLocalPathByPath(projectPath));
     }
 }

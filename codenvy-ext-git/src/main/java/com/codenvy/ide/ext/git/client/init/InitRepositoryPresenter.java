@@ -79,12 +79,12 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
     /** {@inheritDoc} */
     @Override
     public void onOkClicked() {
+        String projectPath = project.getPath();
         String projectName = project.getName();
-        String projectId = project.getId();
         view.close();
 
         try {
-            service.init(projectId, projectName, false, new RequestCallback<Void>() {
+            service.init(projectPath, projectName, false, new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
                     List<String> vcsProvider = new ArrayList<>();

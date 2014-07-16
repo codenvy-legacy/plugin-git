@@ -87,62 +87,62 @@ public interface GitServiceClient {
      * Get the list of the branches. For now, all branches cannot be returned at once, so the parameter <code>remote</code> tells to get
      * remote branches if <code>true</code> or local ones (if <code>false</code>).
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param mode
      *         get remote branches
      * @param callback
      */
-    void branchList(@NotNull String projectid, @Nullable String mode,
+    void branchList(@NotNull String projectPath, @Nullable String mode,
                     @NotNull AsyncRequestCallback<Array<Branch>> callback);
 
     /**
      * Delete branch.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param name
      *         name of the branch to delete
      * @param force
      *         force if <code>true</code> delete branch {@link #name} even if it is not fully merged
      * @param callback
      */
-    void branchDelete(@NotNull String projectid, @NotNull String name, boolean force,
+    void branchDelete(@NotNull String projectPath, @NotNull String name, boolean force,
                       @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Checkout the branch with pointed name.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param oldName
      *         branch's current name
      * @param newName
      *         branch's new name
      * @param callback
      */
-    void branchRename(@NotNull String projectid, @NotNull String oldName, @NotNull String newName,
+    void branchRename(@NotNull String projectPath, @NotNull String oldName, @NotNull String newName,
                       @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Create new branch with pointed name.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param name
      *         new branch's name
      * @param startPoint
      *         name of a commit at which to start the new branch
      * @param callback
      */
-    void branchCreate(@NotNull String projectid, @NotNull String name, @NotNull String startPoint,
+    void branchCreate(@NotNull String projectPath, @NotNull String name, @NotNull String startPoint,
                       @NotNull AsyncRequestCallback<Branch> callback);
 
     /**
      * Checkout the branch with pointed name.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param name
      *         branch's name
      * @param startPoint
@@ -151,61 +151,61 @@ public interface GitServiceClient {
      *         if <code>true</code> then create a new branch
      * @param callback
      */
-    void branchCheckout(@NotNull String projectid, @NotNull String name, @NotNull String startPoint,
+    void branchCheckout(@NotNull String projectPath, @NotNull String name, @NotNull String startPoint,
                         boolean createNew, @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Get the list of remote repositories for pointed by <code>workDir</code> parameter one.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param remoteName
      *         remote repository's name
      * @param verbose
      *         If <code>true</code> show remote url and name otherwise show remote name
      * @param callback
      */
-    void remoteList(@NotNull String projectid, @Nullable String remoteName, boolean verbose,
+    void remoteList(@NotNull String projectPath, @Nullable String remoteName, boolean verbose,
                     @NotNull AsyncRequestCallback<Array<Remote>> callback);
 
     /**
      * Adds remote repository to the list of remote repositories.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param name
      *         remote repository's name
      * @param url
      *         remote repository's URL
      * @param callback
      */
-    void remoteAdd(@NotNull String projectid, @NotNull String name, @NotNull String url,
+    void remoteAdd(@NotNull String projectPath, @NotNull String name, @NotNull String url,
                    @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Deletes the pointed(by name) remote repository from the list of repositories.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param name
      *         remote repository name to delete
      * @param callback
      */
-    void remoteDelete(@NotNull String projectid, @NotNull String name,
+    void remoteDelete(@NotNull String projectPath, @NotNull String name,
                       @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Remove files from the working tree and the index.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param files
      *         files to remove
      * @param cached
      *         is for removal only from index
      * @param callback
      */
-    void remove(@NotNull String projectid, List<String> files, boolean cached,
+    void remove(@NotNull String projectPath, List<String> files, boolean cached,
                 @NotNull AsyncRequestCallback<String> callback);
 
     /**
@@ -214,22 +214,22 @@ public interface GitServiceClient {
      * <code>git reset [paths]</code> is the opposite of <code>git add [paths]</code>. 2. Reset the current branch head to [commit] and
      * possibly updates the index (resetting it to the tree of [commit]) and the working tree depending on [mode].
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param commit
      *         commit to which current head should be reset
      * @param resetType
      *         type of the reset
      * @param callback
      */
-    void reset(@NotNull String projectid, @NotNull String commit, @Nullable ResetRequest.ResetType resetType,
+    void reset(@NotNull String projectPath, @NotNull String commit, @Nullable ResetRequest.ResetType resetType,
                @NotNull AsyncRequestCallback<Void> callback);
 
     /**
      * Initializes new Git repository (over WebSocket).
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param projectName
      *         project name
      * @param bare
@@ -237,7 +237,7 @@ public interface GitServiceClient {
      * @param callback
      *         callback
      */
-    void init(@NotNull String projectid, @NotNull String projectName, boolean bare,
+    void init(@NotNull String projectPath, @NotNull String projectName, boolean bare,
               @NotNull RequestCallback<Void> callback) throws WebSocketException;
 
     /**
@@ -320,8 +320,8 @@ public interface GitServiceClient {
     /**
      * Compare two commits, get the diff for pointed file(s) or for the whole project in text format.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param fileFilter
      *         files for which to show changes
      * @param type
@@ -336,7 +336,7 @@ public interface GitServiceClient {
      *         second commit to be compared
      * @param callback
      */
-    void diff(@NotNull String projectid, @NotNull List<String> fileFilter, @NotNull DiffRequest.DiffType type,
+    void diff(@NotNull String projectPath, @NotNull List<String> fileFilter, @NotNull DiffRequest.DiffType type,
               boolean noRenames, int renameLimit, @NotNull String commitA, @NotNull String commitB,
               @NotNull AsyncRequestCallback<String> callback);
 
@@ -344,8 +344,8 @@ public interface GitServiceClient {
      * Compare commit with index or working tree (depends on {@link #cached}), get the diff for pointed file(s) or for the whole project in
      * text format.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param fileFilter
      *         files for which to show changes
      * @param type
@@ -360,31 +360,31 @@ public interface GitServiceClient {
      *         if <code>true</code> then compare commit with index, if <code>false</code>, then compare with working tree.
      * @param callback
      */
-    void diff(@NotNull String projectid, @NotNull List<String> fileFilter, @NotNull DiffRequest.DiffType type,
+    void diff(@NotNull String projectPath, @NotNull List<String> fileFilter, @NotNull DiffRequest.DiffType type,
               boolean noRenames, int renameLimit, @NotNull String commitA, boolean cached, @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Get log of commits. The result is the list of {@link Revision}, which is returned by callback in
      * <code>onSuccess(Revision result)</code>.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param isTextFormat
      *         if <code>true</code> the loq response will be in text format
      * @param callback
      */
-    void log(@NotNull String projectid, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback);
+    void log(@NotNull String projectPath, boolean isTextFormat, @NotNull AsyncRequestCallback<LogResponse> callback);
 
     /**
      * Merge the pointed commit with current HEAD.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param commit
      *         commit's reference to merge with
      * @param callback
      */
-    void merge(@NotNull String projectid, @NotNull String commit,
+    void merge(@NotNull String projectPath, @NotNull String commit,
                @NotNull AsyncRequestCallback<MergeResult> callback);
 
     /**
@@ -410,35 +410,35 @@ public interface GitServiceClient {
      * ?? folder/test.css
      * </pre>
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param shortFormat
      *         to show in short format or not
      * @param callback
      */
-    void statusText(@NotNull String projectid, boolean shortFormat, @NotNull AsyncRequestCallback<String> callback);
+    void statusText(@NotNull String projectPath, boolean shortFormat, @NotNull AsyncRequestCallback<String> callback);
 
     /**
      * Gets the working tree status : list of untracked, changed not commited and changed not updated.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param callback
      */
-    void status(@NotNull String projectid, @NotNull AsyncRequestCallback<Status> callback);
+    void status(@NotNull String projectPath, @NotNull AsyncRequestCallback<Status> callback);
 
     /**
      * Get the Git ReadOnly Url for the pointed item's location.
      *
-     * @param projectid
-     *         project's id (root of GIT repository)
+     * @param projectPath
+     *         project's path (root of GIT repository)
      * @param callback
      */
-    void getGitReadOnlyUrl(@NotNull String projectid, @NotNull AsyncRequestCallback<String> callback);
+    void getGitReadOnlyUrl(@NotNull String projectPath, @NotNull AsyncRequestCallback<String> callback);
 
-    void getCommitters(@NotNull String projectid, @NotNull AsyncRequestCallback<Commiters> callback);
+    void getCommitters(@NotNull String projectPath, @NotNull AsyncRequestCallback<Commiters> callback);
 
-    void deleteRepository(@NotNull String projectid, @NotNull AsyncRequestCallback<Void> callback);
+    void deleteRepository(@NotNull String projectPath, @NotNull AsyncRequestCallback<Void> callback);
 
     void getUrlVendorInfo(@NotNull String vcsUrl, @NotNull AsyncRequestCallback<GitUrlVendorInfo> callback);
 }

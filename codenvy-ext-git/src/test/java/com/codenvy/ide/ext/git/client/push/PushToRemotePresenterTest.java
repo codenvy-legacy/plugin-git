@@ -106,7 +106,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view).setEnablePushButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
@@ -156,9 +156,9 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
-        verify(service, times(2)).branchList(eq(PROJECT_ID), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(PROJECT_PATH), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view).setEnablePushButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
         verify(view).showDialog();
@@ -209,7 +209,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -233,7 +233,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));

@@ -59,6 +59,11 @@ public class GitProjectImporterGitCleanUp extends GitProjectImporter {
     }
 
     @Override
+    public boolean isInternal() {
+        return true;
+    }
+
+    @Override
     public void importSources(FolderEntry baseFolder, String location) throws IOException, ApiException {
         super.importSources(baseFolder, location);
 

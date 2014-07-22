@@ -47,13 +47,16 @@ public class BranchListCommand extends GitCommand<List<Branch>> {
                 if (outLine.indexOf("->") != -1)
                     continue;
                 String remoteName = outLine.trim().split(" ")[0];
-                Branch branch = DtoFactory.getInstance().createDto(Branch.class).withName("refs/remotes/".concat(remoteName)).withActive(false).withDisplayName(remoteName).withRemote(true);
+                Branch branch =
+                        DtoFactory.getInstance().createDto(Branch.class).withName("refs/remotes/".concat(remoteName)).withActive(false)
+                                  .withDisplayName(remoteName).withRemote(true);
                 branches.add(branch);
             }
         } else {
             for (String outLine : output) {
                 String localName = outLine.substring(2);
-                Branch branch = DtoFactory.getInstance().createDto(Branch.class).withName("refs/heads/".concat(localName)).withActive(outLine.indexOf('*') != -1).withDisplayName(localName).withRemote(false);
+                Branch branch = DtoFactory.getInstance().createDto(Branch.class).withName("refs/heads/".concat(localName))
+                                          .withActive(outLine.indexOf('*') != -1).withDisplayName(localName).withRemote(false);
                 branches.add(branch);
             }
         }

@@ -34,7 +34,7 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     @Override
     public Void execute() throws GitException {
         if (branchName == null) {
-            throw new GitException("");
+            throw new GitException("Branch name was not set.");
         }
         clear();
         commandLine.add("checkout");

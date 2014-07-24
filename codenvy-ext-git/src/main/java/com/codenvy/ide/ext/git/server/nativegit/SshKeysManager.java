@@ -34,16 +34,16 @@ import java.util.regex.Pattern;
 @Singleton
 public class SshKeysManager {
 
-    private static final Logger  LOG                        = LoggerFactory.getLogger(SshKeysManager.class);
-    private static final Pattern SSH_URL                    = Pattern.compile("((((git|ssh)://)(([^\\\\/@:]+@)??)" +
-                                                                              "[^\\\\/@:]+)|([^\\\\/@:]+@[^\\\\/@:]+)" +
-                                                                              ")(:|/)[^\\\\@:]+");
-    private static final String  DEFAULT_KEY_DIRECTORY_PATH = System.getProperty("java.io.tmpdir");
-    private static final String  DEFAULT_KEY_NAME           = "identity";
+    private static final Logger  LOG     = LoggerFactory.getLogger(SshKeysManager.class);
+    private static final Pattern SSH_URL = Pattern.compile("((((git|ssh)://)(([^\\\\/@:]+@)??)[^\\\\/@:]+)(:|/)|" +
+                                                           "([^\\\\/@:]+@[^\\\\/@:]+):)[^\\\\@:]+");
 
-    private static String      keyDirectoryPath; // TODO(GUICE): initialize
-    private final  SshKeyStore keyProvider;
-    private Set<SshKeyUploaderProvider> sshKeyUploaderProviders;
+    private static final String DEFAULT_KEY_DIRECTORY_PATH = System.getProperty("java.io.tmpdir");
+    private static final String DEFAULT_KEY_NAME           = "identity";
+
+    private static String                      keyDirectoryPath; // TODO(GUICE): initialize
+    private final  SshKeyStore                 keyProvider;
+    private        Set<SshKeyUploaderProvider> sshKeyUploaderProviders;
 
     @Inject
     public SshKeysManager(SshKeyStore keyProvider, Set<SshKeyUploaderProvider> sshKeyUploaderProviders) {

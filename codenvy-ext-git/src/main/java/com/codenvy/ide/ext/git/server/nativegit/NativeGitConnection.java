@@ -67,9 +67,6 @@ import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -82,11 +79,10 @@ import java.util.regex.Pattern;
 /**
  * Native implementation of GitConnection
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class NativeGitConnection implements GitConnection {
 
-    private final static Logger LOG = LoggerFactory.getLogger(NativeGitConnection.class);
     private final NativeGit                nativeGit;
     private final CredentialsLoader        credentialsLoader;
     private final Set<CredentialsProvider> credentialsProviders;
@@ -107,9 +103,9 @@ public class NativeGitConnection implements GitConnection {
      * @param keysManager
      *         manager for ssh keys. If it is null default ssh will be used;
      * @param credentialsLoader
-     *          loader for credentials
+     *         loader for credentials
      * @param credentialsProviders
-     *          set of credentials providers
+     *         set of credentials providers
      * @throws GitException
      *         when some error occurs
      */
@@ -160,7 +156,8 @@ public class NativeGitConnection implements GitConnection {
         branchCreateCommand.setBranchName(request.getName())
                            .setStartPoint(request.getStartPoint())
                            .execute();
-        return DtoFactory.getInstance().createDto(Branch.class).withName(getBranchRef(request.getName())).withActive(false).withDisplayName(request.getName()).withRemote(false);
+        return DtoFactory.getInstance().createDto(Branch.class).withName(getBranchRef(request.getName())).withActive(false)
+                         .withDisplayName(request.getName()).withRemote(false);
     }
 
     @Override
@@ -202,7 +199,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public GitConnection clone(CloneRequest request) throws URISyntaxException, GitException, UnauthorizedException {
+    public GitConnection clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
         if (request.getWorkingDir() != null) {
             nativeGit.setRepository(new File(request.getWorkingDir()));
         }
@@ -287,7 +284,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void fetch(FetchRequest request) throws GitException {
+    public void fetch(FetchRequest request) throws GitException, UnauthorizedException {
         FetchCommand fetchCommand;
         String url;
         //get url
@@ -355,7 +352,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException {
+    public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException, UnauthorizedException {
         LsRemoteCommand command = nativeGit.createLsRemoteCommand().setRemoteUrl(request.getRemoteUrl());
         if (request.isUseAuthorization()) {
             executeWithCredentials(command, request.getRemoteUrl());

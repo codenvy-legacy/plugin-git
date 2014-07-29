@@ -11,9 +11,9 @@
 package com.codenvy.ide.ext.github.server.inject;
 
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
-import com.codenvy.ide.ext.git.server.nativegit.SshKeyUploaderProvider;
+import com.codenvy.ide.ext.git.server.nativegit.SshKeyUploader;
 import com.codenvy.ide.ext.github.server.GitHub;
-import com.codenvy.ide.ext.github.server.GitHubKeyUploaderProvider;
+import com.codenvy.ide.ext.github.server.GitHubKeyUploader;
 import com.codenvy.ide.ext.github.server.oauth.GitHubOAuthCredentialProvider;
 import com.codenvy.ide.ext.github.server.rest.GitHubExceptionMapper;
 import com.codenvy.inject.DynaModule;
@@ -34,7 +34,7 @@ public class GitHubModule extends AbstractModule {
         bind(GitHub.class);
 
         Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(GitHubOAuthCredentialProvider.class);
-        Multibinder.newSetBinder(binder(), SshKeyUploaderProvider.class).addBinding().to(GitHubKeyUploaderProvider.class);
+        Multibinder.newSetBinder(binder(), SshKeyUploader.class).addBinding().to(GitHubKeyUploader.class);
 
         bind(GitHubExceptionMapper.class).toInstance(new GitHubExceptionMapper());
     }

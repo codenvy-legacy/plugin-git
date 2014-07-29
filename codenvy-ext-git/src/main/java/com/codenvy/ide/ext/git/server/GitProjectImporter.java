@@ -71,7 +71,6 @@ public class GitProjectImporter implements ProjectImporter {
     }
 
 
-
     @Override
     public void importSources(FolderEntry baseFolder, String location)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
@@ -80,7 +79,8 @@ public class GitProjectImporter implements ProjectImporter {
                 throw new IOException("Project cannot be imported into \"" + baseFolder.getName() + "\". It is not a folder.");
             }
 
-            String fullPathToClonedProject = localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
+            String fullPathToClonedProject =
+                    localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             GitConnection gitConnection = nativeGitConnectionFactory.getConnection(fullPathToClonedProject);
 
             if (!isFolderEmpty(baseFolder)) {
@@ -109,15 +109,13 @@ public class GitProjectImporter implements ProjectImporter {
                 projectMetaFolder.createFile("project.json", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
             }
 
-        } catch (NotAuthorizedException e) {
-
-            throw new UnauthorizedException("User is not authorize to call this action. " +
-                                            "Try go to main menu Window->Preference->SSH Key and generate new keys pair");
-        } catch (GitException | URISyntaxException e) {
-            throw new IOException("Selected project cannot be imported.", e);
+        } catch (UnauthorizedException e) {
+            throw new UnauthorizedException(
+                    "User is not authorize to call this action. Try go to main menu Window->Preference->SSH Key and generate new keys pair");
+        } catch (URISyntaxException e) {
+            throw new ServerException("Selected project cannot be imported.", e);
         }
     }
-
 
     private boolean isFolderEmpty(FolderEntry folder) throws ServerException {
         return folder.getChildren().size() == 0;

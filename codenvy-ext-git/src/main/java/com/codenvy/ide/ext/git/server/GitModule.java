@@ -34,7 +34,7 @@ public class GitModule extends AbstractModule {
         Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporterGitCleanUp.class);
-        bind(GitConfigurationChecker.class);
+        bind(GitConfigurationChecker.class).asEagerSingleton();
         bind(GitRepositoryPrivacyChecker.class);
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);

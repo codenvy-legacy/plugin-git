@@ -15,11 +15,15 @@ import com.codenvy.ide.commons.ParsingResponseException;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.github.server.GitHub;
 import com.codenvy.ide.ext.github.server.GitHubException;
-import com.codenvy.ide.ext.github.server.GitHubKeyUploaderProvider;
+import com.codenvy.ide.ext.github.server.GitHubKeyUploader;
 import com.codenvy.ide.ext.github.shared.Collaborators;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
+import com.codenvy.ide.ext.ssh.server.SshKey;
+import com.codenvy.ide.ext.ssh.server.SshKeyPair;
+import com.codenvy.ide.ext.ssh.server.SshKeyStore;
+import com.codenvy.ide.ext.ssh.server.SshKeyStoreException;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -41,13 +45,13 @@ import java.util.Map;
 @Path("github/{ws-id}")
 public class GitHubService {
     @Inject
-    OAuthTokenProvider oauthTokenProvider;
-
-    @Inject
     GitHub github;
 
     @Inject
-    GitHubKeyUploaderProvider githubKeyUploader;
+    GitHubKeyUploader githubKeyUploader;
+
+    @Inject
+    SshKeyStore sshKeyStore;
 
     @Path("list/user")
     @GET
@@ -136,7 +140,29 @@ public class GitHubService {
 
     @POST
     @Path("ssh/generate")
-    public void updateSSHKey() throws GitException {
-        githubKeyUploader.uploadKey();
+    public void updateSSHKey() throws Exception {
+        final String host = "github.com";
+        SshKey publicKey;
+
+        try {
+            if (sshKeyStore.getPrivateKey(host) != null) {
+                publicKey = sshKeyStore.getPublicKey(host);
+                if (publicKey == null) {
+                    sshKeyStore.removeKeys(host);
+                    publicKey = sshKeyStore.genKeyPair(host, null, null).getPublicKey();
+                }
+            } else {
+                publicKey = sshKeyStore.genKeyPair(host, null, null).getPublicKey();
+            }
+        } catch (SshKeyStoreException e) {
+            throw new GitException(e.getMessage(), e);
+        }
+
+        // update public key
+        try {
+            githubKeyUploader.uploadKey(publicKey);
+        } catch (IOException e) {
+            throw new GitException(e.getMessage(), e);
+        }
     }
 }

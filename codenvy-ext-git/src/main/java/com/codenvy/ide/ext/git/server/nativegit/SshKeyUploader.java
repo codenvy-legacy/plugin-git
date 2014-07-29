@@ -10,22 +10,33 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.api.auth.oauth.OAuthTokenProvider;
+import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.ide.ext.ssh.server.SshKey;
+
+import java.io.IOException;
 
 /**
- * Provide functionality to upload Public SSH key part to GitHub, BitBucket, etc.
+ * Provides functionality to upload Public SSH key part to GitHub, BitBucket, etc.
  *
  * @author Vladyslav Zhukovskii
  */
-public interface SshKeyUploaderProvider {
+public abstract class SshKeyUploader {
+    protected final OAuthTokenProvider tokenProvider;
+
+    protected SshKeyUploader(OAuthTokenProvider tokenProvider) {
+        this.tokenProvider = tokenProvider;
+    }
+
     /**
      * Upload public key part to GitRepository management.
      *
-     * @return true if upload was successful, otherwise false
-     * @throws GitException
-     *         {@link com.codenvy.ide.ext.git.server.NotAuthorizedException} in case if upload to selected site need authorization
+     * @throws IOException
+     *         if an i/o error occurs
+     * @throws UnauthorizedException
+     *         if user is not authorized to access SSH key storage
      */
-    boolean uploadKey() throws GitException;
+    public abstract void uploadKey(SshKey publicKey) throws IOException, UnauthorizedException;
 
     /**
      * Check if specified url matched to use current upload provider.
@@ -34,5 +45,5 @@ public interface SshKeyUploaderProvider {
      *         input url to check
      * @return true if current uploader can be applied to upload key to host specified in url, passed as parameter
      */
-    boolean match(String url);
+    public abstract boolean match(String url);
 }

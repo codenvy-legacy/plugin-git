@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Initialize repository.
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class InitCommand extends GitCommand<Void> {
 

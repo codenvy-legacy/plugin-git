@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Get list of branches
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class BranchListCommand extends GitCommand<List<Branch>> {
 
@@ -44,8 +44,9 @@ public class BranchListCommand extends GitCommand<List<Branch>> {
         List<Branch> branches = new LinkedList<>();
         if (showRemotes) {
             for (String outLine : output) {
-                if (outLine.indexOf("->") != -1)
+                if (outLine.contains("->")) {
                     continue;
+                }
                 String remoteName = outLine.trim().split(" ")[0];
                 Branch branch =
                         DtoFactory.getInstance().createDto(Branch.class).withName("refs/remotes/".concat(remoteName)).withActive(false)

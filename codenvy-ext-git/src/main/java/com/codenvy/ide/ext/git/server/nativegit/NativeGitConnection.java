@@ -11,12 +11,12 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 
+import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.DiffPage;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.LogPage;
-import com.codenvy.ide.ext.git.server.NotAuthorizedException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.AddCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.BranchCheckoutCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.BranchCreateCommand;
@@ -143,8 +143,7 @@ public class NativeGitConnection implements GitConnection {
          */
         if (request.isCreateNew()) {
             try {
-                if (!(getBranchRef(request.getName()).startsWith("refs/remotes/")
-                      && request.getName().endsWith("/HEAD"))) {
+                if (!(getBranchRef(request.getName()).startsWith("refs/remotes/") && request.getName().endsWith("/HEAD"))) {
                     command.setRemote(true);
                 }
             } catch (GitException ignored) {
@@ -203,7 +202,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public GitConnection clone(CloneRequest request) throws URISyntaxException, GitException {
+    public GitConnection clone(CloneRequest request) throws URISyntaxException, GitException, UnauthorizedException {
         if (request.getWorkingDir() != null) {
             nativeGit.setRepository(new File(request.getWorkingDir()));
         }
@@ -222,9 +221,7 @@ public class NativeGitConnection implements GitConnection {
         executeWithCredentials(clone, request.getRemoteUri());
         File repository = clone.getRepository();
         //set up back default url
-        new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null
-                                                          ? "origin"
-                                                          : request.getRemoteName())
+        new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
                                            .setNewUrl(request.getRemoteUri())
                                            .execute();
         nativeGit.createConfig().setUser(user).saveUser();
@@ -340,7 +337,7 @@ public class NativeGitConnection implements GitConnection {
         if (!request.isBare() && request.isInitCommit()) {
             try {
                 nativeGit.createAddCommand()
-                         .setFilePattern(new ArrayList<String>(Arrays.asList(".")))
+                         .setFilePattern(new ArrayList<>(Arrays.asList(".")))
                          .execute();
                 nativeGit.createCommitCommand()
                          .setMessage("init")
@@ -396,7 +393,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void pull(PullRequest request) throws GitException {
+    public void pull(PullRequest request) throws GitException, UnauthorizedException {
         PullCommand pullCommand;
         String url;
         //get url
@@ -421,12 +418,12 @@ public class NativeGitConnection implements GitConnection {
                    .setTimeout(request.getTimeout());
         executeWithCredentials(pullCommand, url);
         if (pullCommand.getOutputMessage().toLowerCase().contains("already up-to-date")) {
-            throw new AlreadyUpToDateException();
+            throw new AlreadyUpToDateException("Already up-to-date");
         }
     }
 
     @Override
-    public void push(PushRequest request) throws GitException {
+    public void push(PushRequest request) throws GitException, UnauthorizedException {
         PushCommand pushCommand;
         String url;
         //get url
@@ -580,7 +577,7 @@ public class NativeGitConnection implements GitConnection {
      *         when it is not possible to store credentials or
      *         authentication failed or command execution failed
      */
-    public void executeWithCredentials(GitCommand command, String url) throws GitException {
+    public void executeWithCredentials(GitCommand command, String url) throws GitException, UnauthorizedException {
         //create empty credentials
         CredentialItem.Username username = new CredentialItem.Username();
         username.setValue("");
@@ -608,7 +605,7 @@ public class NativeGitConnection implements GitConnection {
                     } catch (GitException inner) {
                         //if not authorized again make runtime exception
                         if (isOperationNeedAuth(inner.getMessage())) {
-                            throw new NotAuthorizedException();
+                            throw new UnauthorizedException("Not authorized");
                         } else {
                             throw inner;
                         }

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Join two development histories together
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class MergeCommand extends GitCommand<MergeResult> {
 

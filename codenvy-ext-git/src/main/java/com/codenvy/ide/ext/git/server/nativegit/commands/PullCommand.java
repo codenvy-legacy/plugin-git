@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Fetch from and merge with another repository
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class PullCommand extends GitCommand<Void> {
 

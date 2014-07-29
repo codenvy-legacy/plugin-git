@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Show commit logs
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class LogCommand extends GitCommand<List<Revision>> {
 
@@ -67,7 +67,6 @@ public class LogCommand extends GitCommand<List<Revision>> {
      * @param count
      *         log objects limit
      * @return LogCommand with established limit of log objects
-     * @throws GitException
      */
     public LogCommand setCount(int count) {
         this.count = count;

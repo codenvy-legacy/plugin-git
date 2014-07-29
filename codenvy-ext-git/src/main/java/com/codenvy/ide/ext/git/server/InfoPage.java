@@ -14,8 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id: InfoPage.java 22811 2011-03-22 07:28:35Z andrew00x $
+ * @author andrew00x
  */
 public interface InfoPage {
     void writeTo(OutputStream out) throws IOException;

@@ -19,7 +19,7 @@ import java.io.File;
 /**
  * Commit changes
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class CommitCommand extends GitCommand<Void> {
 

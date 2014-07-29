@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Used for branches renaming
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class BranchRenameCommand extends GitCommand<Void> {
 

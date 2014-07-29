@@ -17,12 +17,12 @@ import java.io.File;
 /**
  * Delete branch
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class BranchDeleteCommand extends GitCommand<Void> {
 
     private boolean deleteFullyMerged;
-    private String branchName;
+    private String  branchName;
 
     public BranchDeleteCommand(File repository) {
         super(repository);
@@ -45,7 +45,8 @@ public class BranchDeleteCommand extends GitCommand<Void> {
     }
 
     /**
-     * @param deleteFullyMerged if <code>true</code> fully merged branch will be deleted
+     * @param deleteFullyMerged
+     *         if <code>true</code> fully merged branch will be deleted
      * @return BranchDeleteCommand with established delete fully merged branch parameter
      */
     public BranchDeleteCommand setDeleteFullyMerged(boolean deleteFullyMerged) {
@@ -54,7 +55,8 @@ public class BranchDeleteCommand extends GitCommand<Void> {
     }
 
     /**
-     * @param branchName branch to delete
+     * @param branchName
+     *         branch to delete
      * @return BranchDeleteCommand with established branch to delete parameter
      */
     public BranchDeleteCommand setBranchName(String branchName) {

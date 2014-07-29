@@ -18,11 +18,11 @@ import java.util.List;
 /**
  * Add remote to repository
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class RemoteAddCommand extends GitCommand<Void> {
-    private String   name;
-    private String   url;
+    private String       name;
+    private String       url;
     private List<String> branches;
 
     public RemoteAddCommand(File repository) {

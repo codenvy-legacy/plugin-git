@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
+import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.ide.ext.git.shared.AddRequest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
@@ -136,7 +137,7 @@ public interface GitConnection {
      * @throws GitException if any other error occurs
      * @see CloneRequest
      */
-    GitConnection clone(CloneRequest request) throws URISyntaxException, GitException;
+    GitConnection clone(CloneRequest request) throws URISyntaxException, GitException, UnauthorizedException;
 
     /**
      * Commit current state of index in new commit.
@@ -230,7 +231,7 @@ public interface GitConnection {
      * @throws IllegalArgumentException if remote configuration is invalid
      * @see PullRequest
      */
-    void pull(PullRequest request) throws GitException;
+    void pull(PullRequest request) throws GitException, UnauthorizedException;
 
     /**
      * Send changes from local repository to remote one.
@@ -240,7 +241,7 @@ public interface GitConnection {
      * @throws IllegalArgumentException if remote configuration is invalid
      * @see PushRequest
      */
-    void push(PushRequest request) throws GitException;
+    void push(PushRequest request) throws GitException, UnauthorizedException;
 
     /**
      * Add new remote configuration.

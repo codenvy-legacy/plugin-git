@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Checkout branch
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class BranchCheckoutCommand extends GitCommand<Void> {
 

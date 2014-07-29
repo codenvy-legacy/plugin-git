@@ -15,7 +15,6 @@ import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.ide.ext.git.server.commons.GitRepositoryPrivacyChecker;
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
 import com.codenvy.ide.ext.git.server.nativegit.WSO2OAuthCredentialsProvider;
-import com.codenvy.ide.ext.git.server.rest.GitExceptionMapper;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -35,8 +34,7 @@ public class GitModule extends AbstractModule {
         Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporterGitCleanUp.class);
-        bind(GitExceptionMapper.class).toInstance(new GitExceptionMapper());
-        bind(GitConfigurationChecker.class).toInstance(new GitConfigurationChecker());
+        bind(GitConfigurationChecker.class);
         bind(GitRepositoryPrivacyChecker.class);
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);

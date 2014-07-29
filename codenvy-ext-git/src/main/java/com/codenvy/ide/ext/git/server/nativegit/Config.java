@@ -22,7 +22,7 @@ import java.io.File;
  * Config is useful for git repository configuration manipulation.
  * For now it is available to load and save information about git repository user.
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class Config {
 

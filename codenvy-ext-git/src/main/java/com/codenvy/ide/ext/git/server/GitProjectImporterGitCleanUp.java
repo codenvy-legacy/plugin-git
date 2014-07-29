@@ -10,29 +10,19 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
-import com.codenvy.api.core.ApiException;
+import com.codenvy.api.core.ConflictException;
+import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.api.project.server.AbstractVirtualFileEntry;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.vfs.server.exceptions.VirtualFileSystemException;
-import com.codenvy.dto.server.DtoFactory;
-import com.codenvy.ide.Constants;
+import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
-import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
-import com.codenvy.ide.ext.git.shared.CloneRequest;
-import com.codenvy.ide.ext.git.shared.FetchRequest;
-import com.codenvy.ide.ext.git.shared.InitRequest;
-import com.codenvy.ide.ext.git.shared.RemoteAddRequest;
 import com.codenvy.vfs.impl.fs.LocalPathResolver;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collections;
 
 /**
  * @author Vitalii Parfonov
@@ -64,19 +54,16 @@ public class GitProjectImporterGitCleanUp extends GitProjectImporter {
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location) throws IOException, ApiException {
+    public void importSources(FolderEntry baseFolder, String location)
+            throws IOException, ForbiddenException, ServerException, UnauthorizedException, ConflictException {
         super.importSources(baseFolder, location);
 
         //cleanup git
-        AbstractVirtualFileEntry gitFolder = baseFolder.getChild(".git");
+        VirtualFileEntry gitFolder = baseFolder.getChild(".git");
         if (gitFolder != null)
             gitFolder.remove();
-        AbstractVirtualFileEntry gitIgnore = baseFolder.getChild(".gitignore");
+        VirtualFileEntry gitIgnore = baseFolder.getChild(".gitignore");
         if (gitIgnore != null)
             gitIgnore.remove();
     }
-
-
-
-
 }

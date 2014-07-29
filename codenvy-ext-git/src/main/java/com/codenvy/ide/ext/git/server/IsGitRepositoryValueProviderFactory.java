@@ -10,11 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
+import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.shared.ValueProvider;
-import java.util.ArrayList;
+
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -31,10 +34,13 @@ public class IsGitRepositoryValueProviderFactory implements ValueProviderFactory
         return new ValueProvider() {
             @Override
             public List<String> getValues() {
-                List<String> list = new ArrayList<>();
-                FolderEntry git = (FolderEntry)project.getBaseFolder().getChild(".git");
-                if (git != null) {
-                    list.add("git");
+                final List<String> list = new LinkedList<>();
+                try {
+                    final FolderEntry git = (FolderEntry)project.getBaseFolder().getChild(".git");
+                    if (git != null) {
+                        list.add("git");
+                    }
+                } catch (ForbiddenException | ServerException ignored) {
                 }
                 return list;
             }

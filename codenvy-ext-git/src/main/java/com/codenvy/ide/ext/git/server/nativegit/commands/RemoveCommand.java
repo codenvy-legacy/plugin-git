@@ -18,12 +18,12 @@ import java.util.List;
 /**
  * Remove files
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class RemoveCommand extends GitCommand<Void> {
 
     private List<String> listOfFiles;
-    private boolean  cached;
+    private boolean      cached;
 
     public RemoveCommand(File repository) {
         super(repository);

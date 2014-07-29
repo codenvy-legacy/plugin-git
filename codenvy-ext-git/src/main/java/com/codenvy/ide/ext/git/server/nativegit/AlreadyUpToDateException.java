@@ -10,36 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-import com.codenvy.ide.ext.git.server.GitException;
-
 /**
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
-public class AlreadyUpToDateException extends GitException {
-
-    public AlreadyUpToDateException() {
-        this("Already up-to-date.");
-    }
-
-    /**
-     * @param message error message
-     */
+public class AlreadyUpToDateException extends RuntimeException {
     public AlreadyUpToDateException(String message) {
         super(message);
-    }
-
-    /**
-     * @param cause cause
-     */
-    public AlreadyUpToDateException(Throwable cause) {
-        super(cause);
-    }
-
-    /**
-     * @param message error message
-     * @param cause cause
-     */
-    public AlreadyUpToDateException(String message, Throwable cause) {
-        super(message, cause);
     }
 }

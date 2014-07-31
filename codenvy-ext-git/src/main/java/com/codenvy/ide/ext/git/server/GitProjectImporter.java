@@ -111,9 +111,12 @@ public class GitProjectImporter implements ProjectImporter {
 
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(
-                    "User is not authorize to call this action. Try go to main menu Window->Preference->SSH Key and generate new keys pair");
+                    "You are not authorized to perform the remote import.  Codenvy may need accurate keys to the external system. " +
+                    "You can create a new key pair in Window->Preferences->SSH Keys.");
         } catch (URISyntaxException e) {
-            throw new ServerException("Selected project cannot be imported.", e);
+            throw new ServerException(
+                    "Your project cannot be imported.  The issue is either from git configuration, a malformed URL, or file system corruption.  " +
+                    "Please contact support for assistance.", e);
         }
     }
 

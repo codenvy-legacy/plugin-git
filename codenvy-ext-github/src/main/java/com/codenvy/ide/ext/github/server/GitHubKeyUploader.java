@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -115,39 +117,31 @@ public class GitHubKeyUploader extends SshKeyUploader {
     }
 
     private List<GitHubKey> getUserPublicKeys(OAuthToken token) {
+        final String url = String.format("https://api.github.com/user/keys?access_token=%s", token.getToken());
+        HttpURLConnection conn = null;
         try {
-            final String url = String.format("https://api.github.com/user/keys?access_token=%s", token.getToken());
-
-            int responseCode;
-            HttpURLConnection conn = null;
-            try {
-                conn = (HttpURLConnection)new URL(url).openConnection();
-                conn.setInstanceFollowRedirects(false);
-                conn.setRequestMethod(HTTPMethod.GET);
-                conn.setRequestProperty(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON);
-                responseCode = conn.getResponseCode();
-            } finally {
-                if (conn != null) {
-                    conn.disconnect();
+            conn = (HttpURLConnection)new URL(url).openConnection();
+            conn.setInstanceFollowRedirects(false);
+            conn.setRequestMethod(HTTPMethod.GET);
+            conn.setRequestProperty(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON);
+            if (conn.getResponseCode() == HTTPStatus.OK) {
+                final StringBuilder answer = new StringBuilder();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        answer.append(line).append('\n');
+                    }
                 }
+                return DtoFactory.getInstance().createListDtoFromJson(answer.toString(), GitHubKey.class);
             }
-
-            if (responseCode != HTTPStatus.OK) {
-                return Collections.emptyList();
-            }
-
-            final StringBuilder answer = new StringBuilder();
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    answer.append(line).append("\n");
-                }
-            }
-
-            return DtoFactory.getInstance().createListDtoFromJson(answer.toString(), GitHubKey.class);
-        } catch (IOException e) {
             return Collections.emptyList();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+            return Collections.emptyList();
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
         }
     }
 }

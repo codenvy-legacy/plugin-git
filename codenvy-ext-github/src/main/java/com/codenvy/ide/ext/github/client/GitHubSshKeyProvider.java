@@ -99,7 +99,7 @@ public class GitHubSshKeyProvider implements SshKeyProvider, OAuthCallback {
     private void showPopUp() {
         String authUrl = baseUrl + "/oauth/authenticate?oauth_provider=github"
                          + "&scope=user,repo,write:public_key&userId=" + userId + "&redirect_after_login=" +
-                         Window.Location.getProtocol() + "//" + Window.Location.getHost() + "/ide/" + Config.getWorkspaceName();
+                         Window.Location.getProtocol() + "//" + Window.Location.getHost() + "/ws/" + Config.getWorkspaceName();
         JsOAuthWindow authWindow = new JsOAuthWindow(authUrl, "error.url", 500, 980, this);
         authWindow.loginWithOAuth();
     }

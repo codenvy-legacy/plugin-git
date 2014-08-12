@@ -11,8 +11,7 @@
 package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
+import com.codenvy.ide.api.AppContext;
 import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
@@ -28,11 +27,11 @@ public class PushAction extends GitAction {
 
     @Inject
     public PushAction(PushToRemotePresenter presenter,
-                      ResourceProvider resourceProvider,
+                      AppContext appContext,
                       GitResources resources,
                       GitLocalizationConstant constant,
                       AnalyticsEventLogger eventLogger) {
-        super(constant.pushControlTitle(), constant.pushControlPrompt(), null, resources.push(), resourceProvider);
+        super(constant.pushControlTitle(), constant.pushControlPrompt(), null, resources.push(), appContext);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }

@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.ide.api.AppContext;
 import com.codenvy.ide.api.ui.action.ActionEvent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
@@ -27,11 +27,11 @@ public class ShowStatusAction extends GitAction {
 
     @Inject
     public ShowStatusAction(StatusCommandPresenter presenter,
-                            ResourceProvider resourceProvider,
+                            AppContext appContext,
                             GitResources resources,
                             GitLocalizationConstant constant,
                             AnalyticsEventLogger eventLogger) {
-        super(constant.statusControlTitle(), constant.statusControlPrompt(), null, resources.status(), resourceProvider);
+        super(constant.statusControlTitle(), constant.statusControlPrompt(), null, resources.status(), appContext);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }

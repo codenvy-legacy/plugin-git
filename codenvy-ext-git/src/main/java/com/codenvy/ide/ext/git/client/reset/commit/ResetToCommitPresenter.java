@@ -10,23 +10,22 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.reset.commit;
 
+import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.FileEvent;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.FileEvent;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.File;
-import com.codenvy.ide.api.resources.model.Resource;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.DiffRequest;
 import com.codenvy.ide.ext.git.shared.LogResponse;
 import com.codenvy.ide.ext.git.shared.ResetRequest;
 import com.codenvy.ide.ext.git.shared.Revision;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
@@ -37,7 +36,6 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.validation.constraints.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,34 +49,25 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  */
 @Singleton
 public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate {
-    private final DtoUnmarshallerFactory    dtoUnmarshallerFactory;
-    private       ResetToCommitView         view;
-    private       GitServiceClient          service;
-    private       Revision                  selectedRevision;
-    private       ResourceProvider          resourceProvider;
-    private       GitLocalizationConstant   constant;
-    private       NotificationManager       notificationManager;
-    private       String                    projectPath;
-    private       EditorAgent               editorAgent;
-    private       EventBus                  eventBus;
-    private       List<EditorPartPresenter> openedEditors;
+    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private       ResetToCommitView      view;
+    private GitServiceClient          service;
+    private Revision                  selectedRevision;
+    private AppContext                appContext;
+    private GitLocalizationConstant   constant;
+    private NotificationManager       notificationManager;
+    private EditorAgent               editorAgent;
+    private EventBus                  eventBus;
+    private List<EditorPartPresenter> openedEditors;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param resourceProvider
-     * @param constant
-     * @param notificationManager
-     */
+    /** Create presenter. */
     @Inject
     public ResetToCommitPresenter(ResetToCommitView view,
                                   GitServiceClient service,
                                   GitLocalizationConstant constant,
                                   EventBus eventBus,
                                   EditorAgent editorAgent,
-                                  ResourceProvider resourceProvider,
+                                  AppContext appContext,
                                   NotificationManager notificationManager,
                                   DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
@@ -87,16 +76,14 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
         this.constant = constant;
         this.eventBus = eventBus;
         this.editorAgent = editorAgent;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        projectPath = resourceProvider.getActiveProject().getPath();
-
-        service.log(projectPath, false,
+        service.log(appContext.getCurrentProject().getProjectDescription(), false,
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
                         protected void onSuccess(LogResponse result) {
@@ -127,7 +114,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
 
         for (EditorPartPresenter partPresenter : editorAgent.getOpenedEditors().getValues().asIterable()) {
             openedEditors.add(partPresenter);
-            listOpenedFiles.add(partPresenter.getEditorInput().getFile().getRelativePath());
+            listOpenedFiles.add(partPresenter.getEditorInput().getFile().getPath());
         }
 
         getDiff(listOpenedFiles, selectedRevision.getId(), new AsyncCallback<String>() {
@@ -168,8 +155,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
      * @param callback
      */
     private void getDiff(List<String> listFiles, final String commit, final AsyncCallback<String> callback) {
-        projectPath = resourceProvider.getActiveProject().getPath();
-        service.diff(projectPath, listFiles, DiffRequest.DiffType.RAW, true, 0, commit, false,
+        service.diff(appContext.getCurrentProject().getProjectDescription(), listFiles, DiffRequest.DiffType.RAW, true, 0, commit, false,
                      new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                          @Override
                          protected void onSuccess(String diff) {
@@ -197,12 +183,12 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
         type = (type == null && view.isMergeMode()) ? ResetRequest.ResetType.MERGE : type;
 
         final ResetRequest.ResetType finalType = type;
-        service.reset(projectPath, selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
+        service.reset(appContext.getCurrentProject().getProjectDescription(), selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
 
-                if(ResetRequest.ResetType.HARD.equals(finalType) || ResetRequest.ResetType.MERGE.equals(finalType)) {
-                    //Only in the cases of <code>ResetRequest.ResetType.HARD</code>  or <code>ResetRequest.ResetType.MERGE</code>
+                if (ResetRequest.ResetType.HARD.equals(finalType) || ResetRequest.ResetType.MERGE.equals(finalType)) {
+                    // Only in the cases of <code>ResetRequest.ResetType.HARD</code>  or <code>ResetRequest.ResetType.MERGE</code>
                     // must change the workdir
                     refreshProject(diff);
                 }
@@ -227,92 +213,45 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
      *         diff between the specified state and current state for pointed file(s) in text format.
      */
     private void refreshProject(final String diff) {
-        resourceProvider.getActiveProject().refreshChildren(new AsyncCallback<Project>() {
-            @Override
-            public void onSuccess(Project result) {
-                for (EditorPartPresenter partPresenter : openedEditors) {
-                    final File file = partPresenter.getEditorInput().getFile();
-                    String filePath = file.getRelativePath();
+        final String projectPath = appContext.getCurrentProject().getProjectDescription().getPath();
+        eventBus.fireEvent(new RefreshProjectTreeEvent());
+        for (EditorPartPresenter partPresenter : openedEditors) {
+            final ItemReference file = partPresenter.getEditorInput().getFile();
 
-                    if (diff.contains(filePath)) {
-                        int firstIndex = diff.indexOf(filePath);
-                        int lastIndex = diff.lastIndexOf(filePath);
-                        String between = diff.substring(firstIndex, lastIndex);
+            // get project-relative file's path
+            final String filePath = file.getPath().substring(projectPath.length() + 1, file.getPath().length());
+            if (diff.contains(filePath)) {
+                int firstIndex = diff.indexOf(filePath);
+                int lastIndex = diff.lastIndexOf(filePath);
+                String between = diff.substring(firstIndex, lastIndex);
 
-                        if (between.contains("new file mode")) {
-                            //<code>diff</code> contains the string "new file mode" in the case if working tree has file
-                            // that is not exist in the commit to reset. So this file is necessary to close.
-                            eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
-                        } else {
-                            //File is changed in the commit to reset, so this file is necessary to refresh
-                            refreshFile(file, partPresenter);
-                        }
-                    }
+                if (between.contains("new file mode")) {
+                    //<code>diff</code> contains the string "new file mode" in the case if working tree has file
+                    // that is not exist in the commit to reset. So this file is necessary to close.
+                    eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
+                } else {
+                    //File is changed in the commit to reset, so this file is necessary to refresh
+                    updateOpenedFile(partPresenter);
                 }
             }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                Log.error(ResetToCommitPresenter.class, "can not refresh children for project");
-            }
-        });
-    }
-
-    /**
-     * Refresh file.
-     *
-     * @param file
-     *         file to refresh
-     * @param partPresenter
-     *        editor that corresponds to the <code>file</code>.
-     */
-    private void refreshFile(final File file, final EditorPartPresenter partPresenter) {
-        final Project project = resourceProvider.getActiveProject();
-        project.findResourceByPath(file.getPath(), new AsyncCallback<Resource>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.findResourceFailed( );
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-
-            @Override
-            public void onSuccess(final Resource result) {
-                updateOpenedFile((File)result, partPresenter);
-            }
-        });
+        }
     }
 
     /**
      * Update content of the file.
      *
      * @param file
-     *         file to update
+     *         file to refresh
      * @param partPresenter
      *        editor that corresponds to the <code>file</code>.
      */
-    private void updateOpenedFile(final File file, final EditorPartPresenter partPresenter) {
-        resourceProvider.getActiveProject().getContent(file, new AsyncCallback<File>() {
-            @Override
-            public void onSuccess(File result) {
-                try {
-                    EditorInput editorInput = partPresenter.getEditorInput();
-
-                    editorInput.setFile(result);
-                    partPresenter.init(editorInput);
-
-                } catch (EditorInitException event) {
-                    Log.error(ResetToCommitPresenter.class, "can not initializes the editor with the given input " + event);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.getContentFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-        });
+    private void updateOpenedFile(EditorPartPresenter partPresenter) {
+        try {
+            EditorInput editorInput = partPresenter.getEditorInput();
+            partPresenter.init(editorInput);
+        } catch (EditorInitException event) {
+            Log.error(ResetToCommitPresenter.class, "can not initializes the editor with the given input " + event);
+        }
     }
 }
 

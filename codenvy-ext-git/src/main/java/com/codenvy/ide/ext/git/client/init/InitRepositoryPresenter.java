@@ -10,21 +10,24 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.init;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.AppContext;
+import com.codenvy.ide.api.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.api.resources.model.Project;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.Unmarshallable;
+import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -33,14 +36,14 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  * Presenter for Git command Init Repository.
  *
  * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
- * @version $Id: Mar 24, 2011 9:07:58 AM anya $
  */
 @Singleton
 public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegate {
     private InitRepositoryView      view;
+    private ProjectServiceClient    projectServiceClient;
+    private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private GitServiceClient        service;
-    private Project                 project;
-    private ResourceProvider        resourceProvider;
+    private AppContext              appContext;
     private GitLocalizationConstant constant;
     private NotificationManager     notificationManager;
 
@@ -49,29 +52,31 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param notificationManager
      */
     @Inject
     public InitRepositoryPresenter(InitRepositoryView view,
                                    GitServiceClient service,
-                                   ResourceProvider resourceProvider,
+                                   AppContext appContext,
                                    GitLocalizationConstant constant,
-                                   NotificationManager notificationManager) {
+                                   NotificationManager notificationManager,
+                                   ProjectServiceClient projectServiceClient,
+                                   DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
+        this.projectServiceClient = projectServiceClient;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
-
-        view.setWorkDir(project.getPath());
+        view.setWorkDir(appContext.getCurrentProject().getProjectDescription().getPath());
         view.setEnableOkButton(true);
         view.showDialog();
     }
@@ -79,20 +84,29 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
     /** {@inheritDoc} */
     @Override
     public void onOkClicked() {
-        String projectPath = project.getPath();
-        String projectName = project.getName();
+        final CurrentProject currentProject = appContext.getCurrentProject();
         view.close();
-
         try {
-            service.init(projectPath, projectName, false, new RequestCallback<Void>() {
+            service.init(currentProject.getProjectDescription(), false, new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
-                    List<String> vcsProvider = new ArrayList<>();
-                    vcsProvider.add("git");
-                    project.getAttributes().put("vcs.provider.name", vcsProvider);
-
                     Notification notification = new Notification(constant.initSuccess(), INFO);
                     notificationManager.showNotification(notification);
+
+                    // update 'vcs.provider.name' attribute value
+                    Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+                    projectServiceClient.getProject(currentProject.getProjectDescription().getPath(),
+                                                    new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+                                                        @Override
+                                                        protected void onSuccess(ProjectDescriptor projectDescriptor) {
+                                                            currentProject.setProjectDescription(projectDescriptor);
+                                                        }
+
+                                                        @Override
+                                                        protected void onFailure(Throwable throwable) {
+                                                            Log.error(InitRepositoryPresenter.class, throwable);
+                                                        }
+                                                    });
                 }
 
                 @Override

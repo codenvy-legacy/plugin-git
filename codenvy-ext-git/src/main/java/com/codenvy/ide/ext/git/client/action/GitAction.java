@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.action;
 
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
+import com.codenvy.ide.api.AppContext;
+import com.codenvy.ide.api.CurrentProject;
 import com.codenvy.ide.api.ui.action.Action;
 import com.google.gwt.resources.client.ImageResource;
 
@@ -24,31 +24,31 @@ import java.util.List;
  */
 public abstract class GitAction extends Action {
 
-    protected final ResourceProvider resourceProvider;
+    protected final AppContext appContext;
 
     public GitAction(String text,
                      String description,
                      ImageResource icon,
                      SVGResource svgIcon,
-                     ResourceProvider resourceProvider) {
+                     AppContext appContext) {
         super(text, description, icon, svgIcon);
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
     }
 
     protected boolean isGitRepository() {
         boolean isGitRepository = false;
 
-        if (getActiveProject() != null && getActiveProject().getAttributes().containsKey("vcs.provider.name")) {
-            List<String>listVcsProvider = getActiveProject().getAttributes().get("vcs.provider.name");
+        if (getActiveProject() != null) {
+            List<String> listVcsProvider = getActiveProject().getAttributeValues("vcs.provider.name");
 
-            if ((! listVcsProvider.isEmpty()) && listVcsProvider.contains("git")) {
+            if (listVcsProvider != null && (!listVcsProvider.isEmpty()) && listVcsProvider.contains("git")) {
                 isGitRepository = true;
             }
         }
         return isGitRepository;
     }
 
-    protected Project getActiveProject() {
-        return resourceProvider.getActiveProject();
+    protected CurrentProject getActiveProject() {
+        return appContext.getCurrentProject();
     }
 }

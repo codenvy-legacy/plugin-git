@@ -10,18 +10,18 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.reset.files;
 
+import com.codenvy.ide.api.AppContext;
+import com.codenvy.ide.api.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.IndexFile;
 import com.codenvy.ide.ext.git.shared.ResetRequest.ResetType;
 import com.codenvy.ide.ext.git.shared.Status;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.gwt.user.client.Window;
@@ -49,10 +49,10 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private       ResetFilesView          view;
     private       GitServiceClient        service;
-    private       ResourceProvider        resourceProvider;
+    private       AppContext              appContext;
     private       GitLocalizationConstant constant;
     private       NotificationManager     notificationManager;
-    private       Project                 project;
+    private       CurrentProject          project;
     private       Array<IndexFile>        indexedFiles;
 
     /**
@@ -65,7 +65,7 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
      * @param notificationManager
      */
     @Inject
-    public ResetFilesPresenter(ResetFilesView view, GitServiceClient service, ResourceProvider resourceProvider,
+    public ResetFilesPresenter(ResetFilesView view, GitServiceClient service, AppContext appContext,
                                GitLocalizationConstant constant, NotificationManager notificationManager,
                                DtoFactory dtoFactory, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
@@ -73,16 +73,16 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
+        project = appContext.getCurrentProject();
 
-        service.status(project.getPath(),
+        service.status(project.getProjectDescription(),
                        new AsyncRequestCallback<Status>(dtoUnmarshallerFactory.newUnmarshaller(Status.class)) {
                            @Override
                            protected void onSuccess(Status result) {
@@ -136,9 +136,8 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
             return;
         }
         view.close();
-        String projectPath = project.getPath();
 
-        service.reset(projectPath, "HEAD", ResetType.MIXED, new AsyncRequestCallback<Void>() {
+        service.reset(project.getProjectDescription(), "HEAD", ResetType.MIXED, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 Notification notification = new Notification(constant.resetFilesSuccessfully(), INFO);

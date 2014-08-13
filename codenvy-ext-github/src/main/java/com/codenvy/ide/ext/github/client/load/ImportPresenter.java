@@ -15,7 +15,6 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.user.shared.dto.User;
-import com.codenvy.ide.Constants;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.resources.ProjectTypeDescriptorRegistry;
@@ -343,7 +342,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
             public void onSuccess(Project result) {
                 notification.setStatus(FINISHED);
                 notification.setMessage(gitConstant.cloneSuccess(gitRepositoryInfo.getRemoteUri()));
-                if (result.getDescription().getProjectTypeId().equals(Constants.NAMELESS_ID)) {
+                if (result.getDescription().getProjectTypeId().equals(com.codenvy.api.project.shared.Constants.BLANK_ID)) {
                     WizardContext context = new WizardContext();
                     context.putData(ProjectWizard.PROJECT, result);
                     wizardPresenter.show(context);

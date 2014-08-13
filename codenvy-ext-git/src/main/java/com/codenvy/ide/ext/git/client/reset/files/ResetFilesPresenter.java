@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.reset.files;
 
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.CurrentProject;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
@@ -60,7 +60,7 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param notificationManager
      */

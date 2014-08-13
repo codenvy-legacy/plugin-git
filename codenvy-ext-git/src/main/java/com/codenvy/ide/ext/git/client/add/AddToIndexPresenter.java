@@ -10,18 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.add;
 
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.CurrentProject;
+import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.ide.api.selection.CoreSelectionTypes;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.api.resources.model.Folder;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
@@ -92,16 +90,16 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      */
     @NotNull
     private String formMessage(@NotNull String workdir) {
-        Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
+        Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
 
-        Resource element;
-        if (selection == null) {
-            element = project;
+        String path;
+        if (selection == null || selection.getFirstElement() == null) {
+            path = project.getProjectDescription().getPath();
         } else {
-            element = selection.getFirstElement();
+            path = selection.getFirstElement().getPath();
         }
 
-        String pattern = element.getPath().replaceFirst(workdir, "");
+        String pattern = path.replaceFirst(workdir, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         // Root of the working tree:
@@ -109,7 +107,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
             return constant.addToIndexAllChanges();
         }
 
-        if (element instanceof Folder) {
+        if ((selection == null || selection.getFirstElement() == null) && "folder".equals(selection.getFirstElement().getType())) {
             return constant.addToIndexFolder(pattern);
         } else {
             return constant.addToIndexFile(pattern);
@@ -149,15 +147,15 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     private List<String> getFilePatterns() {
         String projectPath = project.getProjectDescription().getPath();
 
-        Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
-        Resource element;
-        if (selection == null) {
-            element = project;
+        Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
+        String path;
+        if (selection == null || selection.getFirstElement() == null) {
+            path = project.getProjectDescription().getPath();
         } else {
-            element = selection.getFirstElement();
+            path = selection.getFirstElement().getPath();
         }
 
-        String pattern = element.getPath().replaceFirst(projectPath, "");
+        String pattern = path.replaceFirst(projectPath, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<>(Arrays.asList("."))

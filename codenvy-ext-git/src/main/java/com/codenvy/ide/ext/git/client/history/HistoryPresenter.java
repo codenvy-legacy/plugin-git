@@ -12,21 +12,18 @@ package com.codenvy.ide.ext.git.client.history;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.event.ActivePartChangedEvent;
-import com.codenvy.ide.api.event.ActivePartChangedHandler;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.parts.PartPresenter;
+import com.codenvy.ide.api.parts.PartStackType;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.api.selection.CoreSelectionTypes;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.api.ui.workspace.PartPresenter;
-import com.codenvy.ide.api.ui.workspace.PartStackType;
-import com.codenvy.ide.api.ui.workspace.PropertyListener;
-import com.codenvy.ide.api.ui.workspace.WorkspaceAgent;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
@@ -64,7 +61,7 @@ import static com.codenvy.ide.ext.git.shared.DiffRequest.DiffType.RAW;
  * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
  */
 @Singleton
-public class HistoryPresenter extends BasePresenter implements HistoryView.ActionDelegate, ActivePartChangedHandler {
+public class HistoryPresenter extends BasePresenter implements HistoryView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private       HistoryView             view;
     private       GitServiceClient        service;
@@ -76,11 +73,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     private       boolean                 showChangesInProject;
     private       DiffWith                diffType;
     private boolean isViewClosed = true;
-    private Array<Revision>          revisions;
-    private SelectionAgent selectionAgent;
-    private PartPresenter            activePart;
-    private Revision                 selectedRevision;
-    private NotificationManager      notificationManager;
+    private Array<Revision>     revisions;
+    private SelectionAgent      selectionAgent;
+    private Revision            selectedRevision;
+    private NotificationManager notificationManager;
 
     /**
      * Create presenter.
@@ -116,7 +112,6 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         this.notificationManager = notificationManager;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.selectionAgent = selectionAgent;
-        eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
@@ -319,9 +314,9 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         if (!showChangesInProject && project != null) {
             String path;
 
-            selectionAgent.getSelection();
+            Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
 
-            if (selection == null) {
+            if (selection == null || selection.getFirstElement() == null) {
                 path = project.getPath();
             } else {
                 path = selection.getFirstElement().getPath();
@@ -452,23 +447,6 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     @Override
     public int getSize() {
         return 450;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onActivePartChanged(ActivePartChangedEvent event) {
-        //This method is necessary for to be able to get the changes for the selected resource
-        // and change a dedicated resource with the history-window open
-
-        // remove listener from previous active part
-        if (activePart != null) {
-            activePart.removePropertyListener(this);
-        }
-        // set new active part
-        activePart = event.getActivePart();
-        if (activePart != null) {
-            activePart.addPropertyListener(this);
-        }
     }
 
     protected enum DiffWith {

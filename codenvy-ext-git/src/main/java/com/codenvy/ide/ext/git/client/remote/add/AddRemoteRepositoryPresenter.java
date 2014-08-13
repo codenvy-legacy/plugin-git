@@ -10,7 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remote.add;
 
-import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -23,13 +24,12 @@ import javax.validation.constraints.NotNull;
  * Presenter for adding remote repository.
  *
  * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
- * @version $Id: Apr 19, 2011 11:12:44 AM anya $
  */
 @Singleton
 public class AddRemoteRepositoryPresenter implements AddRemoteRepositoryView.ActionDelegate {
     private AddRemoteRepositoryView view;
     private GitServiceClient        service;
-    private ResourceProvider        resourceProvider;
+    private AppContext appContext;
     private AsyncCallback<Void>     callback;
 
     /**
@@ -37,14 +37,14 @@ public class AddRemoteRepositoryPresenter implements AddRemoteRepositoryView.Act
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      */
     @Inject
-    public AddRemoteRepositoryPresenter(AddRemoteRepositoryView view, GitServiceClient service, ResourceProvider resourceProvider) {
+    public AddRemoteRepositoryPresenter(AddRemoteRepositoryView view, GitServiceClient service, AppContext appContext) {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
     }
 
     /** Show dialog. */
@@ -61,9 +61,9 @@ public class AddRemoteRepositoryPresenter implements AddRemoteRepositoryView.Act
     public void onOkClicked() {
         String name = view.getName();
         String url = view.getUrl();
-        final String projectPath = resourceProvider.getActiveProject().getPath();
+        final ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
 
-        service.remoteAdd(projectPath, name, url, new AsyncRequestCallback<String>() {
+        service.remoteAdd(project, name, url, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
                 callback.onSuccess(null);

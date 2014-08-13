@@ -10,17 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.status;
 
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.CurrentProject;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.ui.workspace.PartStackType;
-import com.codenvy.ide.api.ui.workspace.WorkspaceAgent;
+import com.codenvy.ide.api.parts.PartStackType;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
-import com.codenvy.ide.ext.git.client.GitOutputPartView;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
@@ -40,14 +39,12 @@ public class StatusCommandPresenter {
 
     private boolean isViewClosed = true;
 
-    private WorkspaceAgent   workspaceAgent;
-    private GitServiceClient service;
-    private EventBus         eventBus;
-    private AppContext appContext;
+    private WorkspaceAgent          workspaceAgent;
+    private GitServiceClient        service;
+    private AppContext              appContext;
     private GitLocalizationConstant constant;
     private GitOutputPartPresenter  console;
     private NotificationManager     notificationManager;
-    private GitOutputPartView       gitOutputPartView;
 
     /**
      * Create presenter.
@@ -68,12 +65,10 @@ public class StatusCommandPresenter {
                                   NotificationManager notificationManager) {
         this.workspaceAgent = workspaceAgent;
         this.service = service;
-        this.eventBus = eventBus;
         this.appContext = appContext;
         this.console = console;
         this.constant = constant;
         this.notificationManager = notificationManager;
-        this.gitOutputPartView = gitOutputPartView;
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -141,6 +136,5 @@ public class StatusCommandPresenter {
             console.print(line);
         }
     }
-
 
 }

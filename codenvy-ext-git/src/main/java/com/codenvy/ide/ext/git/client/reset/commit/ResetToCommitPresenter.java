@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.git.client.reset.commit;
 
 import com.codenvy.api.project.shared.dto.ItemReference;
-import com.codenvy.ide.api.AppContext;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
@@ -49,16 +49,16 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  */
 @Singleton
 public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate {
-    private final DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private       ResetToCommitView      view;
-    private GitServiceClient          service;
-    private Revision                  selectedRevision;
-    private AppContext                appContext;
-    private GitLocalizationConstant   constant;
-    private NotificationManager       notificationManager;
-    private EditorAgent               editorAgent;
-    private EventBus                  eventBus;
-    private List<EditorPartPresenter> openedEditors;
+    private final DtoUnmarshallerFactory    dtoUnmarshallerFactory;
+    private       ResetToCommitView         view;
+    private       GitServiceClient          service;
+    private       Revision                  selectedRevision;
+    private       AppContext                appContext;
+    private       GitLocalizationConstant   constant;
+    private       NotificationManager       notificationManager;
+    private       EditorAgent               editorAgent;
+    private       EventBus                  eventBus;
+    private       List<EditorPartPresenter> openedEditors;
 
     /** Create presenter. */
     @Inject

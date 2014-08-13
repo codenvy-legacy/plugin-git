@@ -10,11 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remove;
 
+import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.api.resources.model.File;
-import com.codenvy.ide.api.resources.model.Folder;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
@@ -29,7 +29,11 @@ import java.util.List;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Testing {@link RemoveFromIndexPresenter} functionality.
@@ -47,14 +51,14 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new RemoveFromIndexPresenter(view, service, constant, resourceProvider, selectionAgent, notificationManager);
+        presenter = new RemoveFromIndexPresenter(view, service, constant, appContext, selectionAgent, notificationManager);
     }
 
     @Test
     public void testShowDialogWhenSomeFileIsSelected() throws Exception {
         String filePath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-        File file = mock(File.class);
+        ItemReference file = mock(ItemReference.class);
         when(file.getPath()).thenReturn(filePath);
         when(selection.getFirstElement()).thenReturn(file);
         when(selectionAgent.getSelection()).thenReturn(selection);
@@ -72,9 +76,9 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFolderIsSelected() throws Exception {
         String folderPath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-        Folder folder = mock(Folder.class);
-        when(folder.getPath()).thenReturn(folderPath);
-        when(selection.getFirstElement()).thenReturn(folder);
+//        Folder folder = mock(Folder.class);
+//        when(folder.getPath()).thenReturn(folderPath);
+//        when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.removeFromIndexFolder(anyString())).thenReturn(MESSAGE);
 
@@ -89,7 +93,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
-        when(selection.getFirstElement()).thenReturn(project);
+        when(selection.getFirstElement()).thenReturn(currentProject);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.removeFromIndexAll()).thenReturn(MESSAGE);
 
@@ -105,7 +109,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     public void testOnRemoveClickedWhenRemoveRequestIsSuccessful() throws Exception {
         when(view.isRemoved()).thenReturn(REMOVED);
         when(selectionAgent.getSelection()).thenReturn(null);
-        when(project.getName()).thenReturn(PROJECT_NAME);
+//        when(currentProject.getName()).thenReturn(PROJECT_NAME);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -115,14 +119,14 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, EMPTY_TEXT);
                 return callback;
             }
-        }).when(service).remove(anyString(), (List<String>)anyObject(), anyBoolean(),
+        }).when(service).remove((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyBoolean(),
                                 (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onRemoveClicked();
 
         verify(service)
-                .remove(eq(PROJECT_PATH), (List<String>)anyObject(), eq(REMOVED),
+                .remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
                         (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).removeFilesSuccessfull();
@@ -142,14 +146,14 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).remove(anyString(), (List<String>)anyObject(), anyBoolean(),
+        }).when(service).remove((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyBoolean(),
                                 (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onRemoveClicked();
 
         verify(service)
-                .remove(eq(PROJECT_PATH), (List<String>)anyObject(), eq(REMOVED),
+                .remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
                         (AsyncRequestCallback<String>)anyObject());
         verify(constant).removeFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

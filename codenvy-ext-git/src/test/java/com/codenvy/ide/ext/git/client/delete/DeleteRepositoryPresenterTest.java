@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.delete;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
 import com.codenvy.ide.ext.git.client.BaseTest;
@@ -57,7 +58,7 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         when(css.glassVisible()).thenReturn("sdgsdf");
         when(css.contentVisible()).thenReturn("sdgsdf");
         when(css.animationDuration()).thenReturn(1);
-        presenter = new DeleteRepositoryPresenter(service, eventBus, constant, resourceProvider, notificationManager);
+        presenter = new DeleteRepositoryPresenter(service, eventBus, constant, appContext, notificationManager);
 //        when(resources.centerPanelCss())
     }
 
@@ -65,7 +66,7 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
     public void testDeleteRepositoryWhenDeleteRepositoryIsSuccessful() throws Exception {
         Map attributes = mock(Map.class);
         List vcsProvider = mock (List.class);
-        when(project.getAttributes()).thenReturn(attributes);
+//        when(currentProject.getAttributes()).thenReturn(attributes);
         when(attributes.get("vcs.provider.name")).thenReturn(vcsProvider);
         doAnswer(new Answer() {
             @Override
@@ -76,15 +77,15 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(service).deleteRepository(anyString(), (AsyncRequestCallback<Void>)anyObject());
+        }).when(service).deleteRepository((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Void>)anyObject());
 
         presenter.deleteRepository();
-        verify(resourceProvider).getActiveProject();
-        verify(project).getPath();
-        verify(service).deleteRepository(eq(PROJECT_PATH), (AsyncRequestCallback<Void>)anyObject());
+        verify(appContext).getCurrentProject();
+//        verify(currentProject).getPath();
+        verify(service).deleteRepository(eq(projectDescriptor), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).deleteGitRepositorySuccess();
-        verify(project).getAttributes();
+//        verify(currentProject).getAttributes();
         verify(attributes).get(anyString());
         verify(vcsProvider).clear();
     }
@@ -100,12 +101,12 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).deleteRepository(anyString(), (AsyncRequestCallback<Void>)anyObject());
+        }).when(service).deleteRepository((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Void>)anyObject());
 
         presenter.deleteRepository();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).deleteRepository(eq(PROJECT_PATH), (AsyncRequestCallback<Void>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(service).deleteRepository(eq(projectDescriptor), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(eventBus).fireEvent((ExceptionThrownEvent)anyObject());
     }

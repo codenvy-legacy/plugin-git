@@ -10,16 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remove;
 
+import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.ide.api.selection.CoreSelectionTypes;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.api.resources.model.Folder;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.inject.Inject;
 
@@ -41,8 +41,8 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     private RemoveFromIndexView     view;
     private GitServiceClient        service;
     private GitLocalizationConstant constant;
-    private ResourceProvider        resourceProvider;
-    private Project                 project;
+    private AppContext              appContext;
+    private CurrentProject          project;
     private SelectionAgent          selectionAgent;
     private NotificationManager     notificationManager;
 
@@ -52,26 +52,26 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      * @param view
      * @param service
      * @param constant
-     * @param resourceProvider
+     * @param appContext
      * @param notificationManager
      */
     @Inject
     public RemoveFromIndexPresenter(RemoveFromIndexView view, GitServiceClient service, GitLocalizationConstant constant,
-                                    ResourceProvider resourceProvider, SelectionAgent selectionAgent,
+                                    AppContext appContext, SelectionAgent selectionAgent,
                                     NotificationManager notificationManager) {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
         this.constant = constant;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.selectionAgent = selectionAgent;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
-        String workDir = project.getPath();
+        project = appContext.getCurrentProject();
+        String workDir = project.getProjectDescription().getPath();
         view.setMessage(formMessage(workDir));
         view.setRemoved(false);
         view.showDialog();
@@ -84,16 +84,16 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      */
     @NotNull
     private String formMessage(@NotNull String workdir) {
-        Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
+        Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
 
-        Resource element;
-        if (selection == null) {
-            element = project;
+        String path;
+        if (selection == null || selection.getFirstElement() == null) {
+            path = project.getProjectDescription().getPath();
         } else {
-            element = selection.getFirstElement();
+            path = selection.getFirstElement().getPath();
         }
 
-        String pattern = element.getPath().replaceFirst(workdir, "");
+        String pattern = path.replaceFirst(workdir, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         // Root of the working tree:
@@ -101,7 +101,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
             return constant.removeFromIndexAll();
         }
 
-        if (element instanceof Folder) {
+        if (selection != null && selection.getFirstElement() != null && "folder".equals(selection.getFirstElement().getType())) {
             return constant.removeFromIndexFolder(pattern);
         } else {
             return constant.removeFromIndexFile(pattern);
@@ -111,7 +111,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     /** {@inheritDoc} */
     @Override
     public void onRemoveClicked() {
-        service.remove(project.getPath(), getFilePatterns(), view.isRemoved(),
+        service.remove(project.getProjectDescription(), getFilePatterns(), view.isRemoved(),
                        new AsyncRequestCallback<String>() {
                            @Override
                            protected void onSuccess(String result) {
@@ -135,18 +135,18 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      */
     @NotNull
     private List<String> getFilePatterns() {
-        Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
-        Resource element;
-        if (selection == null) {
-            element = project;
+        Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
+        String path;
+        if (selection == null || selection.getFirstElement() == null) {
+            path = project.getProjectDescription().getPath();
         } else {
-            element = selection.getFirstElement();
+            path = selection.getFirstElement().getPath();
         }
 
-        String pattern = element.getPath().replaceFirst(project.getPath(), "");
+        String pattern = path.replaceFirst(project.getProjectDescription().getPath(), "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
-        return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<String>(Arrays.asList(".")) : new ArrayList<String>(Arrays.asList(pattern));
+        return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<>(Arrays.asList(".")) : new ArrayList<>(Arrays.asList(pattern));
     }
 
     /**

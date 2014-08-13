@@ -10,9 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.action;
 
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.CurrentProject;
-import com.codenvy.ide.api.ui.action.Action;
+import com.codenvy.ide.api.action.Action;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;

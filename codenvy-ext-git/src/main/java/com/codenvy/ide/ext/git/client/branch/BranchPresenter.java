@@ -10,17 +10,17 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.branch;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ItemReference;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.FileEvent;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.File;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.resources.model.Resource;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -29,7 +29,6 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -48,14 +47,15 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_ALL;
  */
 @Singleton
 public class BranchPresenter implements BranchView.ActionDelegate {
-    private       BranchView              view;
+    private BranchView view;
+    private ProjectServiceClient projectServiceClient;
     private       EventBus                eventBus;
-    private       Project                 project;
+    private       CurrentProject          project;
     private       GitServiceClient        service;
     private       GitLocalizationConstant constant;
     private       EditorAgent             editorAgent;
     private       Branch                  selectedBranch;
-    private       ResourceProvider        resourceProvider;
+    private       AppContext              appContext;
     private       NotificationManager     notificationManager;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
 
@@ -64,7 +64,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param notificationManager
      */
@@ -74,27 +74,29 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                            EditorAgent editorAgent,
                            GitServiceClient service,
                            GitLocalizationConstant constant,
-                           ResourceProvider resourceProvider,
+                           AppContext appContext,
                            NotificationManager notificationManager,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                           ProjectServiceClient projectServiceClient) {
         this.view = view;
+        this.projectServiceClient = projectServiceClient;
         this.view.setDelegate(this);
         this.eventBus = eventBus;
         this.editorAgent = editorAgent;
         this.service = service;
         this.constant = constant;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
+        project = appContext.getCurrentProject();
         view.setEnableCheckoutButton(false);
         view.setEnableDeleteButton(false);
         view.setEnableRenameButton(false);
-        getBranches(project.getPath());
+        getBranches();
         view.showDialog();
     }
 
@@ -110,11 +112,10 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         final String currentBranchName = selectedBranch.getDisplayName();
         String name = Window.prompt(constant.branchTypeNew(), currentBranchName);
         if (!name.isEmpty()) {
-            final String projectPath = project.getPath();
-            service.branchRename(projectPath, currentBranchName, name, new AsyncRequestCallback<String>() {
+            service.branchRename(project.getProjectDescription(), currentBranchName, name, new AsyncRequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
-                    getBranches(projectPath);
+                    getBranches();
                 }
 
                 @Override
@@ -134,11 +135,10 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     public void onDeleteClicked() {
         final String name = selectedBranch.getName();
 
-        final String projectPath = project.getPath();
-        service.branchDelete(projectPath, name, true, new AsyncRequestCallback<String>() {
+        service.branchDelete(project.getProjectDescription(), name, true, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
-                getBranches(projectPath);
+                getBranches();
             }
 
             @Override
@@ -164,15 +164,14 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         if (remote) {
             startingPoint = selectedBranch.getDisplayName();
         }
-        final String projectPath = project.getPath();
         if (name == null) {
             return;
         }
 
-        service.branchCheckout(projectPath, name, startingPoint, remote, new AsyncRequestCallback<String>() {
+        service.branchCheckout(project.getProjectDescription(), name, startingPoint, remote, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
-                getBranches(projectPath);
+                getBranches();
                 refreshProject(openedEditors);
             }
 
@@ -193,22 +192,10 @@ public class BranchPresenter implements BranchView.ActionDelegate {
      *         editors that corresponds to open files
      */
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
-        resourceProvider.getActiveProject().refreshChildren(new AsyncCallback<Project>() {
-            @Override
-            public void onSuccess(Project result) {
-                for (EditorPartPresenter partPresenter : openedEditors) {
-                    final File file = partPresenter.getEditorInput().getFile();
-                    refreshFile(file, partPresenter);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.refreshChildrenFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-        });
+        for (EditorPartPresenter partPresenter : openedEditors) {
+            final ItemReference file = partPresenter.getEditorInput().getFile();
+            refreshFile(file, partPresenter);
+        }
     }
 
     /**
@@ -219,17 +206,16 @@ public class BranchPresenter implements BranchView.ActionDelegate {
      * @param partPresenter
      *         editor that corresponds to the <code>file</code>.
      */
-    private void refreshFile(final File file, final EditorPartPresenter partPresenter) {
-        final Project project = resourceProvider.getActiveProject();
-        project.findResourceByPath(file.getPath(), new AsyncCallback<Resource>() {
+    private void refreshFile(final ItemReference file, final EditorPartPresenter partPresenter) {
+        projectServiceClient.getFileContent(file.getPath(), new AsyncRequestCallback<String>() {
             @Override
-            public void onFailure(Throwable caught) {
-                eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
+            protected void onSuccess(String result) {
+                updateOpenedFile(partPresenter);
             }
 
             @Override
-            public void onSuccess(final Resource result) {
-                updateOpenedFile((File)result, partPresenter);
+            protected void onFailure(Throwable throwable) {
+                eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
             }
         });
     }
@@ -237,43 +223,21 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     /**
      * Update content of the file.
      *
-     * @param file
-     *         file to update
      * @param partPresenter
      *         editor that corresponds to the <code>file</code>.
      */
-    private void updateOpenedFile(final File file, final EditorPartPresenter partPresenter) {
-        resourceProvider.getActiveProject().getContent(file, new AsyncCallback<File>() {
-            @Override
-            public void onSuccess(File result) {
-                try {
-                    EditorInput editorInput = partPresenter.getEditorInput();
-
-                    editorInput.setFile(result);
-                    partPresenter.init(editorInput);
-
-                } catch (EditorInitException event) {
-                    Log.error(BranchPresenter.class, "can not initializes the editor with the given input " + event);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.getContentFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-        });
+    private void updateOpenedFile(EditorPartPresenter partPresenter) {
+        try {
+            EditorInput editorInput = partPresenter.getEditorInput();
+            partPresenter.init(editorInput);
+        } catch (EditorInitException event) {
+            Log.error(BranchPresenter.class, "can not initializes the editor with the given input " + event);
+        }
     }
 
-    /**
-     * Get the list of branches.
-     *
-     * @param projectPath
-     *         project path
-     */
-    private void getBranches(@NotNull String projectPath) {
-        service.branchList(projectPath, LIST_ALL,
+    /** Get the list of branches. */
+    private void getBranches() {
+        service.branchList(project.getProjectDescription(), LIST_ALL,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -296,13 +260,12 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     public void onCreateClicked() {
         String name = Window.prompt(constant.branchTypeNew(), "");
         if (!name.isEmpty()) {
-            final String projectPath = project.getPath();
 
-            service.branchCreate(projectPath, name, null,
+            service.branchCreate(project.getProjectDescription(), name, null,
                                  new AsyncRequestCallback<Branch>(dtoUnmarshallerFactory.newUnmarshaller(Branch.class)) {
                                      @Override
                                      protected void onSuccess(Branch result) {
-                                         getBranches(projectPath);
+                                         getBranches();
                                      }
 
                                      @Override

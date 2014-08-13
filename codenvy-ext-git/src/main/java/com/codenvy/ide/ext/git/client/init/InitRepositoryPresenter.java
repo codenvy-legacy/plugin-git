@@ -12,8 +12,8 @@ package com.codenvy.ide.ext.git.client.init;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.CurrentProject;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;

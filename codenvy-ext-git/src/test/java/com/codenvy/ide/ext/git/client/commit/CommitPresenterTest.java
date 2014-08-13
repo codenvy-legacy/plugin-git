@@ -10,12 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.commit;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.shared.Revision;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -53,7 +52,7 @@ public class CommitPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new CommitPresenter(view, service, resourceProvider, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new CommitPresenter(view, service, constant, notificationManager, dtoUnmarshallerFactory, appContext);
 
         when(revision.isFake()).thenReturn(false);
     }
@@ -84,18 +83,18 @@ public class CommitPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, revision);
                 return callback;
             }
-        }).when(service).commit((Project)anyObject(), anyString(), anyBoolean(), anyBoolean(),
+        }).when(service).commit((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), anyBoolean(),
                                 (AsyncRequestCallback<Revision>)anyObject());
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[1];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, project);
-                return callback;
-            }
-        }).when(resourceProvider).getProject(anyString(), (AsyncCallback<Project>)anyObject());
+//        doAnswer(new Answer() {
+//            @Override
+//            public Object answer(InvocationOnMock invocation) throws Throwable {
+//                Object[] arguments = invocation.getArguments();
+//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[1];
+//                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+//                onSuccess.invoke(callback, currentProject);
+//                return callback;
+//            }
+//        }).when(resourceProvider).getProject(anyString(), (AsyncCallback<Project>)anyObject());
 
         presenter.showDialog();
         presenter.onCommitClicked();
@@ -105,7 +104,7 @@ public class CommitPresenterTest extends BaseTest {
         verify(view).isAmend();
         verify(view).close();
 
-        verify(service).commit(eq(project), eq(COMMIT_TEXT), eq(ALL_FILE_INCLUDES), eq(IS_OVERWRITTEN),
+        verify(service).commit(eq(projectDescriptor), eq(COMMIT_TEXT), eq(ALL_FILE_INCLUDES), eq(IS_OVERWRITTEN),
                                (AsyncRequestCallback<Revision>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -124,7 +123,7 @@ public class CommitPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).commit((Project)anyObject(), anyString(), anyBoolean(), anyBoolean(),
+        }).when(service).commit((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), anyBoolean(),
                                 (AsyncRequestCallback<Revision>)anyObject());
 
         presenter.showDialog();
@@ -135,7 +134,7 @@ public class CommitPresenterTest extends BaseTest {
         verify(view).isAmend();
         verify(view).close();
 
-        verify(service).commit(eq(project), eq(COMMIT_TEXT), eq(ALL_FILE_INCLUDES), eq(IS_OVERWRITTEN),
+        verify(service).commit(eq(projectDescriptor), eq(COMMIT_TEXT), eq(ALL_FILE_INCLUDES), eq(IS_OVERWRITTEN),
                                (AsyncRequestCallback<Revision>)anyObject());
         verify(constant).commitFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

@@ -10,13 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.push;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -57,7 +57,7 @@ public class PushToRemotePresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new PushToRemotePresenter(view, service, resourceProvider, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new PushToRemotePresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
 
         when(view.getRepository()).thenReturn(REPOSITORY_NAME);
         when(view.getLocalBranch()).thenReturn(LOCAL_BRANCH);
@@ -81,7 +81,7 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, remotes);
                 return callback;
             }
-        }).when(service).remoteList(anyString(), anyString(), anyBoolean(),
+        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
                                     (AsyncRequestCallback<Array<Remote>>)anyObject());
         doAnswer(new Answer() {
             @Override
@@ -101,12 +101,12 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, branches);
                 return callback;
             }
-        }).when(service).branchList(anyString(), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(appContext).getCurrentProject();
+        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view).setEnablePushButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
@@ -132,7 +132,7 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, remotes);
                 return callback;
             }
-        }).when(service).remoteList(anyString(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
+        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -151,14 +151,14 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, branches);
                 return callback;
             }
-        }).when(service).branchList(anyString(), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(appContext).getCurrentProject();
+        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
-        verify(service, times(2)).branchList(eq(PROJECT_PATH), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(projectDescriptor), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view).setEnablePushButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
         verify(view).showDialog();
@@ -184,7 +184,7 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, remotes);
                 return callback;
             }
-        }).when(service).remoteList(anyString(), anyString(), anyBoolean(),
+        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
                                     (AsyncRequestCallback<Array<Remote>>)anyObject());
         doAnswer(new Answer() {
             @Override
@@ -204,12 +204,12 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).branchList(anyString(), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(appContext).getCurrentProject();
+        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -227,13 +227,13 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).remoteList(anyString(), anyString(), anyBoolean(),
+        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
                                     (AsyncRequestCallback<Array<Remote>>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(appContext).getCurrentProject();
+        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));
@@ -250,13 +250,13 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, EMPTY_TEXT);
                 return callback;
             }
-        }).when(service).push((Project)anyObject(), (List<String>)anyObject(), anyString(), anyBoolean(),
+        }).when(service).push((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyString(), anyBoolean(),
                               (RequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onPushClicked();
 
-        verify(service).push(eq(project), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
+        verify(service).push(eq(projectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
                              (RequestCallback<String>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -274,13 +274,13 @@ public class PushToRemotePresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).push((Project)anyObject(), (List<String>)anyObject(), anyString(), anyBoolean(),
+        }).when(service).push((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyString(), anyBoolean(),
                               (RequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onPushClicked();
 
-        verify(service).push(eq(project), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
+        verify(service).push(eq(projectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
                              (RequestCallback<String>)anyObject());
         verify(view).close();
         verify(constant).pushFail();

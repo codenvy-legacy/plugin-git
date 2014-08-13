@@ -10,8 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.pull;
 
-import com.codenvy.ide.api.AppContext;
-import com.codenvy.ide.api.CurrentProject;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;

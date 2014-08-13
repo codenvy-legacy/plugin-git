@@ -10,8 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.status;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
-import com.codenvy.ide.api.ui.workspace.WorkspaceAgent;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -27,7 +28,6 @@ import java.lang.reflect.Method;
 
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -56,7 +56,7 @@ public class StatusCommandPresenterTest extends BaseTest {
         presenter = new StatusCommandPresenter(workspaceAgent,
                                                service,
                                                eventBus,
-                                               resourceProvider,
+                                               appContext,
                                                gitOutput,
                                                constant,
                                                notificationManager);
@@ -73,13 +73,12 @@ public class StatusCommandPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, EMPTY_TEXT);
                 return callback;
             }
-        }).when(service).statusText(anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).statusText((ProjectDescriptor)anyObject(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showStatus();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).statusText(eq(PROJECT_PATH), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
-//        verify(console).print(eq(EMPTY_TEXT));
+        verify(appContext).getCurrentProject();
+        verify(service).statusText(eq(projectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
     }
 
     @Test
@@ -93,12 +92,12 @@ public class StatusCommandPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).statusText(anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).statusText((ProjectDescriptor)anyObject(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showStatus();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).statusText(eq(PROJECT_PATH), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(service).statusText(eq(projectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).statusFailed();
     }

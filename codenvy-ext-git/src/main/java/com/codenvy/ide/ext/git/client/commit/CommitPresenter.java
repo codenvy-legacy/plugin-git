@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.commit;
 
-import com.codenvy.ide.api.AppContext;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;

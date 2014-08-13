@@ -10,9 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remote;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -39,32 +40,32 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
     private       RemoteView                   view;
     private       GitServiceClient             service;
-    private       ResourceProvider             resourceProvider;
+    private       AppContext                   appContext;
     private       GitLocalizationConstant      constant;
     private       AddRemoteRepositoryPresenter addRemoteRepositoryPresenter;
     private       NotificationManager          notificationManager;
     private       Remote                       selectedRemote;
-    private       String                       projectPath;
+    private       ProjectDescriptor            project;
 
     /**
      * Create presenter.
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param addRemoteRepositoryPresenter
      * @param notificationManager
      */
     @Inject
-    public RemotePresenter(RemoteView view, GitServiceClient service, ResourceProvider resourceProvider, GitLocalizationConstant constant,
+    public RemotePresenter(RemoteView view, GitServiceClient service, AppContext appContext, GitLocalizationConstant constant,
                            AddRemoteRepositoryPresenter addRemoteRepositoryPresenter, NotificationManager notificationManager,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.constant = constant;
         this.addRemoteRepositoryPresenter = addRemoteRepositoryPresenter;
         this.notificationManager = notificationManager;
@@ -72,7 +73,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
 
     /** Show dialog. */
     public void showDialog() {
-        projectPath = resourceProvider.getActiveProject().getPath();
+        project = appContext.getCurrentProject().getProjectDescription();
         getRemotes();
     }
 
@@ -81,7 +82,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
      * then get the list of branches (remote and local).
      */
     private void getRemotes() {
-        service.remoteList(projectPath, null, true,
+        service.remoteList(project, null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
@@ -135,7 +136,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
         }
 
         final String name = selectedRemote.getName();
-        service.remoteDelete(projectPath, name, new AsyncRequestCallback<String>() {
+        service.remoteDelete(project, name, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
                 getRemotes();

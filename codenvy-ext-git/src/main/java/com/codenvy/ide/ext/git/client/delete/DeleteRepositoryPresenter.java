@@ -10,10 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.delete;
 
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -29,15 +29,13 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  * Delete repository command handler, performs deleting Git repository.
  *
  * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
- * @version $Id: Jun 21, 2011 5:57:30 PM anya $
  */
 @Singleton
 public class DeleteRepositoryPresenter {
     private GitServiceClient        service;
     private EventBus                eventBus;
     private GitLocalizationConstant constant;
-    private ResourceProvider        resourceProvider;
-    private Project                 project;
+    private AppContext              appContext;
     private NotificationManager     notificationManager;
 
     /**
@@ -46,29 +44,29 @@ public class DeleteRepositoryPresenter {
      * @param service
      * @param eventBus
      * @param constant
-     * @param resourceProvider
+     * @param appContext
      * @param notificationManager
      */
     @Inject
     public DeleteRepositoryPresenter(GitServiceClient service,
                                      EventBus eventBus,
                                      GitLocalizationConstant constant,
-                                     ResourceProvider resourceProvider,
+                                     AppContext appContext,
                                      NotificationManager notificationManager) {
         this.service = service;
         this.eventBus = eventBus;
         this.constant = constant;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.notificationManager = notificationManager;
     }
 
     /** Delete Git repository. */
     public void deleteRepository() {
-        project = resourceProvider.getActiveProject();
-        service.deleteRepository(project.getPath(), new AsyncRequestCallback<Void>() {
+        final CurrentProject project = appContext.getCurrentProject();
+        service.deleteRepository(project.getProjectDescription(), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
-                project.getAttributes().get("vcs.provider.name").clear();
+                project.getProjectDescription().getAttributes().get("vcs.provider.name").clear();
 
                 Notification notification = new Notification(constant.deleteGitRepositorySuccess(), INFO);
                 notificationManager.showNotification(notification);

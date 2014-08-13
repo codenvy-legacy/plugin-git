@@ -18,7 +18,6 @@ import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.dto.server.DtoFactory;
-import com.codenvy.ide.Constants;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
 import com.codenvy.ide.ext.git.shared.CloneRequest;
@@ -104,7 +103,7 @@ public class GitProjectImporter implements ProjectImporter {
             }
 
             if (!baseFolder.isProjectFolder()) {
-                String propertyFileContent = "{\"type\":\"" + Constants.NAMELESS_ID + "\"}";
+                String propertyFileContent = "{\"type\":\"" + com.codenvy.api.project.shared.Constants.BLANK_ID + "\"}";
                 FolderEntry projectMetaFolder = baseFolder.createFolder(".codenvy");
                 projectMetaFolder.createFile("project.json", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
             }

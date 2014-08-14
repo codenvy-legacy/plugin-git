@@ -17,7 +17,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectReference;
 import com.codenvy.api.user.shared.dto.User;
 import com.codenvy.ide.api.ResourceNameValidator;
-import com.codenvy.ide.api.event.ProjectActionEvent_2;
+import com.codenvy.ide.api.event.OpenProjectEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttype.ProjectTypeDescriptorRegistry;
@@ -214,7 +214,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                 ProjectReference projectToOpen = dtoFactory.createDto(ProjectReference.class)
                                                            .withName(result.getName())
                                                            .withPath(result.getPath());
-                eventBus.fireEvent(ProjectActionEvent_2.createOpenProjectEvent(projectToOpen));
+                eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
                 Notification notification = new Notification(gitConstant.cloneSuccess(url), INFO);
                 notificationManager.showNotification(notification);
                 WizardContext context = new WizardContext();

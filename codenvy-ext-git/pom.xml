@@ -52,11 +52,6 @@
             <version>${codenvy.ide.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.ide</groupId>
-            <artifactId>codenvy-ide-vfs-fs</artifactId>
-            <version>${codenvy.ide.version}</version>
-        </dependency>
-        <dependency>
             <groupId>com.codenvy.platform-api</groupId>
             <artifactId>codenvy-api-auth</artifactId>
             <version>${codenvy.platform-api.version}</version>
@@ -92,6 +87,11 @@
                     <groupId>javassist</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.vfs</groupId>
+            <artifactId>codenvy-vfs-impl</artifactId>
+            <version>${codenvy.vfs.impl.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>

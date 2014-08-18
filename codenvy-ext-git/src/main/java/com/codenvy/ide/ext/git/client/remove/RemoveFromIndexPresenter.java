@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remove;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.selection.CoreSelectionTypes;
+import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.ItemNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
@@ -84,7 +84,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      */
     @NotNull
     private String formMessage(@NotNull String workdir) {
-        Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
+        Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
 
         String path;
         if (selection == null || selection.getFirstElement() == null) {
@@ -101,7 +101,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
             return constant.removeFromIndexAll();
         }
 
-        if (selection != null && selection.getFirstElement() != null && "folder".equals(selection.getFirstElement().getType())) {
+        if (selection.getFirstElement() instanceof FolderNode) {
             return constant.removeFromIndexFolder(pattern);
         } else {
             return constant.removeFromIndexFile(pattern);
@@ -135,7 +135,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      */
     @NotNull
     private List<String> getFilePatterns() {
-        Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
+        Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
         String path;
         if (selection == null || selection.getFirstElement() == null) {
             path = project.getProjectDescription().getPath();

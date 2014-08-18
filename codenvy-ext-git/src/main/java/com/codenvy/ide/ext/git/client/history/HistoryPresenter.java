@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.history;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.event.ProjectActionEvent;
@@ -21,7 +20,7 @@ import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
-import com.codenvy.ide.api.selection.CoreSelectionTypes;
+import com.codenvy.ide.api.projecttree.generic.ItemNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
@@ -314,7 +313,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         if (!showChangesInProject && project != null) {
             String path;
 
-            Selection<ItemReference> selection = selectionAgent.getSelection(CoreSelectionTypes.ITEM_REFERENCE);
+            Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
 
             if (selection == null || selection.getFirstElement() == null) {
                 path = project.getPath();

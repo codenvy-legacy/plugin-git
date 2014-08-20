@@ -83,7 +83,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      * @return {@link String} message to display
      */
     @NotNull
-    private String formMessage(@NotNull String workdir) {
+    private String formMessage(@NotNull String workDir) {
         Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
 
         String path;
@@ -93,7 +93,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
             path = selection.getFirstElement().getPath();
         }
 
-        String pattern = path.replaceFirst(workdir, "");
+        String pattern = path.replaceFirst(workDir, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         // Root of the working tree:

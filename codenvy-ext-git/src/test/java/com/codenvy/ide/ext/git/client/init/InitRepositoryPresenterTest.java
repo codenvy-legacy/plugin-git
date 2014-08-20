@@ -48,8 +48,6 @@ public class InitRepositoryPresenterTest extends BaseTest {
 
         presenter = new InitRepositoryPresenter(view, service, appContext, constant, notificationManager, projectServiceClient,
                                                 dtoUnmarshallerFactory);
-
-//        when(currentProject.getName()).thenReturn(PROJECT_NAME);
     }
 
     @Test
@@ -67,7 +65,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[3];
+                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[2];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
@@ -89,7 +87,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
+                RequestCallback<String> callback = (RequestCallback<String>)arguments[2];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;

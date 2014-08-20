@@ -85,16 +85,6 @@ public class CommitPresenterTest extends BaseTest {
             }
         }).when(service).commit((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), anyBoolean(),
                                 (AsyncRequestCallback<Revision>)anyObject());
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[1];
-//                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-//                onSuccess.invoke(callback, currentProject);
-//                return callback;
-//            }
-//        }).when(resourceProvider).getProject(anyString(), (AsyncCallback<Project>)anyObject());
 
         presenter.showDialog();
         presenter.onCommitClicked();
@@ -139,8 +129,6 @@ public class CommitPresenterTest extends BaseTest {
         verify(constant).commitFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
-
-
 
     @Test
     public void testOnCancelClicked() throws Exception {

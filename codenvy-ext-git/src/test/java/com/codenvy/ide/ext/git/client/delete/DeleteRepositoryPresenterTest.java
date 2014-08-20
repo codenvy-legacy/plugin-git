@@ -49,7 +49,6 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
     @Mock
     Window.Css css;
 
-
     @Override
     public void disarm() {
         super.disarm();
@@ -59,14 +58,13 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         when(css.contentVisible()).thenReturn("sdgsdf");
         when(css.animationDuration()).thenReturn(1);
         presenter = new DeleteRepositoryPresenter(service, eventBus, constant, appContext, notificationManager);
-//        when(resources.centerPanelCss())
     }
 
     @Test
     public void testDeleteRepositoryWhenDeleteRepositoryIsSuccessful() throws Exception {
         Map attributes = mock(Map.class);
-        List vcsProvider = mock (List.class);
-//        when(currentProject.getAttributes()).thenReturn(attributes);
+        List vcsProvider = mock(List.class);
+        when(projectDescriptor.getAttributes()).thenReturn(attributes);
         when(attributes.get("vcs.provider.name")).thenReturn(vcsProvider);
         doAnswer(new Answer() {
             @Override
@@ -80,12 +78,12 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         }).when(service).deleteRepository((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Void>)anyObject());
 
         presenter.deleteRepository();
+
         verify(appContext).getCurrentProject();
-//        verify(currentProject).getPath();
         verify(service).deleteRepository(eq(projectDescriptor), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).deleteGitRepositorySuccess();
-//        verify(currentProject).getAttributes();
+        verify(projectDescriptor).getAttributes();
         verify(attributes).get(anyString());
         verify(vcsProvider).clear();
     }
@@ -110,5 +108,4 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(eventBus).fireEvent((ExceptionThrownEvent)anyObject());
     }
-
 }

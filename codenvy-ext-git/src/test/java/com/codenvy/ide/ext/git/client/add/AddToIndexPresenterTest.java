@@ -12,6 +12,9 @@ package com.codenvy.ide.ext.git.client.add;
 
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.ProjectRootNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.BaseTest;
@@ -60,7 +63,9 @@ public class AddToIndexPresenterTest extends BaseTest {
     @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
-        when(selection.getFirstElement()).thenReturn(currentProject);
+        ProjectRootNode project = mock(ProjectRootNode.class);
+//        when(project.getPath()).thenReturn(PROJECT_PATH);
+        when(selection.getFirstElement()).thenReturn(project);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexAllChanges()).thenReturn(MESSAGE);
 
@@ -77,9 +82,9 @@ public class AddToIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFolderIsSelected() throws Exception {
         String folderPath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-//        Folder folder = mock(Folder.class);
-//        when(folder.getPath()).thenReturn(folderPath);
-//        when(selection.getFirstElement()).thenReturn(folder);
+        FolderNode folder = mock(FolderNode.class);
+        when(folder.getPath()).thenReturn(folderPath);
+        when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexFolder(anyString())).thenReturn(MESSAGE);
 
@@ -96,9 +101,9 @@ public class AddToIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFileIsSelected() throws Exception {
         String filePath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-//        File file = mock(File.class);
-//        when(file.getPath()).thenReturn(filePath);
-//        when(selection.getFirstElement()).thenReturn(file);
+        FileNode file = mock(FileNode.class);
+        when(file.getPath()).thenReturn(filePath);
+        when(selection.getFirstElement()).thenReturn(file);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexFile(anyString())).thenReturn(MESSAGE);
 
@@ -125,7 +130,6 @@ public class AddToIndexPresenterTest extends BaseTest {
         }).when(service).add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
                              (RequestCallback<Void>)anyObject());
 
-//        when(currentProject.getName()).thenReturn(PROJECT_NAME);
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
         when(constant.addSuccess()).thenReturn(MESSAGE);
 
@@ -169,8 +173,8 @@ public class AddToIndexPresenterTest extends BaseTest {
     @Test
     public void testOnAddClickedWhenAddRequestIsFailed() throws Exception {
         doThrow(WebSocketException.class).when(service)
-                .add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
-                     (RequestCallback<Void>)anyObject());
+                                         .add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
+                                              (RequestCallback<Void>)anyObject());
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
 
         presenter.showDialog();

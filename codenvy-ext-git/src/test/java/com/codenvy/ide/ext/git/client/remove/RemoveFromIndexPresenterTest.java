@@ -10,9 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remove;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -58,7 +59,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFileIsSelected() throws Exception {
         String filePath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-        ItemReference file = mock(ItemReference.class);
+        FileNode file = mock(FileNode.class);
         when(file.getPath()).thenReturn(filePath);
         when(selection.getFirstElement()).thenReturn(file);
         when(selectionAgent.getSelection()).thenReturn(selection);
@@ -76,9 +77,9 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFolderIsSelected() throws Exception {
         String folderPath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-//        Folder folder = mock(Folder.class);
-//        when(folder.getPath()).thenReturn(folderPath);
-//        when(selection.getFirstElement()).thenReturn(folder);
+        FolderNode folder = mock(FolderNode.class);
+        when(folder.getPath()).thenReturn(folderPath);
+        when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.removeFromIndexFolder(anyString())).thenReturn(MESSAGE);
 
@@ -93,7 +94,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
-        when(selection.getFirstElement()).thenReturn(currentProject);
+        //when(selection.getFirstElement()).thenReturn(currentProject);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.removeFromIndexAll()).thenReturn(MESSAGE);
 
@@ -109,7 +110,6 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     public void testOnRemoveClickedWhenRemoveRequestIsSuccessful() throws Exception {
         when(view.isRemoved()).thenReturn(REMOVED);
         when(selectionAgent.getSelection()).thenReturn(null);
-//        when(currentProject.getName()).thenReturn(PROJECT_NAME);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -125,9 +125,8 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onRemoveClicked();
 
-        verify(service)
-                .remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
-                        (AsyncRequestCallback<String>)anyObject());
+        verify(service).remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
+                               (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).removeFilesSuccessfull();
         verify(view).close();
@@ -152,8 +151,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onRemoveClicked();
 
-        verify(service)
-                .remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
+        verify(service).remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
                         (AsyncRequestCallback<String>)anyObject());
         verify(constant).removeFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

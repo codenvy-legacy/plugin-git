@@ -245,7 +245,6 @@ public class HistoryPresenterTest extends BaseTest {
         when(activePart.getSelection()).thenReturn(sel);
         when(sel.getFirstElement()).thenReturn(item);
         when(selection.getFirstElement()).thenReturn(item);
-//        when(currentProject.getPath()).thenReturn("testProject/");
         when(item.getPath()).thenReturn("testProject/src");
         doAnswer(new Answer() {
             @Override
@@ -268,8 +267,6 @@ public class HistoryPresenterTest extends BaseTest {
                               anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
-//        presenter.onActivePartChanged(event);
-//        presenter.propertyChanged(activePart, 1);
         presenter.onDiffWithIndexClicked();
         presenter.onRevisionSelected(selectedRevision);
         reset(view);

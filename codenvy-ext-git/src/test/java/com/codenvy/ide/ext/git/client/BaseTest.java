@@ -36,7 +36,6 @@ import static org.mockito.Mockito.when;
 @GwtModule("com.codenvy.ide.ext.git.Git")
 public abstract class BaseTest extends GwtTestWithMockito {
     public static final String  PROJECT_PATH    = "/test";
-    public static final String  VFS_ID          = "vfsid";
     public static final boolean SELECTED_ITEM   = true;
     public static final boolean UNSELECTED_ITEM = false;
     public static final boolean ENABLE_BUTTON   = true;
@@ -82,6 +81,7 @@ public abstract class BaseTest extends GwtTestWithMockito {
     public void disarm() {
         when(appContext.getCurrentProject()).thenReturn(currentProject);
         when(currentProject.getProjectDescription()).thenReturn(projectDescriptor);
-//        when(currentProject.getName()).thenReturn(PROJECT_NAME);
+        when(projectDescriptor.getName()).thenReturn(PROJECT_NAME);
+        when(projectDescriptor.getPath()).thenReturn(PROJECT_PATH);
     }
 }

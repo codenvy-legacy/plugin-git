@@ -89,7 +89,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      * @return {@link String} message to display
      */
     @NotNull
-    private String formMessage(@NotNull String workdir) {
+    private String formMessage(@NotNull String workDir) {
         Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
 
         String path;
@@ -99,7 +99,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
             path = selection.getFirstElement().getPath();
         }
 
-        String pattern = path.replaceFirst(workdir, "");
+        String pattern = path.replaceFirst(workDir, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         // Root of the working tree:

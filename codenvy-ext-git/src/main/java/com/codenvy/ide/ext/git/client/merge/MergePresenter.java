@@ -184,7 +184,6 @@ public class MergePresenter implements MergeView.ActionDelegate {
 
                           @Override
                           protected void onFailure(Throwable exception) {
-                              eventBus.fireEvent(new ExceptionThrownEvent(exception));
                               Notification notification = new Notification(exception.getMessage(), ERROR);
                               notificationManager.showNotification(notification);
                           }

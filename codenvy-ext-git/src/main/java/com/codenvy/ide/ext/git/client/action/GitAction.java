@@ -13,6 +13,9 @@ package com.codenvy.ide.ext.git.client.action;
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
+import com.codenvy.ide.api.projecttree.generic.ItemNode;
+import com.codenvy.ide.api.selection.Selection;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -24,15 +27,14 @@ import java.util.List;
  */
 public abstract class GitAction extends Action {
 
-    protected final AppContext appContext;
+    protected final AppContext     appContext;
+    protected       SelectionAgent selectionAgent;
 
-    public GitAction(String text,
-                     String description,
-                     ImageResource icon,
-                     SVGResource svgIcon,
-                     AppContext appContext) {
+    public GitAction(String text, String description, ImageResource icon, SVGResource svgIcon, AppContext appContext,
+                     SelectionAgent selectionAgent) {
         super(text, description, icon, svgIcon);
         this.appContext = appContext;
+        this.selectionAgent = selectionAgent;
     }
 
     protected boolean isGitRepository() {
@@ -46,6 +48,11 @@ public abstract class GitAction extends Action {
             }
         }
         return isGitRepository;
+    }
+
+    protected boolean isItemSelected() {
+        Selection<?> selection = selectionAgent.getSelection();
+        return selection != null && selection instanceof ItemNode;
     }
 
     protected CurrentProject getActiveProject() {

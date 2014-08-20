@@ -10,10 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client;
 
-import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.action.IdeActions;
+import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.ext.github.client.welcome.ImportProjectFromGitHubAction;
 import com.codenvy.ide.ext.ssh.client.SshKeyService;
 import com.google.inject.Inject;
@@ -22,7 +22,7 @@ import com.google.inject.Singleton;
 /**
  * Extension adds GitHub support to the IDE Application.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 @Extension(title = "GitHub", version = "3.0.0")
@@ -35,8 +35,8 @@ public class GitHubExtension {
                            ImportProjectFromGitHubAction importProjectFromGitHubAction,
                            SshKeyService sshKeyService,
                            GitHubSshKeyProvider gitHubSshKeyProvider) {
-
         sshKeyService.registerSshKeyProvider(GITHUB_HOST, gitHubSshKeyProvider);
+
         actionManager.registerAction("importProjectFromGitHubAction", importProjectFromGitHubAction);
         DefaultActionGroup importProjectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_IMPORT_PROJECT);
         importProjectGroup.add(importProjectFromGitHubAction);

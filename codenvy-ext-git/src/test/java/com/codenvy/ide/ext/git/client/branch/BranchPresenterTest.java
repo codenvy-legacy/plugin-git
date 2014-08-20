@@ -260,37 +260,19 @@ public class BranchPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, PROJECT_PATH);
                 return callback;
             }
-        }).when(service).branchCheckout((ProjectDescriptor)anyObject(), anyString(), anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).branchCheckout((ProjectDescriptor)anyObject(), anyString(), anyString(), anyBoolean(),
+                                        (AsyncRequestCallback<String>)anyObject());
 
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onSuccess(currentProject);
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
-//                callback.onSuccess(file);
-//                return callback;
-//            }
-//        }).when(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<File> callback = (AsyncCallback<File>)arguments[1];
-//                callback.onSuccess(file);
-//                return callback;
-//            }
-//        }).when(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, "content");
+                return callback;
+            }
+        }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
 
         selectBranch();
         presenter.onCheckoutClicked();
@@ -301,21 +283,18 @@ public class BranchPresenterTest extends BaseTest {
         verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
                                        (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(appContext, times(4)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
+        verify(appContext).getCurrentProject();
         verify(partPresenter, times(2)).getEditorInput();
-        verify(editorInput).getFile();
         verify(file).getPath();
-//        verify(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-//        verify(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-        verify(editorInput).setFile((ItemReference)anyObject());
+        verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
         verify(partPresenter).init((EditorInput)anyObject());
         verify(notificationManager, never()).showNotification((Notification)anyObject());
         verify(constant, never()).branchCheckoutFailed();
     }
 
     @Test
-    public void testOnCheckoutClickedWhenBranchCheckoutRequestIsSuccessfulButRefreshProjectIsFailed() throws Exception {
+    public void testOnCheckoutClickedWhenBranchCheckoutRequestAndRefreshProjectIsSuccessfulButOpenFileIsNotExistInBranch()
+            throws Exception {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -325,17 +304,19 @@ public class BranchPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, PROJECT_PATH);
                 return callback;
             }
-        }).when(service).branchCheckout((ProjectDescriptor)anyObject(), anyString(), anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).branchCheckout((ProjectDescriptor)anyObject(), anyString(), anyString(), anyBoolean(),
+                                        (AsyncRequestCallback<String>)anyObject());
 
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onFailure(mock(Throwable.class));
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[1];
+                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
+                onFailure.invoke(callback, mock(Throwable.class));
+                return callback;
+            }
+        }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
 
         selectBranch();
         presenter.onCheckoutClicked();
@@ -346,130 +327,11 @@ public class BranchPresenterTest extends BaseTest {
         verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
                                        (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(appContext, times(2)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-        verify(partPresenter, never()).getEditorInput();
-        verify(editorInput, never()).getFile();
-//        verify(currentProject, never()).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
-        verify(constant).refreshChildrenFailed();
-    }
-
-    @Test
-    public void testOnCheckoutClickedWhenBranchCheckoutRequestAndRefreshProjectIsSuccessfulButOpenFileIsNotExistInBranch() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[4];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, PROJECT_PATH);
-                return callback;
-            }
-        }).when(service).branchCheckout((ProjectDescriptor)anyObject(), anyString(), anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onSuccess(currentProject);
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
-//                callback.onFailure(mock(Throwable.class));
-//                return callback;
-//            }
-//        }).when(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-
-        selectBranch();
-        presenter.onCheckoutClicked();
-
-        verify(editorAgent).getOpenedEditors();
-        verify(selectedBranch, times(2)).getDisplayName();
-        verify(selectedBranch).isRemote();
-        verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
-                                       (AsyncRequestCallback<String>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(appContext, times(3)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
+        verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();
-        verify(editorInput).getFile();
         verify(file).getPath();
-//        verify(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
+        verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
         verify(eventBus).fireEvent((FileEvent)anyObject());
-//        verify(currentProject, never()).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-    }
-
-    @Test
-    public void testOnCheckoutClickedWhenBranchCheckoutRequestAndRefreshProjectIsSuccessfulButGetContentOfFileIsFailed() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[4];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, PROJECT_PATH);
-                return callback;
-            }
-        }).when(service).branchCheckout((ProjectDescriptor)anyObject(), anyString(), anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onSuccess(currentProject);
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
-//                callback.onSuccess(file);
-//                return callback;
-//            }
-//        }).when(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<File> callback = (AsyncCallback<File>)arguments[1];
-//                callback.onFailure(mock(Throwable.class));
-//                return callback;
-//            }
-//        }).when(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-
-        selectBranch();
-        presenter.onCheckoutClicked();
-
-        verify(editorAgent).getOpenedEditors();
-        verify(selectedBranch, times(2)).getDisplayName();
-        verify(selectedBranch).isRemote();
-        verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
-                                       (AsyncRequestCallback<String>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(appContext, times(4)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-        verify(partPresenter).getEditorInput();
-        verify(editorInput).getFile();
-        verify(file).getPath();
-//        verify(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-//        verify(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-        verify(editorInput, never()).setFile((ItemReference)anyObject());
-        verify(partPresenter, never()).init((EditorInput)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
-        verify(constant).getContentFailed();
     }
 
     @Test

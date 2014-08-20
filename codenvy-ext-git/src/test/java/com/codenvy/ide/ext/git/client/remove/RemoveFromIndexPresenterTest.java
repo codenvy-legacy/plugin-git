@@ -14,6 +14,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.ProjectRootNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -94,7 +95,9 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
-        //when(selection.getFirstElement()).thenReturn(currentProject);
+        ProjectRootNode project = mock(ProjectRootNode.class);
+        when(project.getPath()).thenReturn(PROJECT_PATH);
+        when(selection.getFirstElement()).thenReturn(project);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.removeFromIndexAll()).thenReturn(MESSAGE);
 
@@ -152,7 +155,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.onRemoveClicked();
 
         verify(service).remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
-                        (AsyncRequestCallback<String>)anyObject());
+                               (AsyncRequestCallback<String>)anyObject());
         verify(constant).removeFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(view).close();

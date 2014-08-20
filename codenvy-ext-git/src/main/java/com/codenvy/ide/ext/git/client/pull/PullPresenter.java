@@ -258,8 +258,6 @@ public class PullPresenter implements PullView.ActionDelegate {
     /**
      * Update content of the file.
      *
-     * @param file
-     *         file to refresh
      * @param partPresenter
      *        editor that corresponds to the <code>file</code>.
      */

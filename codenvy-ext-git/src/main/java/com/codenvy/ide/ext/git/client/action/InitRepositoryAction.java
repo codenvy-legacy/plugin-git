@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.client.action;
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.init.InitRepositoryPresenter;
@@ -30,8 +31,9 @@ public class InitRepositoryAction extends GitAction {
                                 GitResources resources,
                                 GitLocalizationConstant constant,
                                 AppContext appContext,
-                                AnalyticsEventLogger eventLogger) {
-        super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo(), appContext);
+                                AnalyticsEventLogger eventLogger,
+                                SelectionAgent selectionAgent) {
+        super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }

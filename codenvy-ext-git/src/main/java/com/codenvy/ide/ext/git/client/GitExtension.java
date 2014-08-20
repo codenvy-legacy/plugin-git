@@ -40,12 +40,11 @@ import static com.codenvy.ide.api.action.IdeActions.GROUP_WINDOW;
 /**
  * Extension add Git support to the IDE Application.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 @Extension(title = "Git", version = "3.0.0")
 public class GitExtension {
-    public static final String GIT_REPOSITORY_PROP        = "isGitRepository";
     public static final String GIT_GROUP_MAIN_MENU        = "Git";
     public static final String REPOSITORY_GROUP_MAIN_MENU = "GitRepositoryGroup";
     public static final String COMMAND_GROUP_MAIN_MENU    = "GitCommandGroup";
@@ -134,7 +133,5 @@ public class GitExtension {
         remoteGroup.add(pullAction);
         actionManager.registerAction("GitRemote", showRemoteAction);
         remoteGroup.add(showRemoteAction);
-
-       
     }
 }

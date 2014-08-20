@@ -64,7 +64,7 @@ public class AddToIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
         ProjectRootNode project = mock(ProjectRootNode.class);
-//        when(project.getPath()).thenReturn(PROJECT_PATH);
+        when(project.getPath()).thenReturn(PROJECT_PATH);
         when(selection.getFirstElement()).thenReturn(project);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexAllChanges()).thenReturn(MESSAGE);

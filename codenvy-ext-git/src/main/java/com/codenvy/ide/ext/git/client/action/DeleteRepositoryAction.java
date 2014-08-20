@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.client.action;
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.delete.DeleteRepositoryPresenter;
@@ -33,8 +34,9 @@ public class DeleteRepositoryAction extends GitAction {
                                   AppContext appContext,
                                   GitResources resources,
                                   GitLocalizationConstant constant,
-                                  AnalyticsEventLogger eventLogger) {
-        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), appContext);
+                                  AnalyticsEventLogger eventLogger,
+                                  SelectionAgent selectionAgent) {
+        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.constant = constant;
         this.eventLogger = eventLogger;

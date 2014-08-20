@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.client.action;
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.reset.commit.ResetToCommitPresenter;
@@ -30,8 +31,10 @@ public class ResetToCommitAction extends GitAction {
                                AppContext appContext,
                                GitResources resources,
                                GitLocalizationConstant constant,
-                               AnalyticsEventLogger eventLogger) {
-        super(constant.resetToCommitControlTitle(), constant.resetToCommitControlPrompt(), null, resources.revert(), appContext);
+                               AnalyticsEventLogger eventLogger,
+                               SelectionAgent selectionAgent) {
+        super(constant.resetToCommitControlTitle(), constant.resetToCommitControlPrompt(), null, resources.revert(), appContext,
+              selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }

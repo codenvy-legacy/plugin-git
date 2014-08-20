@@ -27,7 +27,6 @@
 */
 package com.codenvy.ide.ext.git.client.merge;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInput;
@@ -73,8 +72,6 @@ public class MergePresenterTest extends BaseTest {
     @Mock
     private MergeView           view;
     @Mock
-    private ItemReference       file;
-    @Mock
     private MergeResult         mergeResult;
     @Mock
     private EditorInput         editorInput;
@@ -99,7 +96,6 @@ public class MergePresenterTest extends BaseTest {
         when(selectedReference.getDisplayName()).thenReturn(DISPLAY_NAME);
         when(editorAgent.getOpenedEditors()).thenReturn(partPresenterMap);
         when(partPresenter.getEditorInput()).thenReturn(editorInput);
-        when(editorInput.getFile()).thenReturn(file);
     }
 
     @Test
@@ -116,17 +112,17 @@ public class MergePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, branches);
                 return callback;
             }
-        }).when(service).branchList(projectDescriptor, eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[2];
+                AsyncRequestCallback<Array<Branch>> callback = (AsyncRequestCallback<Array<Branch>>)arguments[2];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
                 onSuccess.invoke(callback, branches);
                 return callback;
             }
-        }).when(service).branchList(projectDescriptor, eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
 
         presenter.showDialog();
 
@@ -152,7 +148,7 @@ public class MergePresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).branchList(projectDescriptor, eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -162,7 +158,7 @@ public class MergePresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).branchList(projectDescriptor, eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        }).when(service).branchList((ProjectDescriptor)anyObject(), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
 
         presenter.showDialog();
 
@@ -180,7 +176,7 @@ public class MergePresenterTest extends BaseTest {
     }
 
     @Test
-    public void testOnMergeClickedWhenMergeRequestAndRefreshProjectIsSuccessful() throws Exception {
+    public void testOnMergeClickedWhenMergeRequestIsSuccessful() throws Exception {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -190,206 +186,18 @@ public class MergePresenterTest extends BaseTest {
                 onSuccess.invoke(callback, mergeResult);
                 return callback;
             }
-        }).when(service).merge(projectDescriptor, anyString(), (AsyncRequestCallback<MergeResult>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onSuccess(currentProject);
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
-//                callback.onSuccess(file);
-//                return callback;
-//            }
-//        }).when(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<File> callback = (AsyncCallback<File>)arguments[1];
-//                callback.onSuccess(file);
-//                return callback;
-//            }
-//        }).when(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
+        }).when(service).merge((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<MergeResult>)anyObject());
 
         presenter.onReferenceSelected(selectedReference);
         presenter.onMergeClicked();
 
         verify(view).close();
         verify(editorAgent).getOpenedEditors();
-        verify(service).merge(projectDescriptor, eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
-        verify(appContext, times(3)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-        verify(partPresenter, times(2)).getEditorInput();
-        verify(editorInput).getFile();
-        verify(file).getPath();
-//        verify(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-//        verify(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-        verify(editorInput).setFile((ItemReference)anyObject());
+        verify(service).merge(eq(projectDescriptor), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(partPresenter).getEditorInput();
         verify(partPresenter).init((EditorInput)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
-    }
-
-    @Test
-    public void testOnMergeClickedWhenMergeRequestIsSuccessfulButRefreshProjectIsFailed() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<MergeResult> callback = (AsyncRequestCallback<MergeResult>)arguments[2];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, mergeResult);
-                return callback;
-            }
-        }).when(service).merge((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<MergeResult>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onFailure(mock(Throwable.class));
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-        presenter.onReferenceSelected(selectedReference);
-        presenter.onMergeClicked();
-
-        verify(view).close();
-        verify(editorAgent).getOpenedEditors();
-        verify(service).merge((ProjectDescriptor)anyObject(), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
-        verify(appContext).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-        verify(partPresenter, never()).getEditorInput();
-        verify(editorInput, never()).getFile();
-//        verify(currentProject, never()).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-        verify(notificationManager, times(2)).showNotification((Notification)anyObject());
-        verify(constant).refreshChildrenFailed();
-    }
-
-    @Test
-    public void testOnMergeClickedWhenMergeRequestAndRefreshProjectIsSuccessfulButFindOpenFileIsFailed() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<MergeResult> callback = (AsyncRequestCallback<MergeResult>)arguments[2];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, mergeResult);
-                return callback;
-            }
-        }).when(service).merge((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<MergeResult>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onSuccess(currentProject);
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
-//                callback.onFailure(mock(Throwable.class));
-//                return callback;
-//            }
-//        }).when(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-
-        presenter.onReferenceSelected(selectedReference);
-        presenter.onMergeClicked();
-
-        verify(view).close();
-        verify(editorAgent).getOpenedEditors();
-        verify(service).merge((ProjectDescriptor)anyObject(), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
-        verify(appContext, times(2)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-        verify(partPresenter).getEditorInput();
-        verify(editorInput).getFile();
-        verify(file).getPath();
-//        verify(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-//        verify(currentProject, never()).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-        verify(editorInput, never()).setFile((ItemReference)anyObject());
-        verify(partPresenter, never()).init((EditorInput)anyObject());
-        verify(notificationManager, times(2)).showNotification((Notification)anyObject());
-        verify(constant).findResourceFailed();
-    }
-
-    @Test
-    public void testOnMergeClickedWhenMergeRequestAndRefreshProjectIsSuccessfulButGetContentOfFileIsFailed() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<MergeResult> callback = (AsyncRequestCallback<MergeResult>)arguments[2];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, mergeResult);
-                return callback;
-            }
-        }).when(service).merge((ProjectDescriptor)anyObject(), anyString(), (AsyncRequestCallback<MergeResult>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Project> callback = (AsyncCallback<Project>)arguments[0];
-//                callback.onSuccess(currentProject);
-//                return callback;
-//            }
-//        }).when(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<Resource> callback = (AsyncCallback<Resource>)arguments[1];
-//                callback.onSuccess(file);
-//                return callback;
-//            }
-//        }).when(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-
-//        doAnswer(new Answer() {
-//            @Override
-//            public Object answer(InvocationOnMock invocation) throws Throwable {
-//                Object[] arguments = invocation.getArguments();
-//                AsyncCallback<File> callback = (AsyncCallback<File>)arguments[1];
-//                callback.onFailure(mock(Throwable.class));
-//                return callback;
-//            }
-//        }).when(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-
-        presenter.onReferenceSelected(selectedReference);
-        presenter.onMergeClicked();
-
-        verify(view).close();
-        verify(editorAgent).getOpenedEditors();
-        verify(service).merge((ProjectDescriptor)anyObject(), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
-        verify(appContext, times(3)).getCurrentProject();
-//        verify(currentProject).refreshChildren((AsyncCallback<Project>)anyObject());
-        verify(partPresenter).getEditorInput();
-        verify(editorInput).getFile();
-        verify(file).getPath();
-//        verify(currentProject).findResourceByPath(anyString(), (AsyncCallback<Resource>)anyObject());
-//        verify(currentProject).getContent((File)anyObject(), (AsyncCallback<File>)anyObject());
-        verify(editorInput, never()).setFile((ItemReference)anyObject());
-        verify(partPresenter, never()).init((EditorInput)anyObject());
-        verify(notificationManager, times(2)).showNotification((Notification)anyObject());
-        verify(constant).getContentFailed();
     }
 
     @Test

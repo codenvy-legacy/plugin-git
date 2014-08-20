@@ -53,13 +53,7 @@ public class StatusCommandPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new StatusCommandPresenter(workspaceAgent,
-                                               service,
-                                               eventBus,
-                                               appContext,
-                                               gitOutput,
-                                               constant,
-                                               notificationManager);
+        presenter = new StatusCommandPresenter(workspaceAgent, service, eventBus, appContext, gitOutput, constant, notificationManager);
     }
 
     @Test

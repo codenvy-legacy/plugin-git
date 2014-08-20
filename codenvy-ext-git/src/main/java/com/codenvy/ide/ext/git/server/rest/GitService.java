@@ -449,7 +449,11 @@ public class GitService {
     @GET
     public String readOnlyGitUrl(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
-        return gitUrlResolver.resolve(uriInfo.getBaseUri(), (com.codenvy.vfs.impl.fs.VirtualFileImpl)virtualFile);
+        if (virtualFile.getChild(".git") != null) {
+            return gitUrlResolver.resolve(uriInfo.getBaseUri(), (com.codenvy.vfs.impl.fs.VirtualFileImpl)virtualFile);
+        } else {
+            throw new ServerException("Not git repository");
+        }
     }
 
     @GET

@@ -44,7 +44,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     private       AddRemoteRepositoryPresenter addRemoteRepositoryPresenter;
     private       NotificationManager          notificationManager;
     private       Remote                       selectedRemote;
-    private       String                       projectId;
+    private       String                       projectPath;
 
     /**
      * Create presenter.
@@ -72,7 +72,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
 
     /** Show dialog. */
     public void showDialog() {
-        projectId = resourceProvider.getActiveProject().getId();
+        projectPath = resourceProvider.getActiveProject().getPath();
         getRemotes();
     }
 
@@ -81,7 +81,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
      * then get the list of branches (remote and local).
      */
     private void getRemotes() {
-        service.remoteList(projectId, null, true,
+        service.remoteList(projectPath, null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
@@ -135,7 +135,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
         }
 
         final String name = selectedRemote.getName();
-        service.remoteDelete(projectId, name, new AsyncRequestCallback<String>() {
+        service.remoteDelete(projectPath, name, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
                 getRemotes();

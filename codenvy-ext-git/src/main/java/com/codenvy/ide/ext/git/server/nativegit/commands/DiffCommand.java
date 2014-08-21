@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Show diff
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class DiffCommand extends GitCommand<String> {
 

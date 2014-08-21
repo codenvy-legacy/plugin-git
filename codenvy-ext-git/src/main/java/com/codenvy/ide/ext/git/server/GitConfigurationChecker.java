@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Singleton;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -21,7 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,6 +31,7 @@ import java.util.Set;
  *
  * @author Artem Zatsarynnyy
  */
+@Singleton
 public class GitConfigurationChecker {
     private static final Logger      LOG                = LoggerFactory.getLogger(GitConfigurationChecker.class);
     /** Special comment for global .gitignore file. Define begin of Codenvy-specific patterns. */

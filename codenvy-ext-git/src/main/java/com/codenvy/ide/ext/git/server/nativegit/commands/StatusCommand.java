@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Show repository status
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class StatusCommand extends GitCommand<List<String>> {
 

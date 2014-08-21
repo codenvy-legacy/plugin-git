@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Update remote refs with associated objects
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class PushCommand extends GitCommand<Void> {
 

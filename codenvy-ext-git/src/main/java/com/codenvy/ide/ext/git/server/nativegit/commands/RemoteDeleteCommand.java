@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Delete remote
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class RemoteDeleteCommand extends GitCommand<Void> {
 

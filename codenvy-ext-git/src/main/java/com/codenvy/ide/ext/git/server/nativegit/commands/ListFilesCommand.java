@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Get list of files
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class ListFilesCommand extends GitCommand<List<String>> {
 

@@ -84,7 +84,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view).setEnableDeleteButton(eq(DISABLE_BUTTON));
         verify(view).setRemotes((Array<Remote>)anyObject());
@@ -108,7 +108,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
     }
@@ -176,7 +176,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.onRemoteSelected(selectedRemote);
         presenter.onDeleteClicked();
 
-        verify(service).remoteDelete(eq(PROJECT_ID), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
+        verify(service).remoteDelete(eq(PROJECT_PATH), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2)).remoteList(anyString(), anyString(), eq(SHOW_ALL_INFORMATION),
                                              (AsyncRequestCallback<Array<Remote>>)anyObject());
     }
@@ -198,7 +198,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.onRemoteSelected(selectedRemote);
         presenter.onDeleteClicked();
 
-        verify(service).remoteDelete(eq(PROJECT_ID), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
+        verify(service).remoteDelete(eq(PROJECT_PATH), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
         verify(constant).remoteDeleteFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }

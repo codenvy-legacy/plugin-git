@@ -80,8 +80,8 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
 
         presenter.deleteRepository();
         verify(resourceProvider).getActiveProject();
-        verify(project).getId();
-        verify(service).deleteRepository(eq(PROJECT_ID), (AsyncRequestCallback<Void>)anyObject());
+        verify(project).getPath();
+        verify(service).deleteRepository(eq(PROJECT_PATH), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).deleteGitRepositorySuccess();
         verify(project).getAttributes();
@@ -105,7 +105,7 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         presenter.deleteRepository();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).deleteRepository(eq(PROJECT_ID), (AsyncRequestCallback<Void>)anyObject());
+        verify(service).deleteRepository(eq(PROJECT_PATH), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(eventBus).fireEvent((ExceptionThrownEvent)anyObject());
     }

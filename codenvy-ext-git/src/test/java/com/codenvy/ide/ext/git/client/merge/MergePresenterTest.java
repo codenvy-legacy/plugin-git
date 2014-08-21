@@ -135,8 +135,8 @@ public class MergePresenterTest extends BaseTest {
         verify(resourceProvider).getActiveProject();
         verify(view).setEnableMergeButton(eq(DISABLE_BUTTON));
         verify(view).showDialog();
-        verify(service).branchList(eq(PROJECT_ID), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(service).branchList(eq(PROJECT_ID), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(PROJECT_PATH), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(PROJECT_PATH), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view).setRemoteBranches((Array<Reference>)anyObject());
         verify(view).setLocalBranches((Array<Reference>)anyObject());
         verify(eventBus, never()).fireEvent((ExceptionThrownEvent)anyObject());
@@ -168,8 +168,8 @@ public class MergePresenterTest extends BaseTest {
 
         presenter.showDialog();
 
-        verify(service).branchList(eq(PROJECT_ID), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(service).branchList(eq(PROJECT_ID), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(PROJECT_PATH), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(PROJECT_PATH), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(eventBus, times(2)).fireEvent((ExceptionThrownEvent)anyObject());
         verify(notificationManager, times(2)).showNotification((Notification)anyObject());
     }

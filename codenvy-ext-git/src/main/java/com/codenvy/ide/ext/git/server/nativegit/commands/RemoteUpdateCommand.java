@@ -18,13 +18,13 @@ import java.util.List;
 /**
  * Update remote
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class RemoteUpdateCommand extends GitCommand<Void> {
 
-    private boolean  addBranches;
-    private String   remoteName;
-    private String   newUrl;
+    private boolean      addBranches;
+    private String       remoteName;
+    private String       newUrl;
     private List<String> branchesToAdd;
     private List<String> addUrl;
     private List<String> removeUrl;

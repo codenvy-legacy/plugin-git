@@ -60,7 +60,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
     private       GitServiceClient        service;
     private       EventBus                eventBus;
     private       GitLocalizationConstant constant;
-    private       String                  projectId;
+    private       String                  projectPath;
     private       EditorAgent             editorAgent;
     private       ResourceProvider        resourceProvider;
     private       Reference               selectedReference;
@@ -100,11 +100,11 @@ public class MergePresenter implements MergeView.ActionDelegate {
     /** Show dialog. */
     public void showDialog() {
         Project project = resourceProvider.getActiveProject();
-        projectId = project.getId();
+        projectPath = project.getPath();
         selectedReference = null;
         view.setEnableMergeButton(false);
 
-        service.branchList(projectId, LIST_LOCAL,
+        service.branchList(projectPath, LIST_LOCAL,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -131,7 +131,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
                                }
                            });
 
-        service.branchList(projectId, LIST_REMOTE,
+        service.branchList(projectPath, LIST_REMOTE,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -177,7 +177,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
         for (EditorPartPresenter partPresenter : editorAgent.getOpenedEditors().getValues().asIterable()) {
             openedEditors.add(partPresenter);
         }
-        service.merge(projectId, selectedReference.getDisplayName(),
+        service.merge(projectPath, selectedReference.getDisplayName(),
                       new AsyncRequestCallback<MergeResult>(dtoUnmarshallerFactory.newUnmarshaller(MergeResult.class)) {
                           @Override
                           protected void onSuccess(final MergeResult result) {

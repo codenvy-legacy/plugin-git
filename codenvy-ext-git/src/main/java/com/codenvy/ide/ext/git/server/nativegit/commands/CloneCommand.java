@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * This command used for cloning repositories.
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class CloneCommand extends GitCommand<Void> {
 

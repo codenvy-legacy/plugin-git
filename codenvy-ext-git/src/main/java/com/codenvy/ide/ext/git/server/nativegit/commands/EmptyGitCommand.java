@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Used with specific git commands
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class EmptyGitCommand extends GitCommand<Void> {
 

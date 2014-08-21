@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Create branch
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class BranchCreateCommand extends GitCommand<Void> {
 

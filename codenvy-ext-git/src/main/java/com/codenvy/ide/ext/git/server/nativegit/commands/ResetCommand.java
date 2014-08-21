@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Reset repository to specifically state
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class ResetCommand extends GitCommand<Void> {
 

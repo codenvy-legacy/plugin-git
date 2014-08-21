@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Base class for all git commands
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public abstract class GitCommand<T> {
 
@@ -44,7 +44,7 @@ public abstract class GitCommand<T> {
 
     /**
      * @return git command result
-     * @throws GitException
+     * @throws com.codenvy.ide.ext.git.server.GitException
      *         when command execution failed or command execution exit value is not 0
      */
     public abstract T execute() throws GitException;

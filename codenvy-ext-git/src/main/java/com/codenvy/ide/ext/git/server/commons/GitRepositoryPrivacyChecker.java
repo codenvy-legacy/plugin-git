@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.commons;
 
+import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
@@ -51,12 +52,17 @@ public class GitRepositoryPrivacyChecker {
         Matcher matcher = SSH_URL.matcher(gitUrl);
         if (!matcher.matches()) {
             // call git ls-remote
+            GitConnection gitConnection = null;
             try {
-                GitConnection gitConnection = gitConnectionFactory.getConnection("/tmp");
+                gitConnection = gitConnectionFactory.getConnection("/tmp");
                 gitConnection.lsRemote(DtoFactory.getInstance().createDto(LsRemoteRequest.class).withRemoteUrl(gitUrl));
                 return true;
-            } catch (GitException e) {
+            } catch (GitException | UnauthorizedException e) {
                 return false;
+            } finally {
+                if (gitConnection != null) {
+                    gitConnection.close();
+                }
             }
         } else {
             // if url is ssh, use special check
@@ -70,14 +76,19 @@ public class GitRepositoryPrivacyChecker {
             gitUrls.add(createHttpsWithoutPortUrl(host, path));
             gitUrls.add(createHttpWithoutPortUrl(host, path));
             for (String repoUrl : gitUrls) {
+                GitConnection gitConnection = null;
                 try {
-                    GitConnection gitConnection = gitConnectionFactory.getConnection("/tmp", null);
+                    gitConnection = gitConnectionFactory.getConnection("/tmp", null);
                     gitConnection.lsRemote(DtoFactory.getInstance().createDto(LsRemoteRequest.class)
                                                      .withRemoteUrl(repoUrl)
                                                      .withUseAuthorization(false));
                     return true;
-                } catch (GitException ignored) {
+                } catch (GitException | UnauthorizedException ignored) {
                     // try another url to check for
+                } finally {
+                    if (gitConnection != null) {
+                        gitConnection.close();
+                    }
                 }
             }
             return false;

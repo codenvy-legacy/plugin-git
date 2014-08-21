@@ -127,7 +127,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view, times(2)).setEnablePullButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
@@ -177,9 +177,9 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
-        verify(service, times(2)).branchList(eq(PROJECT_ID), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(PROJECT_PATH), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view, times(2)).setEnablePullButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
         verify(view).showDialog();
@@ -229,7 +229,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -253,7 +253,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
         verify(view).setEnablePullButton(eq(DISABLE_BUTTON));

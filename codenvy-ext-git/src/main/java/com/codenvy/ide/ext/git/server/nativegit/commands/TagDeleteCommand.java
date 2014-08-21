@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Delete tag
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class TagDeleteCommand extends GitCommand<Void> {
 

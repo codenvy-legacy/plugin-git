@@ -77,7 +77,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
         presenter.onOkClicked();
 
         verify(view).close();
-        verify(service).init(eq(PROJECT_ID), eq(PROJECT_NAME), eq(BARE), (RequestCallback<Void>)anyObject());
+        verify(service).init(eq(PROJECT_PATH), eq(PROJECT_NAME), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(constant).initSuccess();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -99,7 +99,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
         presenter.onOkClicked();
 
         verify(view).close();
-        verify(service).init(eq(PROJECT_ID), eq(PROJECT_NAME), eq(BARE), (RequestCallback<Void>)anyObject());
+        verify(service).init(eq(PROJECT_PATH), eq(PROJECT_NAME), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).initFailed();
     }

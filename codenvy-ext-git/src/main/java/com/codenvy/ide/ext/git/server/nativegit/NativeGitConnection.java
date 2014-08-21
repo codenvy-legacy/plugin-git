@@ -11,12 +11,13 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 
+import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.DiffPage;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.LogPage;
-import com.codenvy.ide.ext.git.server.NotAuthorizedException;
+import com.codenvy.ide.ext.git.server.commons.Util;
 import com.codenvy.ide.ext.git.server.nativegit.commands.AddCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.BranchCheckoutCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.BranchCreateCommand;
@@ -67,9 +68,6 @@ import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -82,11 +80,10 @@ import java.util.regex.Pattern;
 /**
  * Native implementation of GitConnection
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class NativeGitConnection implements GitConnection {
 
-    private final static Logger LOG = LoggerFactory.getLogger(NativeGitConnection.class);
     private final NativeGit                nativeGit;
     private final CredentialsLoader        credentialsLoader;
     private final Set<CredentialsProvider> credentialsProviders;
@@ -107,9 +104,9 @@ public class NativeGitConnection implements GitConnection {
      * @param keysManager
      *         manager for ssh keys. If it is null default ssh will be used;
      * @param credentialsLoader
-     *          loader for credentials
+     *         loader for credentials
      * @param credentialsProviders
-     *          set of credentials providers
+     *         set of credentials providers
      * @throws GitException
      *         when some error occurs
      */
@@ -143,8 +140,7 @@ public class NativeGitConnection implements GitConnection {
          */
         if (request.isCreateNew()) {
             try {
-                if (!(getBranchRef(request.getName()).startsWith("refs/remotes/")
-                      && request.getName().endsWith("/HEAD"))) {
+                if (!(getBranchRef(request.getName()).startsWith("refs/remotes/") && request.getName().endsWith("/HEAD"))) {
                     command.setRemote(true);
                 }
             } catch (GitException ignored) {
@@ -161,7 +157,8 @@ public class NativeGitConnection implements GitConnection {
         branchCreateCommand.setBranchName(request.getName())
                            .setStartPoint(request.getStartPoint())
                            .execute();
-        return DtoFactory.getInstance().createDto(Branch.class).withName(getBranchRef(request.getName())).withActive(false).withDisplayName(request.getName()).withRemote(false);
+        return DtoFactory.getInstance().createDto(Branch.class).withName(getBranchRef(request.getName())).withActive(false)
+                         .withDisplayName(request.getName()).withRemote(false);
     }
 
     @Override
@@ -203,29 +200,27 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public GitConnection clone(CloneRequest request) throws URISyntaxException, GitException {
+    public GitConnection clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
         if (request.getWorkingDir() != null) {
             nativeGit.setRepository(new File(request.getWorkingDir()));
         }
         CloneCommand clone;
-        String key;
-        if ((key = keysManager.storeKeyIfNeed(request.getRemoteUri())) != null) {
-            clone = nativeGit.createCloneCommand(key);
+        final String remoteUri = request.getRemoteUri();
+        if (Util.isSSH(remoteUri)) {
+            clone = nativeGit.createCloneCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
         } else {
             clone = nativeGit.createCloneCommand();
         }
-        clone.setUri(request.getRemoteUri());
+        clone.setUri(remoteUri);
         clone.setRemoteName(request.getRemoteName());
         if (clone.getTimeout() > 0) {
             clone.setTimeout(request.getTimeout());
         }
-        executeWithCredentials(clone, request.getRemoteUri());
+        executeWithCredentials(clone, remoteUri);
         File repository = clone.getRepository();
         //set up back default url
-        new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null
-                                                          ? "origin"
-                                                          : request.getRemoteName())
-                                           .setNewUrl(request.getRemoteUri())
+        new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
+                                           .setNewUrl(remoteUri)
                                            .execute();
         nativeGit.createConfig().setUser(user).saveUser();
         return new NativeGitConnection(repository, user, keysManager, credentialsLoader, credentialsProviders);
@@ -290,31 +285,28 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void fetch(FetchRequest request) throws GitException {
+    public void fetch(FetchRequest request) throws GitException, UnauthorizedException {
         FetchCommand fetchCommand;
-        String url;
-        //get url
+        String remoteUri;
         try {
-            url = nativeGit.createRemoteListCommand()
-                           .setRemoteName(request.getRemote())
-                           .execute()
-                           .get(0)
-                           .getUrl();
+            remoteUri = nativeGit.createRemoteListCommand()
+                                 .setRemoteName(request.getRemote())
+                                 .execute()
+                                 .get(0)
+                                 .getUrl();
         } catch (GitException ignored) {
-            url = request.getRemote();
+            remoteUri = request.getRemote();
         }
-        String key;
-        //try to store key
-        if ((key = keysManager.storeKeyIfNeed(url)) != null) {
-            fetchCommand = nativeGit.createFetchCommand(key);
+        if (Util.isSSH(remoteUri)) {
+            fetchCommand = nativeGit.createFetchCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
         } else {
             fetchCommand = nativeGit.createFetchCommand();
         }
-        fetchCommand.setRemote(url)
+        fetchCommand.setRemote(remoteUri)
                     .setPrune(request.isRemoveDeletedRefs())
                     .setRefSpec(request.getRefSpec())
                     .setTimeout(request.getTimeout());
-        executeWithCredentials(fetchCommand, url);
+        executeWithCredentials(fetchCommand, remoteUri);
     }
 
     @Override
@@ -340,7 +332,7 @@ public class NativeGitConnection implements GitConnection {
         if (!request.isBare() && request.isInitCommit()) {
             try {
                 nativeGit.createAddCommand()
-                         .setFilePattern(new ArrayList<String>(Arrays.asList(".")))
+                         .setFilePattern(new ArrayList<>(Arrays.asList(".")))
                          .execute();
                 nativeGit.createCommitCommand()
                          .setMessage("init")
@@ -358,7 +350,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException {
+    public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException, UnauthorizedException {
         LsRemoteCommand command = nativeGit.createLsRemoteCommand().setRemoteUrl(request.getRemoteUrl());
         if (request.isUseAuthorization()) {
             executeWithCredentials(command, request.getRemoteUrl());
@@ -396,60 +388,54 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void pull(PullRequest request) throws GitException {
+    public void pull(PullRequest request) throws GitException, UnauthorizedException {
         PullCommand pullCommand;
-        String url;
-        //get url
+        String remoteUri;
         try {
-            url = nativeGit.createRemoteListCommand()
-                           .setRemoteName(request.getRemote())
-                           .execute()
-                           .get(0)
-                           .getUrl();
+            remoteUri = nativeGit.createRemoteListCommand()
+                                 .setRemoteName(request.getRemote())
+                                 .execute()
+                                 .get(0)
+                                 .getUrl();
         } catch (GitException ignored) {
-            url = request.getRemote();
+            remoteUri = request.getRemote();
         }
-        String key;
-        //try to store key
-        if ((key = keysManager.storeKeyIfNeed(url)) != null) {
-            pullCommand = nativeGit.createPullCommand(key);
+        if (Util.isSSH(remoteUri)) {
+            pullCommand = nativeGit.createPullCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
         } else {
             pullCommand = nativeGit.createPullCommand();
         }
-        pullCommand.setRemote(url);
+        pullCommand.setRemote(remoteUri);
         pullCommand.setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());
-        executeWithCredentials(pullCommand, url);
+        executeWithCredentials(pullCommand, remoteUri);
         if (pullCommand.getOutputMessage().toLowerCase().contains("already up-to-date")) {
-            throw new AlreadyUpToDateException();
+            throw new AlreadyUpToDateException("Already up-to-date");
         }
     }
 
     @Override
-    public void push(PushRequest request) throws GitException {
+    public void push(PushRequest request) throws GitException, UnauthorizedException {
         PushCommand pushCommand;
-        String url;
-        //get url
+        String remoteUri;
         try {
-            url = nativeGit.createRemoteListCommand()
-                           .setRemoteName(request.getRemote())
-                           .execute()
-                           .get(0)
-                           .getUrl();
+            remoteUri = nativeGit.createRemoteListCommand()
+                                 .setRemoteName(request.getRemote())
+                                 .execute()
+                                 .get(0)
+                                 .getUrl();
         } catch (GitException ignored) {
-            url = request.getRemote();
+            remoteUri = request.getRemote();
         }
-        String key;
-        //try to store ssh key if it is ssh or git url
-        if ((key = keysManager.storeKeyIfNeed(url)) != null) {
-            pushCommand = nativeGit.createPushCommand(key);
+        if (Util.isSSH(remoteUri)) {
+            pushCommand = nativeGit.createPushCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
         } else {
             pushCommand = nativeGit.createPushCommand();
         }
         pushCommand.setRemote(request.getRemote()).setForce(request.isForce())
                    .setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());
-        executeWithCredentials(pushCommand, url);
+        executeWithCredentials(pushCommand, remoteUri);
         if (pushCommand.getOutputMessage().toLowerCase().contains("everything up-to-date")) {
             throw new AlreadyUpToDateException("Everything up-to-date");
         }
@@ -580,7 +566,7 @@ public class NativeGitConnection implements GitConnection {
      *         when it is not possible to store credentials or
      *         authentication failed or command execution failed
      */
-    public void executeWithCredentials(GitCommand command, String url) throws GitException {
+    public void executeWithCredentials(GitCommand command, String url) throws GitException, UnauthorizedException {
         //create empty credentials
         CredentialItem.Username username = new CredentialItem.Username();
         username.setValue("");
@@ -608,7 +594,7 @@ public class NativeGitConnection implements GitConnection {
                     } catch (GitException inner) {
                         //if not authorized again make runtime exception
                         if (isOperationNeedAuth(inner.getMessage())) {
-                            throw new NotAuthorizedException();
+                            throw new UnauthorizedException("Not authorized");
                         } else {
                             throw inner;
                         }

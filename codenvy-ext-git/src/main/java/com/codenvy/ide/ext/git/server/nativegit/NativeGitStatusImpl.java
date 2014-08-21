@@ -24,7 +24,7 @@ import java.util.List;
  * NativeGit implementation for org.exoplatform.ide.git.shared.Status and
  * org.exoplatform.ide.git.server.InfoPage.
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class NativeGitStatusImpl implements Status, InfoPage {
 
@@ -69,7 +69,7 @@ public class NativeGitStatusImpl implements Status, InfoPage {
         load();
     }
 
-    /** @see org.exoplatform.ide.git.server.InfoPage#writeTo(java.io.OutputStream) */
+    /** @see InfoPage#writeTo(java.io.OutputStream) */
     @Override
     public void writeTo(OutputStream out) throws IOException {
         StatusCommand status = nativeGit.createStatusCommand().setShort(shortFormat);
@@ -77,161 +77,161 @@ public class NativeGitStatusImpl implements Status, InfoPage {
             status.execute();
             out.write(status.getOutputMessage().getBytes());
         } catch (GitException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new IOException(e.getMessage(), e);
         }
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#isClean() */
+    /** @see Status#isClean() */
     @Override
     public boolean isClean() {
         return clean;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setClean(Boolean) */
+    /** @see Status#setClean(boolean) */
     @Override
     public void setClean(boolean clean) {
         this.clean = clean;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getShortFormat() */
+    /** @see Status#isShortFormat() */
     @Override
     public boolean isShortFormat() {
         return shortFormat;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setShortFormat(Boolean) */
+    /** @see Status#setShortFormat(boolean) */
     @Override
     public void setShortFormat(boolean shortFormat) {
         this.shortFormat = shortFormat;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getBranchName() */
+    /** @see Status#getBranchName() */
     @Override
     public String getBranchName() {
         return branchName;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setBranchName(String) */
+    /** @see Status#setBranchName(String) */
     @Override
     public void setBranchName(String branchName) {
         this.branchName = branchName;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getAdded() */
+    /** @see Status#getAdded() */
     @Override
     public List<String> getAdded() {
-        if (added == null){
-            added = new ArrayList<String>();
+        if (added == null) {
+            added = new ArrayList<>();
         }
         return added;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setAdded(java.util.Set) */
+    /** @see Status#setAdded(java.util.List) */
     @Override
     public void setAdded(List<String> added) {
         this.added = added;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getChanged() */
+    /** @see Status#getChanged() */
     @Override
     public List<String> getChanged() {
-        if (changed == null){
-            changed = new ArrayList<String>();
+        if (changed == null) {
+            changed = new ArrayList<>();
         }
         return changed;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setChanged(java.util.Set) */
+    /** @see Status#setChanged(java.util.List) */
     @Override
     public void setChanged(List<String> changed) {
         this.changed = changed;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getRemoved() */
+    /** @see Status#getRemoved() */
     @Override
     public List<String> getRemoved() {
-        if (removed == null){
-            removed = new ArrayList<String>();
+        if (removed == null) {
+            removed = new ArrayList<>();
         }
         return removed;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setRemoved(java.util.Set) */
+    /** @see Status#setRemoved(java.util.List) */
     @Override
     public void setRemoved(List<String> removed) {
         this.removed = removed;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getMissing() */
+    /** @see Status#getMissing() */
     @Override
     public List<String> getMissing() {
         if (missing == null) {
-            missing = new ArrayList<String>();
+            missing = new ArrayList<>();
         }
         return missing;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setMissing(java.util.Set) */
+    /** @see Status#setMissing(java.util.List) */
     @Override
     public void setMissing(List<String> missing) {
         this.missing = missing;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getModified() */
+    /** @see Status#getModified() */
     @Override
     public List<String> getModified() {
         if (modified == null) {
-            modified = new ArrayList<String>();
+            modified = new ArrayList<>();
         }
         return modified;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setModified(java.util.Set) */
+    /** @see Status#setModified(java.util.List) */
     @Override
     public void setModified(List<String> modified) {
         this.modified = modified;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getUntracked() */
+    /** @see Status#getUntracked() */
     @Override
     public List<String> getUntracked() {
         if (untracked == null) {
-            untracked = new ArrayList<String>();
+            untracked = new ArrayList<>();
         }
         return untracked;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setUntracked(java.util.Set) */
+    /** @see Status#setUntracked(java.util.List) */
     @Override
     public void setUntracked(List<String> untracked) {
         this.untracked = untracked;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getUntrackedFolders() */
+    /** @see Status#getUntrackedFolders() */
     @Override
     public List<String> getUntrackedFolders() {
         if (untrackedFolders == null) {
-            untrackedFolders = new ArrayList<String>();
+            untrackedFolders = new ArrayList<>();
         }
         return untrackedFolders;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setUntrackedFolders(java.util.Set) */
+    /** @see Status#setUntrackedFolders(java.util.List) */
     @Override
     public void setUntrackedFolders(List<String> untrackedFolders) {
         this.untrackedFolders = untrackedFolders;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#getConflicting() */
+    /** @see Status#getConflicting() */
     @Override
     public List<String> getConflicting() {
         if (conflicting == null) {
-            conflicting = new ArrayList<String>();
+            conflicting = new ArrayList<>();
         }
         return conflicting;
     }
 
-    /** @see com.codenvy.ide.ext.git.shared_.Status#setConflicting(java.util.Set) */
+    /** @see Status#setConflicting(java.util.List) */
     @Override
     public void setConflicting(List<String> conflicting) {
         this.conflicting = conflicting;
@@ -249,14 +249,14 @@ public class NativeGitStatusImpl implements Status, InfoPage {
         List<String> statusOutput = status.execute();
         setClean(statusOutput.size() == 0);
         if (!isClean()) {
-            added = new ArrayList<String>();
-            changed = new ArrayList<String>();
-            removed = new ArrayList<String>();
-            missing = new ArrayList<String>();
-            modified = new ArrayList<String>();
-            untracked = new ArrayList<String>();
-            untrackedFolders = new ArrayList<String>();
-            conflicting = new ArrayList<String>();
+            added = new ArrayList<>();
+            changed = new ArrayList<>();
+            removed = new ArrayList<>();
+            missing = new ArrayList<>();
+            modified = new ArrayList<>();
+            untracked = new ArrayList<>();
+            untrackedFolders = new ArrayList<>();
+            conflicting = new ArrayList<>();
             for (String statusLine : statusOutput) {
                 //add conflict files AA, UU, any of U
                 addFileIfAccepted(conflicting, statusLine, 'A', 'A');

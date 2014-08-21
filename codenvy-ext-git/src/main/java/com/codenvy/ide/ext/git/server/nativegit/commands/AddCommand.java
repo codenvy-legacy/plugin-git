@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Used for adding new files into index(stage area).
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class AddCommand extends GitCommand<Void> {
     private boolean update;

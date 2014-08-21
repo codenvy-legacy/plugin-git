@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Used for getting list of remotes
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class RemoteListCommand extends GitCommand<List<Remote>> {
 
@@ -45,7 +45,7 @@ public class RemoteListCommand extends GitCommand<List<Remote>> {
             String[] outArr = outLine.split("\t");
             remotes.put(outArr[0], outArr[1].split(" ")[0]);
         }
-        //parse remtes
+        //parse remotes
         List<Remote> remoteList = new LinkedList<>();
         if (remoteName != null) {
             if (remotes.get(remoteName) == null) {

@@ -22,7 +22,6 @@ import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.Window;
@@ -87,13 +86,13 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * If remote repositories are found, then get the list of branches (remote and local).
      */
     private void getRemotes() {
-        final String projectId = project.getId();
+        final String projectPath = project.getPath();
 
-        service.remoteList(projectId, null, true,
+        service.remoteList(projectPath, null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   getBranches(projectId, LIST_LOCAL);
+                                   getBranches(projectPath, LIST_LOCAL);
                                    view.setEnablePushButton(!result.isEmpty());
                                    view.setRepositories(result);
                                    view.showDialog();
@@ -113,13 +112,13 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Get the list of branches.
      *
-     * @param projectId
+     * @param projectPath
      *         Git repository work tree location
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@NotNull final String projectId, @NotNull final String remoteMode) {
-        service.branchList(projectId, remoteMode,
+    private void getBranches(@NotNull final String projectPath, @NotNull final String remoteMode) {
+        service.branchList(projectPath, remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -133,7 +132,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                                break;
                                            }
                                        }
-                                       getBranches(projectId, LIST_REMOTE);
+                                       getBranches(projectPath, LIST_REMOTE);
                                    } else {
                                        Array<String> remoteBranches = getRemoteBranchesToDisplay(view.getRepository(), result);
                                        // Need to add the current local branch in the list of remote branches

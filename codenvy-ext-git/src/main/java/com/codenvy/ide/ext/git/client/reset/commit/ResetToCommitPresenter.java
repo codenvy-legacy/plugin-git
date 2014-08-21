@@ -58,7 +58,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
     private       ResourceProvider          resourceProvider;
     private       GitLocalizationConstant   constant;
     private       NotificationManager       notificationManager;
-    private       String                    projectId;
+    private       String                    projectPath;
     private       EditorAgent               editorAgent;
     private       EventBus                  eventBus;
     private       List<EditorPartPresenter> openedEditors;
@@ -94,9 +94,9 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
 
     /** Show dialog. */
     public void showDialog() {
-        projectId = resourceProvider.getActiveProject().getId();
+        projectPath = resourceProvider.getActiveProject().getPath();
 
-        service.log(projectId, false,
+        service.log(projectPath, false,
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
                         protected void onSuccess(LogResponse result) {
@@ -168,8 +168,8 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
      * @param callback
      */
     private void getDiff(List<String> listFiles, final String commit, final AsyncCallback<String> callback) {
-        String projectId = resourceProvider.getActiveProject().getId();
-        service.diff(projectId, listFiles, DiffRequest.DiffType.RAW, true, 0, commit, false,
+        projectPath = resourceProvider.getActiveProject().getPath();
+        service.diff(projectPath, listFiles, DiffRequest.DiffType.RAW, true, 0, commit, false,
                      new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                          @Override
                          protected void onSuccess(String diff) {
@@ -197,7 +197,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
         type = (type == null && view.isMergeMode()) ? ResetRequest.ResetType.MERGE : type;
 
         final ResetRequest.ResetType finalType = type;
-        service.reset(projectId, selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
+        service.reset(projectPath, selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
 

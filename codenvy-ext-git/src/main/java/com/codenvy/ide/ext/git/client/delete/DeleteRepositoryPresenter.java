@@ -65,7 +65,7 @@ public class DeleteRepositoryPresenter {
     /** Delete Git repository. */
     public void deleteRepository() {
         project = resourceProvider.getActiveProject();
-        service.deleteRepository(project.getId(), new AsyncRequestCallback<Void>() {
+        service.deleteRepository(project.getPath(), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 project.getAttributes().get("vcs.provider.name").clear();

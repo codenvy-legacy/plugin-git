@@ -94,7 +94,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         view.setEnableCheckoutButton(false);
         view.setEnableDeleteButton(false);
         view.setEnableRenameButton(false);
-        getBranches(project.getId());
+        getBranches(project.getPath());
         view.showDialog();
     }
 
@@ -110,11 +110,11 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         final String currentBranchName = selectedBranch.getDisplayName();
         String name = Window.prompt(constant.branchTypeNew(), currentBranchName);
         if (!name.isEmpty()) {
-            final String projectId = project.getId();
-            service.branchRename(projectId, currentBranchName, name, new AsyncRequestCallback<String>() {
+            final String projectPath = project.getPath();
+            service.branchRename(projectPath, currentBranchName, name, new AsyncRequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
-                    getBranches(projectId);
+                    getBranches(projectPath);
                 }
 
                 @Override
@@ -134,11 +134,11 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     public void onDeleteClicked() {
         final String name = selectedBranch.getName();
 
-        final String projectId = project.getId();
-        service.branchDelete(projectId, name, true, new AsyncRequestCallback<String>() {
+        final String projectPath = project.getPath();
+        service.branchDelete(projectPath, name, true, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
-                getBranches(projectId);
+                getBranches(projectPath);
             }
 
             @Override
@@ -164,15 +164,15 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         if (remote) {
             startingPoint = selectedBranch.getDisplayName();
         }
-        final String projectId = project.getId();
+        final String projectPath = project.getPath();
         if (name == null) {
             return;
         }
 
-        service.branchCheckout(projectId, name, startingPoint, remote, new AsyncRequestCallback<String>() {
+        service.branchCheckout(projectPath, name, startingPoint, remote, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
-                getBranches(projectId);
+                getBranches(projectPath);
                 refreshProject(openedEditors);
             }
 
@@ -269,11 +269,11 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     /**
      * Get the list of branches.
      *
-     * @param projectId
-     *         project id
+     * @param projectPath
+     *         project path
      */
-    private void getBranches(@NotNull String projectId) {
-        service.branchList(projectId, LIST_ALL,
+    private void getBranches(@NotNull String projectPath) {
+        service.branchList(projectPath, LIST_ALL,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -296,13 +296,13 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     public void onCreateClicked() {
         String name = Window.prompt(constant.branchTypeNew(), "");
         if (!name.isEmpty()) {
-            final String projectId = project.getId();
+            final String projectPath = project.getPath();
 
-            service.branchCreate(projectId, name, null,
+            service.branchCreate(projectPath, name, null,
                                  new AsyncRequestCallback<Branch>(dtoUnmarshallerFactory.newUnmarshaller(Branch.class)) {
                                      @Override
                                      protected void onSuccess(Branch result) {
-                                         getBranches(projectId);
+                                         getBranches(projectPath);
                                      }
 
                                      @Override

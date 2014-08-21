@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Move files.
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class MoveCommand extends GitCommand<Void> {
 

@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Checkout branch
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class BranchCheckoutCommand extends GitCommand<Void> {
 
@@ -34,7 +34,7 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
     @Override
     public Void execute() throws GitException {
         if (branchName == null) {
-            throw new GitException("");
+            throw new GitException("Branch name was not set.");
         }
         clear();
         commandLine.add("checkout");

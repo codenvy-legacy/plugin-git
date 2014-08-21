@@ -106,7 +106,7 @@ public class FetchPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view).setEnableFetchButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
@@ -155,7 +155,7 @@ public class FetchPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -178,7 +178,7 @@ public class FetchPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(resourceProvider).getActiveProject();
-        verify(service).remoteList(eq(PROJECT_ID), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(PROJECT_PATH), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
         verify(view).setEnableFetchButton(eq(DISABLE_BUTTON));

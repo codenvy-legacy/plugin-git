@@ -10,14 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
-import com.codenvy.api.core.ApiException;
+import com.codenvy.api.core.ConflictException;
+import com.codenvy.api.core.ForbiddenException;
+import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ProjectManager;
-import com.codenvy.api.vfs.server.exceptions.VirtualFileSystemException;
 import com.codenvy.dto.server.DtoFactory;
-import com.codenvy.ide.Constants;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
 import com.codenvy.ide.ext.git.shared.CloneRequest;
@@ -60,18 +60,26 @@ public class GitProjectImporter implements ProjectImporter {
 
 
     @Override
+    public boolean isInternal() {
+        return false;
+    }
+
+    @Override
     public String getDescription() {
         return "Add possibility to import project from GIT repository";
     }
 
+
     @Override
-    public void importSources(FolderEntry baseFolder, String location) throws IOException, ApiException {
+    public void importSources(FolderEntry baseFolder, String location)
+            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         try {
             if (!baseFolder.isFolder()) {
                 throw new IOException("Project cannot be imported into \"" + baseFolder.getName() + "\". It is not a folder.");
             }
 
-            String fullPathToClonedProject = localPathResolver.resolve(baseFolder.getVirtualFile());
+            String fullPathToClonedProject =
+                    localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             GitConnection gitConnection = nativeGitConnectionFactory.getConnection(fullPathToClonedProject);
 
             if (!isFolderEmpty(baseFolder)) {
@@ -95,24 +103,23 @@ public class GitProjectImporter implements ProjectImporter {
             }
 
             if (!baseFolder.isProjectFolder()) {
-                String propertyFileContent = "{\"type\":\"" + Constants.NAMELESS_ID + "\"}";
+                String propertyFileContent = "{\"type\":\"" + com.codenvy.api.project.shared.Constants.BLANK_ID + "\"}";
                 FolderEntry projectMetaFolder = baseFolder.createFolder(".codenvy");
                 projectMetaFolder.createFile("project.json", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
             }
 
-        } catch (NotAuthorizedException e) {
-
-            throw new UnauthorizedException("User is not authorize to call this action. " +
-                                            "Try go to main menu Window->Preference->SSH Key and generate new keys pair");
-        } catch (VirtualFileSystemException | GitException | URISyntaxException e) {
-            throw new IOException("Selected project cannot be imported.", e);
+        } catch (UnauthorizedException e) {
+            throw new UnauthorizedException(
+                    "You are not authorized to perform the remote import.  Codenvy may need accurate keys to the external system. " +
+                    "You can create a new key pair in Window->Preferences->SSH Keys.");
+        } catch (URISyntaxException e) {
+            throw new ServerException(
+                    "Your project cannot be imported.  The issue is either from git configuration, a malformed URL, or file system corruption.  " +
+                    "Please contact support for assistance.", e);
         }
     }
 
-
-    private boolean isFolderEmpty(FolderEntry folder) {
+    private boolean isFolderEmpty(FolderEntry folder) throws ServerException {
         return folder.getChildren().size() == 0;
     }
-
-
 }

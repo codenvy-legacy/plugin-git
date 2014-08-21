@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Get list of tags
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class TagListCommand extends GitCommand<List<Tag>> {
 
@@ -50,7 +50,8 @@ public class TagListCommand extends GitCommand<List<Tag>> {
     }
 
     /**
-     * @param pattern tag pattern
+     * @param pattern
+     *         tag pattern
      * @return TagListCommand with established pattern
      */
     public TagListCommand setPattern(String pattern) {

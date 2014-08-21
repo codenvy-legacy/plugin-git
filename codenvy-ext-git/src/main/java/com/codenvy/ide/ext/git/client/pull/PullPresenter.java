@@ -100,14 +100,14 @@ public class PullPresenter implements PullView.ActionDelegate {
      * local).
      */
     private void getRemotes() {
-        final String projectId = project.getId();
+        final String projectPath = project.getPath();
         view.setEnablePullButton(true);
 
-        service.remoteList(projectId, null, true,
+        service.remoteList(projectPath, null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   getBranches(projectId, LIST_REMOTE);
+                                   getBranches(projectPath, LIST_REMOTE);
                                    view.setRepositories(result);
                                    view.setEnablePullButton(!result.isEmpty());
                                    view.showDialog();
@@ -127,19 +127,19 @@ public class PullPresenter implements PullView.ActionDelegate {
     /**
      * Get the list of branches.
      *
-     * @param projectId
+     * @param projectPath
      *         Git repository work tree location
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@NotNull final String projectId, @NotNull final String remoteMode) {
-        service.branchList(projectId, remoteMode,
+    private void getBranches(@NotNull final String projectPath, @NotNull final String remoteMode) {
+        service.branchList(projectPath, remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
                                    if (LIST_REMOTE.equals(remoteMode)) {
                                        view.setRemoteBranches(getRemoteBranchesToDisplay(view.getRepositoryName(), result));
-                                       getBranches(projectId, LIST_LOCAL);
+                                       getBranches(projectPath, LIST_LOCAL);
                                    } else {
                                        view.setLocalBranches(getLocalBranchesToDisplay(result));
                                        for (Branch branch : result.asIterable()) {

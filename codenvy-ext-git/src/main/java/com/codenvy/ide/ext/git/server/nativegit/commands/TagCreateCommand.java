@@ -19,7 +19,7 @@ import java.io.File;
 /**
  * Create tag
  *
- * @author <a href="maito:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class TagCreateCommand extends GitCommand<Tag> {
 

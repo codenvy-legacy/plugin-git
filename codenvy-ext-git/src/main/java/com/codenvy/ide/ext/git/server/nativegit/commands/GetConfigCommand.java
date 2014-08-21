@@ -17,7 +17,7 @@ import java.io.File;
 /**
  * Get git configuration.
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class GetConfigCommand extends GitCommand<Void> {
 

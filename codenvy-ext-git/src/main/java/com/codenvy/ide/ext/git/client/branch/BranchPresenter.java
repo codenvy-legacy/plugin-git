@@ -11,7 +11,6 @@
 package com.codenvy.ide.ext.git.client.branch;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
@@ -21,6 +20,7 @@ import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -193,7 +193,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
      */
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
         for (EditorPartPresenter partPresenter : openedEditors) {
-            final ItemReference file = partPresenter.getEditorInput().getFile();
+            final FileNode file = partPresenter.getEditorInput().getFile();
             refreshFile(file, partPresenter);
         }
     }
@@ -206,7 +206,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
      * @param partPresenter
      *         editor that corresponds to the <code>file</code>.
      */
-    private void refreshFile(final ItemReference file, final EditorPartPresenter partPresenter) {
+    private void refreshFile(final FileNode file, final EditorPartPresenter partPresenter) {
         projectServiceClient.getFileContent(file.getPath(), new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {

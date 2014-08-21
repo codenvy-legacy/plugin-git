@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.reset.commit;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
@@ -20,6 +19,7 @@ import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.DiffRequest;
@@ -216,7 +216,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
         final String projectPath = appContext.getCurrentProject().getProjectDescription().getPath();
         eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
-            final ItemReference file = partPresenter.getEditorInput().getFile();
+            final FileNode file = partPresenter.getEditorInput().getFile();
 
             // get project-relative file's path
             final String filePath = file.getPath().substring(projectPath.length() + 1, file.getPath().length());

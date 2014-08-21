@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.git.client.action;
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
-import com.codenvy.ide.api.projecttree.generic.ItemNode;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.google.gwt.resources.client.ImageResource;
@@ -52,7 +52,7 @@ public abstract class GitAction extends Action {
 
     protected boolean isItemSelected() {
         Selection<?> selection = selectionAgent.getSelection();
-        return selection != null && selection instanceof ItemNode;
+        return selection != null && selection instanceof StorableNode;
     }
 
     protected CurrentProject getActiveProject() {

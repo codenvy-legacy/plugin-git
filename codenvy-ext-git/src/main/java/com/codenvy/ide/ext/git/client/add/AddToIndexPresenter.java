@@ -15,7 +15,7 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
-import com.codenvy.ide.api.projecttree.generic.ItemNode;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
@@ -90,7 +90,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      */
     @NotNull
     private String formMessage(@NotNull String workDir) {
-        Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
+        Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
 
         String path;
         if (selection == null || selection.getFirstElement() == null) {
@@ -147,7 +147,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     private List<String> getFilePatterns() {
         String projectPath = project.getProjectDescription().getPath();
 
-        Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
+        Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
         String path;
         if (selection == null || selection.getFirstElement() == null) {
             path = project.getProjectDescription().getPath();

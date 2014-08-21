@@ -20,7 +20,7 @@ import com.codenvy.ide.api.parts.PartPresenter;
 import com.codenvy.ide.api.parts.PartStackType;
 import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
-import com.codenvy.ide.api.projecttree.generic.ItemNode;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
@@ -313,7 +313,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         if (!showChangesInProject && project != null) {
             String path;
 
-            Selection<ItemNode> selection = (Selection<ItemNode>)selectionAgent.getSelection();
+            Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
 
             if (selection == null || selection.getFirstElement() == null) {
                 path = project.getPath();

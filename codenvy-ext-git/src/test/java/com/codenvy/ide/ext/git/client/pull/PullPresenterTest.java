@@ -10,12 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.pull;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 public class PullPresenterTest extends BaseTest {
     public static final boolean SHOW_ALL_INFORMATION = true;
     @Mock
-    private ItemReference       file;
+    private FileNode            file;
     @Mock
     private PullView            view;
     @Mock

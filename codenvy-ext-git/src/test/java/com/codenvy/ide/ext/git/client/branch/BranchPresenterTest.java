@@ -10,13 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.branch;
 
-import com.codenvy.api.project.shared.dto.ItemReference;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.notification.Notification;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
@@ -59,7 +59,7 @@ public class BranchPresenterTest extends BaseTest {
     @Mock
     private BranchView          view;
     @Mock
-    private ItemReference       file;
+    private FileNode            file;
     @Mock
     private EditorInput         editorInput;
     @Mock

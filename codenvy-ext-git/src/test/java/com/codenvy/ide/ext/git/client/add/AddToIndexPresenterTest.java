@@ -10,13 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.add;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.ProjectRootNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.api.resources.model.File;
-import com.codenvy.ide.api.resources.model.Folder;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -56,19 +57,21 @@ public class AddToIndexPresenterTest extends BaseTest {
     @Override
     public void disarm() {
         super.disarm();
-        presenter = new AddToIndexPresenter(view, service, constant, resourceProvider, selectionAgent, notificationManager);
+        presenter = new AddToIndexPresenter(view, service, constant, appContext, selectionAgent, notificationManager);
     }
 
     @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
+        ProjectRootNode project = mock(ProjectRootNode.class);
+        when(project.getPath()).thenReturn(PROJECT_PATH);
         when(selection.getFirstElement()).thenReturn(project);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexAllChanges()).thenReturn(MESSAGE);
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
+        verify(appContext).getCurrentProject();
         verify(constant).addToIndexAllChanges();
         verify(view).setMessage(eq(MESSAGE));
         verify(view).setUpdated(anyBoolean());
@@ -79,7 +82,7 @@ public class AddToIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFolderIsSelected() throws Exception {
         String folderPath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-        Folder folder = mock(Folder.class);
+        FolderNode folder = mock(FolderNode.class);
         when(folder.getPath()).thenReturn(folderPath);
         when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
@@ -87,7 +90,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
+        verify(appContext).getCurrentProject();
         verify(constant).addToIndexFolder(eq(PROJECT_NAME));
         verify(view).setMessage(eq(MESSAGE));
         verify(view).setUpdated(anyBoolean());
@@ -98,7 +101,7 @@ public class AddToIndexPresenterTest extends BaseTest {
     public void testShowDialogWhenSomeFileIsSelected() throws Exception {
         String filePath = PROJECT_PATH + PROJECT_NAME;
         Selection selection = mock(Selection.class);
-        File file = mock(File.class);
+        FileNode file = mock(FileNode.class);
         when(file.getPath()).thenReturn(filePath);
         when(selection.getFirstElement()).thenReturn(file);
         when(selectionAgent.getSelection()).thenReturn(selection);
@@ -106,7 +109,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
+        verify(appContext).getCurrentProject();
         verify(constant).addToIndexFile(eq(PROJECT_NAME));
         verify(view).setMessage(eq(MESSAGE));
         verify(view).setUpdated(anyBoolean());
@@ -124,10 +127,9 @@ public class AddToIndexPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(service).add((Project)anyObject(), anyBoolean(), (List<String>)anyObject(),
+        }).when(service).add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
                              (RequestCallback<Void>)anyObject());
 
-        when(project.getName()).thenReturn(PROJECT_NAME);
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
         when(constant.addSuccess()).thenReturn(MESSAGE);
 
@@ -136,7 +138,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         verify(view).isUpdated();
         verify(view).close();
-        verify(service).add(eq(project), eq(NEED_UPDATING), (List<String>)anyObject(),
+        verify(service).add(eq(projectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                             (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).addSuccess();
@@ -153,7 +155,7 @@ public class AddToIndexPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).add((Project)anyObject(), anyBoolean(), (List<String>)anyObject(),
+        }).when(service).add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
                              (RequestCallback<Void>)anyObject());
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
 
@@ -162,7 +164,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         verify(view).isUpdated();
         verify(view).close();
-        verify(service).add(eq(project), eq(NEED_UPDATING), (List<String>)anyObject(),
+        verify(service).add(eq(projectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                             (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).addFailed();
@@ -171,8 +173,8 @@ public class AddToIndexPresenterTest extends BaseTest {
     @Test
     public void testOnAddClickedWhenAddRequestIsFailed() throws Exception {
         doThrow(WebSocketException.class).when(service)
-                .add((Project)anyObject(), anyBoolean(), (List<String>)anyObject(),
-                     (RequestCallback<Void>)anyObject());
+                                         .add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
+                                              (RequestCallback<Void>)anyObject());
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
 
         presenter.showDialog();
@@ -180,7 +182,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         verify(view).isUpdated();
         verify(service)
-                .add(eq(project), eq(NEED_UPDATING), (List<String>)anyObject(),
+                .add(eq(projectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                      (RequestCallback<Void>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());

@@ -233,7 +233,7 @@ public interface GitLocalizationConstant extends Messages {
     // ----CloneRequestHandler-------------
 
     @Key("clone.started")
-    String cloneStarted(String projectName, String remoteName);
+    String cloneStarted(String projectPath, String remoteName);
 
     @Key("clone.finished")
     String cloneFinished(String projectName, String remoteUri);

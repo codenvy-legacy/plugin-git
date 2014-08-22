@@ -10,11 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.url;
 
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
 import com.google.inject.Inject;
@@ -31,7 +31,7 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 public class ShowProjectGitReadOnlyUrlPresenter implements ShowProjectGitReadOnlyUrlView.ActionDelegate {
     private ShowProjectGitReadOnlyUrlView view;
     private GitServiceClient              service;
-    private ResourceProvider              resourceProvider;
+    private AppContext                    appContext;
     private GitLocalizationConstant       constant;
     private NotificationManager           notificationManager;
 
@@ -40,27 +40,25 @@ public class ShowProjectGitReadOnlyUrlPresenter implements ShowProjectGitReadOnl
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param notificationManager
      */
     @Inject
     public ShowProjectGitReadOnlyUrlPresenter(ShowProjectGitReadOnlyUrlView view, GitServiceClient service,
-                                              ResourceProvider resourceProvider, GitLocalizationConstant constant,
+                                              AppContext appContext, GitLocalizationConstant constant,
                                               NotificationManager notificationManager) {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        String projectPath = resourceProvider.getActiveProject().getPath();
-
-        service.getGitReadOnlyUrl(projectPath,
+        service.getGitReadOnlyUrl(appContext.getCurrentProject().getProjectDescription(),
                                   new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                                       @Override
                                       protected void onSuccess(String result) {
@@ -70,11 +68,8 @@ public class ShowProjectGitReadOnlyUrlPresenter implements ShowProjectGitReadOnl
 
                                       @Override
                                       protected void onFailure(Throwable exception) {
-                                          String errorMessage =
-                                                  exception.getMessage() != null && !exception.getMessage().isEmpty() ? exception
-                                                          .getMessage()
-                                                                                                                      : constant
-                                                          .initFailed();
+                                          String errorMessage = exception.getMessage() != null && !exception.getMessage().isEmpty()
+                                                                ? exception.getMessage() : constant.initFailed();
                                           Notification notification = new Notification(errorMessage, ERROR);
                                           notificationManager.showNotification(notification);
                                       }

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.url;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -23,7 +24,6 @@ import org.mockito.stubbing.Answer;
 import java.lang.reflect.Method;
 
 import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -43,7 +43,7 @@ public class ShowProjectGitReadOnlyUrlPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new ShowProjectGitReadOnlyUrlPresenter(view, service, resourceProvider, constant, notificationManager);
+        presenter = new ShowProjectGitReadOnlyUrlPresenter(view, service, appContext, constant, notificationManager);
     }
 
     @Test
@@ -57,12 +57,12 @@ public class ShowProjectGitReadOnlyUrlPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, REMOTE_URI);
                 return callback;
             }
-        }).when(service).getGitReadOnlyUrl(anyString(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).getGitReadOnlyUrl((ProjectDescriptor)anyObject(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).getGitReadOnlyUrl(eq(PROJECT_PATH), (AsyncRequestCallback<String>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(service).getGitReadOnlyUrl(eq(projectDescriptor), (AsyncRequestCallback<String>)anyObject());
         verify(view).setUrl(eq(REMOTE_URI));
     }
 
@@ -77,12 +77,12 @@ public class ShowProjectGitReadOnlyUrlPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).getGitReadOnlyUrl(anyString(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).getGitReadOnlyUrl((ProjectDescriptor)anyObject(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).getGitReadOnlyUrl(eq(PROJECT_PATH), (AsyncRequestCallback<String>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(service).getGitReadOnlyUrl(eq(projectDescriptor), (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).initFailed();
     }

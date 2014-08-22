@@ -10,29 +10,22 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.status;
 
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.parts.base.BasePresenter;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.ui.workspace.PartPresenter;
-import com.codenvy.ide.api.ui.workspace.PartStackType;
-import com.codenvy.ide.api.ui.workspace.WorkspaceAgent;
-import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
-import com.codenvy.ide.ext.git.client.GitOutputPartView;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.api.parts.PartStackType;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.api.resources.model.Project;
+import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.StringUnmarshaller;
-import com.google.web.bindery.event.shared.EventBus;
-import com.google.gwt.resources.client.ImageResource;
-import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import javax.annotation.Nullable;
+import com.google.web.bindery.event.shared.EventBus;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 
@@ -46,20 +39,18 @@ public class StatusCommandPresenter {
 
     private boolean isViewClosed = true;
 
-    private WorkspaceAgent   workspaceAgent;
-    private GitServiceClient service;
-    private EventBus         eventBus;
-    private ResourceProvider resourceProvider;
+    private WorkspaceAgent          workspaceAgent;
+    private GitServiceClient        service;
+    private AppContext              appContext;
     private GitLocalizationConstant constant;
     private GitOutputPartPresenter  console;
     private NotificationManager     notificationManager;
-    private GitOutputPartView       gitOutputPartView;
 
     /**
      * Create presenter.
      *
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param console
      * @param constant
      * @param notificationManager
@@ -68,18 +59,16 @@ public class StatusCommandPresenter {
     public StatusCommandPresenter(final WorkspaceAgent workspaceAgent,
                                   GitServiceClient service,
                                   EventBus eventBus,
-                                  ResourceProvider resourceProvider,
+                                  AppContext appContext,
                                   final GitOutputPartPresenter console,
                                   GitLocalizationConstant constant,
                                   NotificationManager notificationManager) {
         this.workspaceAgent = workspaceAgent;
         this.service = service;
-        this.eventBus = eventBus;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.console = console;
         this.constant = constant;
         this.notificationManager = notificationManager;
-        this.gitOutputPartView = gitOutputPartView;
 
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
@@ -93,22 +82,17 @@ public class StatusCommandPresenter {
                 console.clear();
                 workspaceAgent.hidePart(console);
             }
-
-            @Override
-            public void onProjectDescriptionChanged(ProjectActionEvent event) {
-
-            }
         });
     }
 
     /** Show status. */
     public void showStatus() {
-        Project project = resourceProvider.getActiveProject();
+        CurrentProject project = appContext.getCurrentProject();
         if (project == null) {
             return;
         }
 
-        service.statusText(project.getPath(), false,
+        service.statusText(project.getProjectDescription(), false,
                            new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                                @Override
                                protected void onSuccess(String result) {
@@ -152,6 +136,5 @@ public class StatusCommandPresenter {
             console.print(line);
         }
     }
-
 
 }

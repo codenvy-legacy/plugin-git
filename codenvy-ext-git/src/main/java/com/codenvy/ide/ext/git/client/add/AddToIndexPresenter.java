@@ -10,16 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.add;
 
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.ide.api.projecttree.generic.FolderNode;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.api.resources.model.Folder;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.resources.model.Resource;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
@@ -37,15 +37,14 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  * Presenter for add changes to Git index.
  *
  * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
- * @version $Id: Mar 29, 2011 4:35:16 PM anya $
  */
 @Singleton
 public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     private AddToIndexView          view;
     private GitServiceClient        service;
     private GitLocalizationConstant constant;
-    private ResourceProvider        resourceProvider;
-    private Project                 project;
+    private AppContext              appContext;
+    private CurrentProject          project;
     private SelectionAgent          selectionAgent;
     private NotificationManager     notificationManager;
 
@@ -55,7 +54,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      * @param view
      * @param service
      * @param constant
-     * @param resourceProvider
+     * @param appContext
      * @param selectionAgent
      * @param notificationManager
      */
@@ -63,22 +62,22 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     public AddToIndexPresenter(AddToIndexView view,
                                GitServiceClient service,
                                GitLocalizationConstant constant,
-                               ResourceProvider resourceProvider,
+                               AppContext appContext,
                                SelectionAgent selectionAgent,
                                NotificationManager notificationManager) {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
         this.constant = constant;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.selectionAgent = selectionAgent;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
-        String workDir = project.getPath();
+        project = appContext.getCurrentProject();
+        final String workDir = project.getProjectDescription().getPath();
         view.setMessage(formMessage(workDir));
         view.setUpdated(false);
         view.showDialog();
@@ -90,17 +89,17 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      * @return {@link String} message to display
      */
     @NotNull
-    private String formMessage(@NotNull String workdir) {
-        Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
+    private String formMessage(@NotNull String workDir) {
+        Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
 
-        Resource element;
-        if (selection == null) {
-            element = project;
+        String path;
+        if (selection == null || selection.getFirstElement() == null) {
+            path = project.getProjectDescription().getPath();
         } else {
-            element = selection.getFirstElement();
+            path = selection.getFirstElement().getPath();
         }
 
-        String pattern = element.getPath().replaceFirst(workdir, "");
+        String pattern = path.replaceFirst(workDir, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         // Root of the working tree:
@@ -108,7 +107,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
             return constant.addToIndexAllChanges();
         }
 
-        if (element instanceof Folder) {
+        if (selection.getFirstElement() instanceof FolderNode) {
             return constant.addToIndexFolder(pattern);
         } else {
             return constant.addToIndexFile(pattern);
@@ -121,7 +120,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         boolean update = view.isUpdated();
 
         try {
-            service.add(project, update, getFilePatterns(), new RequestCallback<Void>() {
+            service.add(project.getProjectDescription(), update, getFilePatterns(), new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
                     Notification notification = new Notification(constant.addSuccess(), INFO);
@@ -146,21 +145,21 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      */
     @NotNull
     private List<String> getFilePatterns() {
-        String projectPath = project.getPath();
+        String projectPath = project.getProjectDescription().getPath();
 
-        Selection<Resource> selection = (Selection<Resource>)selectionAgent.getSelection();
-        Resource element;
-        if (selection == null) {
-            element = project;
+        Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
+        String path;
+        if (selection == null || selection.getFirstElement() == null) {
+            path = project.getProjectDescription().getPath();
         } else {
-            element = selection.getFirstElement();
+            path = selection.getFirstElement().getPath();
         }
 
-        String pattern = element.getPath().replaceFirst(projectPath, "");
+        String pattern = path.replaceFirst(projectPath, "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
-        return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<String>(Arrays.asList("."))
-                                                              : new ArrayList<String>(Arrays.asList(pattern));
+        return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<>(Arrays.asList("."))
+                                                              : new ArrayList<>(Arrays.asList(pattern));
     }
 
     /**

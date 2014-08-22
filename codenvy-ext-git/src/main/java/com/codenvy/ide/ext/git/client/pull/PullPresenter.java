@@ -10,34 +10,30 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.pull;
 
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.File;
-import com.codenvy.ide.api.resources.model.Resource;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.Window;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.validation.constraints.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,10 +51,10 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 public class PullPresenter implements PullView.ActionDelegate {
     private       PullView                view;
     private       GitServiceClient        service;
-    private       Project                 project;
+    private       CurrentProject          project;
     private       GitLocalizationConstant constant;
     private       EditorAgent             editorAgent;
-    private       ResourceProvider        resourceProvider;
+    private       AppContext              appContext;
     private       NotificationManager     notificationManager;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
 
@@ -67,7 +63,7 @@ public class PullPresenter implements PullView.ActionDelegate {
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param notificationManager
      */
@@ -75,7 +71,7 @@ public class PullPresenter implements PullView.ActionDelegate {
     public PullPresenter(PullView view,
                          EditorAgent editorAgent,
                          GitServiceClient service,
-                         ResourceProvider resourceProvider,
+                         AppContext appContext,
                          GitLocalizationConstant constant,
                          NotificationManager notificationManager,
                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
@@ -84,14 +80,14 @@ public class PullPresenter implements PullView.ActionDelegate {
         this.service = service;
         this.constant = constant;
         this.editorAgent = editorAgent;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
+        project = appContext.getCurrentProject();
         getRemotes();
     }
 
@@ -100,14 +96,13 @@ public class PullPresenter implements PullView.ActionDelegate {
      * local).
      */
     private void getRemotes() {
-        final String projectPath = project.getPath();
         view.setEnablePullButton(true);
 
-        service.remoteList(projectPath, null, true,
+        service.remoteList(project.getProjectDescription(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   getBranches(projectPath, LIST_REMOTE);
+                                   getBranches(LIST_REMOTE);
                                    view.setRepositories(result);
                                    view.setEnablePullButton(!result.isEmpty());
                                    view.showDialog();
@@ -127,19 +122,17 @@ public class PullPresenter implements PullView.ActionDelegate {
     /**
      * Get the list of branches.
      *
-     * @param projectPath
-     *         Git repository work tree location
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@NotNull final String projectPath, @NotNull final String remoteMode) {
-        service.branchList(projectPath, remoteMode,
+    private void getBranches(@NotNull final String remoteMode) {
+        service.branchList(project.getProjectDescription(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
                                    if (LIST_REMOTE.equals(remoteMode)) {
                                        view.setRemoteBranches(getRemoteBranchesToDisplay(view.getRepositoryName(), result));
-                                       getBranches(projectPath, LIST_LOCAL);
+                                       getBranches(LIST_LOCAL);
                                    } else {
                                        view.setLocalBranches(getLocalBranchesToDisplay(result));
                                        for (Branch branch : result.asIterable()) {
@@ -230,7 +223,7 @@ public class PullPresenter implements PullView.ActionDelegate {
         }
 
         try {
-            service.pull(project, getRefs(), remoteName, new RequestCallback<String>() {
+            service.pull(project.getProjectDescription(), getRefs(), remoteName, new RequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
                     Notification notification = new Notification(constant.pullSuccess(remoteUrl), INFO);
@@ -257,78 +250,24 @@ public class PullPresenter implements PullView.ActionDelegate {
      *         editors that corresponds to open files
      */
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
-        project.refreshChildren(new AsyncCallback<Project>() {
-            @Override
-            public void onSuccess(Project result) {
-                for (EditorPartPresenter partPresenter : openedEditors) {
-                    final File file = partPresenter.getEditorInput().getFile();
-                    refreshFile(file, partPresenter);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.refreshChildrenFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-        });
-    }
-
-    /**
-     * Refresh file.
-     *
-     * @param file
-     *         file to refresh
-     * @param partPresenter
-     *        editor that corresponds to the <code>file</code>.
-     */
-    private void refreshFile(final File file, final EditorPartPresenter partPresenter) {
-        project.findResourceByPath(file.getPath(), new AsyncCallback<Resource>() {
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.findResourceFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-
-            @Override
-            public void onSuccess(final Resource result) {
-                updateOpenedFile((File)result, partPresenter);
-            }
-        });
+        for (EditorPartPresenter partPresenter : openedEditors) {
+            updateOpenedFile(partPresenter);
+        }
     }
 
     /**
      * Update content of the file.
      *
-     * @param file
-     *         file to update
      * @param partPresenter
      *        editor that corresponds to the <code>file</code>.
      */
-    private void updateOpenedFile(final File file, final EditorPartPresenter partPresenter) {
-        project.getContent(file, new AsyncCallback<File>() {
-            @Override
-            public void onSuccess(File result) {
-                try {
-                    EditorInput editorInput = partPresenter.getEditorInput();
-
-                    editorInput.setFile(result);
-                    partPresenter.init(editorInput);
-
-                } catch (EditorInitException event) {
-                    Log.error(PullPresenter.class, "can not initializes the editor with the given input " + event);
-                }
-            }
-
-            @Override
-            public void onFailure(Throwable caught) {
-                String errorMessage = (caught.getMessage() != null) ? caught.getMessage() : constant.getContentFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
-            }
-        });
+    private void updateOpenedFile(EditorPartPresenter partPresenter) {
+        try {
+            EditorInput editorInput = partPresenter.getEditorInput();
+            partPresenter.init(editorInput);
+        } catch (EditorInitException event) {
+            Log.error(PullPresenter.class, "can not initializes the editor with the given input " + event);
+        }
     }
 
     /** @return list of refs to fetch */

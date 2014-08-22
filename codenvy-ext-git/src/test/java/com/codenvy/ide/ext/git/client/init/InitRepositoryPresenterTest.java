@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.init;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.websocket.rest.RequestCallback;
@@ -25,7 +26,6 @@ import java.lang.reflect.Method;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyBoolean;
-import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -46,9 +46,8 @@ public class InitRepositoryPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new InitRepositoryPresenter(view, service, resourceProvider, constant, notificationManager);
-
-        when(project.getName()).thenReturn(PROJECT_NAME);
+        presenter = new InitRepositoryPresenter(view, service, appContext, constant, notificationManager, projectServiceClient,
+                                                dtoUnmarshallerFactory);
     }
 
     @Test
@@ -66,18 +65,18 @@ public class InitRepositoryPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[3];
+                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[2];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(service).init(anyString(), anyString(), anyBoolean(), (RequestCallback<Void>)anyObject());
+        }).when(service).init((ProjectDescriptor)anyObject(), anyBoolean(), (RequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onOkClicked();
 
         verify(view).close();
-        verify(service).init(eq(PROJECT_PATH), eq(PROJECT_NAME), eq(BARE), (RequestCallback<Void>)anyObject());
+        verify(service).init(eq(projectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(constant).initSuccess();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -88,18 +87,18 @@ public class InitRepositoryPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
+                RequestCallback<String> callback = (RequestCallback<String>)arguments[2];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).init(anyString(), anyString(), anyBoolean(), (RequestCallback<Void>)anyObject());
+        }).when(service).init((ProjectDescriptor)anyObject(), anyBoolean(), (RequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onOkClicked();
 
         verify(view).close();
-        verify(service).init(eq(PROJECT_PATH), eq(PROJECT_NAME), eq(BARE), (RequestCallback<Void>)anyObject());
+        verify(service).init(eq(projectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).initFailed();
     }

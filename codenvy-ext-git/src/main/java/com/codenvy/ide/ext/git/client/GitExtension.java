@@ -10,10 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client;
 
+import com.codenvy.ide.api.action.ActionManager;
+import com.codenvy.ide.api.action.Constraints;
+import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.extension.Extension;
-import com.codenvy.ide.api.ui.action.ActionManager;
-import com.codenvy.ide.api.ui.action.Constraints;
-import com.codenvy.ide.api.ui.action.DefaultActionGroup;
 import com.codenvy.ide.ext.git.client.action.AddToIndexAction;
 import com.codenvy.ide.ext.git.client.action.CommitAction;
 import com.codenvy.ide.ext.git.client.action.DeleteRepositoryAction;
@@ -33,19 +33,18 @@ import com.codenvy.ide.ext.git.client.action.ShowStatusAction;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import static com.codenvy.ide.api.ui.action.Anchor.BEFORE;
-import static com.codenvy.ide.api.ui.action.IdeActions.GROUP_MAIN_MENU;
-import static com.codenvy.ide.api.ui.action.IdeActions.GROUP_WINDOW;
+import static com.codenvy.ide.api.action.Anchor.BEFORE;
+import static com.codenvy.ide.api.action.IdeActions.GROUP_MAIN_MENU;
+import static com.codenvy.ide.api.action.IdeActions.GROUP_WINDOW;
 
 /**
  * Extension add Git support to the IDE Application.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 @Extension(title = "Git", version = "3.0.0")
 public class GitExtension {
-    public static final String GIT_REPOSITORY_PROP        = "isGitRepository";
     public static final String GIT_GROUP_MAIN_MENU        = "Git";
     public static final String REPOSITORY_GROUP_MAIN_MENU = "GitRepositoryGroup";
     public static final String COMMAND_GROUP_MAIN_MENU    = "GitCommandGroup";
@@ -134,7 +133,5 @@ public class GitExtension {
         remoteGroup.add(pullAction);
         actionManager.registerAction("GitRemote", showRemoteAction);
         remoteGroup.add(showRemoteAction);
-
-       
     }
 }

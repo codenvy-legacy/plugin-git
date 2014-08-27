@@ -52,7 +52,7 @@ public abstract class GitAction extends Action {
 
     protected boolean isItemSelected() {
         Selection<?> selection = selectionAgent.getSelection();
-        return selection != null && selection instanceof StorableNode;
+        return selection != null && selection.getFirstElement() != null && selection.getFirstElement() instanceof StorableNode;
     }
 
     protected CurrentProject getActiveProject() {

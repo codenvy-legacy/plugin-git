@@ -14,7 +14,6 @@ import com.codenvy.api.core.rest.shared.dto.ServiceError;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.api.project.shared.dto.ProjectReference;
 import com.codenvy.api.user.shared.dto.User;
 import com.codenvy.ide.api.ResourceNameValidator;
 import com.codenvy.ide.api.event.OpenProjectEvent;
@@ -36,7 +35,6 @@ import com.codenvy.ide.ext.github.client.GitHubSshKeyProvider;
 import com.codenvy.ide.ext.github.client.marshaller.AllRepositoriesUnmarshaller;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.wizard.project.NewProjectWizardPresenter;
 import com.google.gwt.user.client.Window;
@@ -59,7 +57,6 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 @Singleton
 public class ImportPresenter implements ImportView.ActionDelegate {
     private final DtoFactory                         dtoFactory;
-    private final DtoUnmarshallerFactory             dtoUnmarshallerFactory;
     private final ProjectServiceClient               projectServiceClient;
     private       NewProjectWizardPresenter          wizardPresenter;
     private       ImportView                         view;
@@ -82,13 +79,11 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                            NotificationManager notificationManager,
                            GitHubSshKeyProvider gitHubSshKeyProvider,
                            DtoFactory dtoFactory,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory,
                            ProjectTypeDescriptorRegistry projectTypeDescriptorRegistry,
                            ProjectServiceClient projectServiceClient,
                            NewProjectWizardPresenter wizardPresenter) {
         this.view = view;
         this.dtoFactory = dtoFactory;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectServiceClient = projectServiceClient;
         this.wizardPresenter = wizardPresenter;
         this.view.setDelegate(this);
@@ -211,10 +206,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         projectServiceClient.importProject(projectName, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>() {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
-                ProjectReference projectToOpen = dtoFactory.createDto(ProjectReference.class)
-                                                           .withName(result.getName())
-                                                           .withPath(result.getPath());
-                eventBus.fireEvent(new OpenProjectEvent(projectToOpen));
+                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
                 Notification notification = new Notification(gitConstant.cloneSuccess(url), INFO);
                 notificationManager.showNotification(notification);
                 WizardContext context = new WizardContext();

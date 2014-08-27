@@ -35,6 +35,7 @@ import com.codenvy.ide.ext.github.client.GitHubSshKeyProvider;
 import com.codenvy.ide.ext.github.client.marshaller.AllRepositoriesUnmarshaller;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.wizard.project.NewProjectWizardPresenter;
 import com.google.gwt.user.client.Window;
@@ -56,34 +57,35 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  */
 @Singleton
 public class ImportPresenter implements ImportView.ActionDelegate {
-    private final DtoFactory                         dtoFactory;
-    private final ProjectServiceClient               projectServiceClient;
-    private       NewProjectWizardPresenter          wizardPresenter;
-    private       ImportView                         view;
-    private       GitHubClientService                service;
-    private       EventBus                           eventBus;
-    private       StringMap<Array<GitHubRepository>> repositories;
-    private       ProjectData                        selectedRepository;
-    private       GitLocalizationConstant            gitConstant;
-    private       NotificationManager                notificationManager;
-    private       Notification                       notification;
-    private       GitHubSshKeyProvider               gitHubSshKeyProvider;
+    private final DtoFactory             dtoFactory;
+    private       DtoUnmarshallerFactory dtoUnmarshallerFactory;
+    private final ProjectServiceClient projectServiceClient;
+    private NewProjectWizardPresenter          wizardPresenter;
+    private ImportView                         view;
+    private GitHubClientService                service;
+    private EventBus                           eventBus;
+    private StringMap<Array<GitHubRepository>> repositories;
+    private ProjectData                        selectedRepository;
+    private GitLocalizationConstant            gitConstant;
+    private NotificationManager                notificationManager;
+    private Notification                       notification;
+    private GitHubSshKeyProvider               gitHubSshKeyProvider;
 
     /** Create presenter. */
     @Inject
     public ImportPresenter(ImportView view,
                            GitHubClientService service,
-                           GitServiceClient gitService,
                            EventBus eventBus,
                            GitLocalizationConstant gitConstant,
                            NotificationManager notificationManager,
                            GitHubSshKeyProvider gitHubSshKeyProvider,
                            DtoFactory dtoFactory,
-                           ProjectTypeDescriptorRegistry projectTypeDescriptorRegistry,
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory,
                            ProjectServiceClient projectServiceClient,
                            NewProjectWizardPresenter wizardPresenter) {
         this.view = view;
         this.dtoFactory = dtoFactory;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectServiceClient = projectServiceClient;
         this.wizardPresenter = wizardPresenter;
         this.view.setDelegate(this);
@@ -203,7 +205,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         view.close();
         ImportSourceDescriptor importSourceDescriptor =
                 dtoFactory.createDto(ImportSourceDescriptor.class).withType(importer).withLocation(url);
-        projectServiceClient.importProject(projectName, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>() {
+        projectServiceClient.importProject(projectName, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 eventBus.fireEvent(new OpenProjectEvent(result.getName()));

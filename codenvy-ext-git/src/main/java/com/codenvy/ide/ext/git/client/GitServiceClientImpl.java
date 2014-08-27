@@ -49,8 +49,8 @@ import com.codenvy.ide.ext.git.shared.RmRequest;
 import com.codenvy.ide.ext.git.shared.Status;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
+import com.codenvy.ide.rest.AsyncRequestLoader;
 import com.codenvy.ide.rest.HTTPHeader;
-import com.codenvy.ide.ui.loader.Loader;
 import com.codenvy.ide.websocket.Message;
 import com.codenvy.ide.websocket.MessageBuilder;
 import com.codenvy.ide.websocket.MessageBus;
@@ -106,7 +106,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     private final String                  baseHttpUrl;
     private final String                  gitServicePath;
     /** Loader to be displayed. */
-    private final Loader                  loader;
+    private final AsyncRequestLoader      loader;
     private final MessageBus              wsMessageBus;
     private final EventBus                eventBus;
     private final GitLocalizationConstant constant;
@@ -116,7 +116,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     @Inject
     protected GitServiceClientImpl(@Named("restContext") String restContext,
                                    @Named("workspaceId") String workspaceId,
-                                   Loader loader,
+                                   AsyncRequestLoader loader,
                                    MessageBus wsMessageBus,
                                    EventBus eventBus,
                                    GitLocalizationConstant constant,

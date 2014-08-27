@@ -18,7 +18,7 @@ import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.AsyncRequestFactory;
-import com.codenvy.ide.ui.loader.Loader;
+import com.codenvy.ide.rest.AsyncRequestLoader;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
@@ -47,11 +47,13 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     /** REST service context. */
     private final String              baseUrl;
     /** Loader to be displayed. */
-    private final Loader              loader;
+    private final AsyncRequestLoader  loader;
     private final AsyncRequestFactory asyncRequestFactory;
 
     @Inject
-    protected GitHubClientServiceImpl(@Named("restContext") String baseUrl, @Named("workspaceId") String workspaceId, Loader loader,
+    protected GitHubClientServiceImpl(@Named("restContext") String baseUrl,
+                                      @Named("workspaceId") String workspaceId,
+                                      AsyncRequestLoader loader,
                                       AsyncRequestFactory asyncRequestFactory) {
         this.baseUrl = baseUrl + "/github/" + workspaceId;
         this.loader = loader;

@@ -10,9 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.action;
 
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.action.Action;
+import com.codenvy.ide.api.action.Action;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
+import com.codenvy.ide.api.selection.Selection;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.google.gwt.resources.client.ImageResource;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
@@ -24,31 +27,35 @@ import java.util.List;
  */
 public abstract class GitAction extends Action {
 
-    protected final ResourceProvider resourceProvider;
+    protected final AppContext     appContext;
+    protected       SelectionAgent selectionAgent;
 
-    public GitAction(String text,
-                     String description,
-                     ImageResource icon,
-                     SVGResource svgIcon,
-                     ResourceProvider resourceProvider) {
+    public GitAction(String text, String description, ImageResource icon, SVGResource svgIcon, AppContext appContext,
+                     SelectionAgent selectionAgent) {
         super(text, description, icon, svgIcon);
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
+        this.selectionAgent = selectionAgent;
     }
 
     protected boolean isGitRepository() {
         boolean isGitRepository = false;
 
-        if (getActiveProject() != null && getActiveProject().getAttributes().containsKey("vcs.provider.name")) {
-            List<String>listVcsProvider = getActiveProject().getAttributes().get("vcs.provider.name");
+        if (getActiveProject() != null) {
+            List<String> listVcsProvider = getActiveProject().getAttributeValues("vcs.provider.name");
 
-            if ((! listVcsProvider.isEmpty()) && listVcsProvider.contains("git")) {
+            if (listVcsProvider != null && (!listVcsProvider.isEmpty()) && listVcsProvider.contains("git")) {
                 isGitRepository = true;
             }
         }
         return isGitRepository;
     }
 
-    protected Project getActiveProject() {
-        return resourceProvider.getActiveProject();
+    protected boolean isItemSelected() {
+        Selection<?> selection = selectionAgent.getSelection();
+        return selection != null && selection.getFirstElement() != null && selection.getFirstElement() instanceof StorableNode;
+    }
+
+    protected CurrentProject getActiveProject() {
+        return appContext.getCurrentProject();
     }
 }

@@ -10,11 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.commit;
 
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.parts.ConsolePart;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Revision;
@@ -38,11 +36,10 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 @Singleton
 public class CommitPresenter implements CommitView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private       AppContext              appContext;
     private       CommitView              view;
     private       GitServiceClient        service;
-    private       ResourceProvider        resourceProvider;
     private       GitLocalizationConstant constant;
-    private       Project                 project;
     private       NotificationManager     notificationManager;
 
     /**
@@ -50,29 +47,29 @@ public class CommitPresenter implements CommitView.ActionDelegate {
      *
      * @param view
      * @param service
-     * @param resourceProvider
      * @param constant
      * @param notificationManager
+     * @param dtoUnmarshallerFactory
+     * @param appContext
      */
     @Inject
     public CommitPresenter(CommitView view,
                            GitServiceClient service,
-                           ResourceProvider resourceProvider,
                            GitLocalizationConstant constant,
                            NotificationManager notificationManager,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                           AppContext appContext) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.appContext = appContext;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
         view.setAmend(false);
         view.setAllFilesInclude(false);
         view.setMessage("");
@@ -88,7 +85,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
         boolean all = view.isAllFilesInclued();
         boolean amend = view.isAmend();
 
-        service.commit(project, message, all, amend,
+        service.commit(appContext.getCurrentProject().getProjectDescription(), message, all, amend,
                        new AsyncRequestCallback<Revision>(dtoUnmarshallerFactory.newUnmarshaller(Revision.class)) {
                            @Override
                            protected void onSuccess(Revision result) {

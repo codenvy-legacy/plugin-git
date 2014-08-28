@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.reset.files;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.BaseTest;
@@ -51,7 +52,7 @@ public class ResetFilesPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
         presenter =
-                new ResetFilesPresenter(view, service, resourceProvider, constant, notificationManager, dtoFactory, dtoUnmarshallerFactory);
+                new ResetFilesPresenter(view, service, appContext, constant, notificationManager, dtoFactory, dtoUnmarshallerFactory);
         when(dtoFactory.createDto(IndexFile.class)).thenReturn(mock(IndexFile.class));
     }
 
@@ -72,12 +73,12 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, status);
                 return callback;
             }
-        }).when(service).status(anyString(), (AsyncRequestCallback<Status>)anyObject());
+        }).when(service).status((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Status>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).status(eq(PROJECT_PATH), (AsyncRequestCallback<Status>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(service).status(eq(projectDescriptor), (AsyncRequestCallback<Status>)anyObject());
         verify(view).setIndexedFiles((Array<IndexFile>)anyObject());
         verify(view).showDialog();
     }
@@ -93,12 +94,12 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).status(anyString(), (AsyncRequestCallback<Status>)anyObject());
+        }).when(service).status((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Status>)anyObject());
 
         presenter.showDialog();
 
-        verify(resourceProvider).getActiveProject();
-        verify(service).status(eq(PROJECT_PATH), (AsyncRequestCallback<Status>)anyObject());
+        verify(appContext).getCurrentProject();
+        verify(service).status(eq(projectDescriptor), (AsyncRequestCallback<Status>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).statusFailed();
     }
@@ -120,13 +121,13 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, status);
                 return callback;
             }
-        }).when(service).status(anyString(), (AsyncRequestCallback<Status>)anyObject());
+        }).when(service).status((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Status>)anyObject());
 
         presenter.showDialog();
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service, never()).reset(eq(PROJECT_PATH), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service, never()).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
                                        (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).nothingToReset();
@@ -150,7 +151,7 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, status);
                 return callback;
             }
-        }).when(service).status(anyString(), (AsyncRequestCallback<Status>)anyObject());
+        }).when(service).status((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Status>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -160,14 +161,14 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(service).reset(anyString(), anyString(), (ResetRequest.ResetType)anyObject(),
+        }).when(service).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(),
                                (AsyncRequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service).reset(eq(PROJECT_PATH), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).resetFilesSuccessfully();
@@ -191,7 +192,7 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, status);
                 return callback;
             }
-        }).when(service).status(anyString(), (AsyncRequestCallback<Status>)anyObject());
+        }).when(service).status((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Status>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -201,13 +202,13 @@ public class ResetFilesPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).reset(anyString(), anyString(), (ResetRequest.ResetType)anyObject(),
+        }).when(service).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(),
                                (AsyncRequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onResetClicked();
 
-        verify(service).reset(eq(PROJECT_PATH), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(constant).resetFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

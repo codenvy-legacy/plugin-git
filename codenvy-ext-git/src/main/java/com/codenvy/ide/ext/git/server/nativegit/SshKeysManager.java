@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.server.nativegit;
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.ext.git.server.commons.Util;
 import com.codenvy.ide.ext.ssh.server.SshKey;
 import com.codenvy.ide.ext.ssh.server.SshKeyPair;
 import com.codenvy.ide.ext.ssh.server.SshKeyStore;
@@ -28,19 +29,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
- * Loads ssh keys into filesystem.
+ * Writes SSH key into file.
  *
  * @author Eugene Voevodin
  */
 @Singleton
 public class SshKeysManager {
 
-    private static final Logger  LOG     = LoggerFactory.getLogger(SshKeysManager.class);
-    private static final Pattern SSH_URL = Pattern.compile("((((git|ssh)://)(([^\\\\/@:]+@)??)[^\\\\/@:]+)(:|/)|" +
-                                                           "([^\\\\/@:]+@[^\\\\/@:]+):)[^\\\\@:]+");
+    private static final Logger LOG = LoggerFactory.getLogger(SshKeysManager.class);
 
     private static final String DEFAULT_KEY_DIRECTORY_PATH = System.getProperty("java.io.tmpdir");
     private static final String DEFAULT_KEY_NAME           = "identity";
@@ -62,31 +60,20 @@ public class SshKeysManager {
     }
 
     /**
-     * Stores ssh key into filesystem.
+     * Writes SSH key into file.
      *
-     * @param uri
-     *         link to resource
-     * @return path to ssh key
+     * @param url
+     *         SSH url to git repository
+     * @return file that contains SSH key
+     * @throws IllegalArgumentException
+     *         if specified URL is not SSH url
+     * @throws GitException
+     *         if other error occurs
      */
-    public String storeKeyIfNeed(String uri) throws UnauthorizedException, GitException {
-        final String host = getHost(uri);
+    public File writeKeyFile(String url) throws GitException {
+        final String host = Util.getHost(url);
         if (host == null) {
-            return null;
-        }
-
-        SshKeyUploader uploader = null;
-
-        for (Iterator<SshKeyUploader> itr = sshKeyUploaders.iterator(); uploader == null && itr.hasNext(); ) {
-            SshKeyUploader next = itr.next();
-            if (next.match(uri)) {
-                uploader = next;
-            }
-        }
-
-        if (uploader == null) {
-            LOG.warn(String.format("Not found ssh key uploader for %s", host));
-            // Git action might fail without SSH key.
-            return null;
+            throw new IllegalArgumentException(String.format("Unable get host name from %s. Probably isn't a SSH URL", url));
         }
 
         SshKey publicKey;
@@ -108,13 +95,6 @@ public class SshKeysManager {
                 privateKey = sshKeyPair.getPrivateKey();
             }
         } catch (SshKeyStoreException e) {
-            throw new GitException(e.getMessage(), e);
-        }
-
-        // upload public key
-        try {
-            uploader.uploadKey(publicKey);
-        } catch (IOException e) {
             throw new GitException(e.getMessage(), e);
         }
 
@@ -141,40 +121,31 @@ public class SshKeysManager {
         keyFile.setReadable(true, true);
         //set perm to -rw-------
         keyFile.setWritable(true, true);
-        return keyFile.toString();
-    }
 
-    /**
-     * Parses URL and get host from it, if it is possible
-     *
-     * @param url
-     *         URL
-     * @return host if it exists in URL or <code>null</code> if it doesn't.
-     */
-    private String getHost(String url) {
-        if (SSH_URL.matcher(url).matches()) {
-            int start;
-            if ((start = url.indexOf("://")) != -1) {
-                /*
-                    Host between ("://" or "@") and (":" or "/")
-                    for ssh or git Schema uri.
-                    ssh://user@host.com/some/path
-                    ssh://host.com/some/path
-                    git://host.com/user/repo
-                    can be with port
-                    ssh://host.com:port/some/path
-                 */
-                int endPoint = url.lastIndexOf(":") != start ? url.lastIndexOf(":") : url.indexOf("/", start + 3);
-                int startPoint = !url.contains("@") ? start + 3 : url.indexOf("@") + 1;
-                return url.substring(startPoint, endPoint);
-            } else {
-                /*
-                    Host between "@" and ":"
-                    user@host.com:login/repo
-                 */
-                return url.substring(url.indexOf("@") + 1, url.indexOf(":"));
+        SshKeyUploader uploader = null;
+
+        for (Iterator<SshKeyUploader> itr = sshKeyUploaders.iterator(); uploader == null && itr.hasNext(); ) {
+            SshKeyUploader next = itr.next();
+            if (next.match(url)) {
+                uploader = next;
             }
         }
-        return null;
+
+        if (uploader != null) {
+            // upload public key
+            try {
+                uploader.uploadKey(publicKey);
+            } catch (IOException e) {
+                throw new GitException(e.getMessage(), e);
+            } catch (UnauthorizedException e) {
+                // Git action might fail without uploaded public SSH key.
+                LOG.warn(String.format("Unable upload public SSH key with %s", uploader.getClass().getSimpleName()), e);
+            }
+        } else {
+            // Git action might fail without SSH key.
+            LOG.warn(String.format("Not found ssh key uploader for %s", host));
+        }
+
+        return keyFile;
     }
 }

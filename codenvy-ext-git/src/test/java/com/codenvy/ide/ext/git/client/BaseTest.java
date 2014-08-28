@@ -10,10 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.parts.ConsolePart;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
@@ -34,7 +36,6 @@ import static org.mockito.Mockito.when;
 @GwtModule("com.codenvy.ide.ext.git.Git")
 public abstract class BaseTest extends GwtTestWithMockito {
     public static final String  PROJECT_PATH    = "/test";
-    public static final String  VFS_ID          = "vfsid";
     public static final boolean SELECTED_ITEM   = true;
     public static final boolean UNSELECTED_ITEM = false;
     public static final boolean ENABLE_BUTTON   = true;
@@ -50,9 +51,11 @@ public abstract class BaseTest extends GwtTestWithMockito {
     public static final String  LOCAL_BRANCH    = "localBranch";
     public static final String  REMOTE_BRANCH   = "remoteBranch";
     @Mock
-    protected Project                 project;
+    protected CurrentProject          currentProject;
     @Mock
-    protected ResourceProvider        resourceProvider;
+    protected ProjectDescriptor       projectDescriptor;
+    @Mock
+    protected AppContext              appContext;
     @Mock
     protected GitServiceClient        service;
     @Mock
@@ -71,11 +74,14 @@ public abstract class BaseTest extends GwtTestWithMockito {
     protected DtoFactory              dtoFactory;
     @Mock
     protected DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    @Mock
+    protected ProjectServiceClient    projectServiceClient;
 
     @Before
     public void disarm() {
-        when(resourceProvider.getActiveProject()).thenReturn(project);
-        when(project.getPath()).thenReturn(PROJECT_PATH);
-        when(project.getName()).thenReturn(PROJECT_NAME);
+        when(appContext.getCurrentProject()).thenReturn(currentProject);
+        when(currentProject.getProjectDescription()).thenReturn(projectDescriptor);
+        when(projectDescriptor.getName()).thenReturn(PROJECT_NAME);
+        when(projectDescriptor.getPath()).thenReturn(PROJECT_PATH);
     }
 }

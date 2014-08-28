@@ -80,7 +80,7 @@ public class GitHubKeyUploader extends SshKeyUploader {
         }
 
         final Map<String, String> postParams = new HashMap<>(2);
-        postParams.put("title", Util.getCodenvyTimeStamptKeyLabel());
+        postParams.put("title", Util.getCodenvyTimeStampKeyLabel());
         postParams.put("key", new String(publicKey.getBytes()));
 
         final String postBody = JsonHelper.toJson(postParams);

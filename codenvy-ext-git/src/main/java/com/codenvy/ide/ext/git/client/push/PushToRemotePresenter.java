@@ -10,16 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.push;
 
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.resources.ResourceProvider;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
-import com.codenvy.ide.api.resources.model.Project;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.websocket.WebSocketException;
@@ -48,36 +48,36 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private       PushToRemoteView        view;
     private       GitServiceClient        service;
-    private       ResourceProvider        resourceProvider;
+    private       AppContext              appContext;
     private       GitLocalizationConstant constant;
     private       NotificationManager     notificationManager;
-    private       Project                 project;
+    private       CurrentProject          project;
 
     /**
      * Create presenter.
      *
      * @param view
      * @param service
-     * @param resourceProvider
+     * @param appContext
      * @param constant
      * @param notificationManager
      */
     @Inject
-    public PushToRemotePresenter(PushToRemoteView view, GitServiceClient service, ResourceProvider resourceProvider,
+    public PushToRemotePresenter(PushToRemoteView view, GitServiceClient service, AppContext appContext,
                                  GitLocalizationConstant constant, NotificationManager notificationManager,
                                  DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.view.setDelegate(this);
         this.service = service;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        project = resourceProvider.getActiveProject();
+        project = appContext.getCurrentProject();
         getRemotes();
     }
 
@@ -86,13 +86,11 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * If remote repositories are found, then get the list of branches (remote and local).
      */
     private void getRemotes() {
-        final String projectPath = project.getPath();
-
-        service.remoteList(projectPath, null, true,
+        service.remoteList(project.getProjectDescription(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   getBranches(projectPath, LIST_LOCAL);
+                                   getBranches(LIST_LOCAL);
                                    view.setEnablePushButton(!result.isEmpty());
                                    view.setRepositories(result);
                                    view.showDialog();
@@ -112,13 +110,11 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Get the list of branches.
      *
-     * @param projectPath
-     *         Git repository work tree location
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@NotNull final String projectPath, @NotNull final String remoteMode) {
-        service.branchList(projectPath, remoteMode,
+    private void getBranches(@NotNull final String remoteMode) {
+        service.branchList(project.getProjectDescription(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -132,7 +128,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                                break;
                                            }
                                        }
-                                       getBranches(projectPath, LIST_REMOTE);
+                                       getBranches(LIST_REMOTE);
                                    } else {
                                        Array<String> remoteBranches = getRemoteBranchesToDisplay(view.getRepository(), result);
                                        // Need to add the current local branch in the list of remote branches
@@ -218,7 +214,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         final String repository = view.getRepository();
 
         try {
-            service.push(project, getRefs(), repository, false, new RequestCallback<String>() {
+            service.push(project.getProjectDescription(), getRefs(), repository, false, new RequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
                     Notification notification = new Notification(constant.pushSuccess(repository), INFO);
@@ -249,7 +245,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private List<String> getRefs() {
         String localBranch = "refs/heads/" + view.getLocalBranch();
         String remoteBranch = "refs/heads/" + view.getRemoteBranch();
-        return new ArrayList<String>(Arrays.asList(localBranch + ":" + remoteBranch));
+        return new ArrayList<>(Arrays.asList(localBranch + ":" + remoteBranch));
     }
 
     /**

@@ -16,11 +16,11 @@
     <parent>
         <artifactId>maven-depmgt-pom</artifactId>
         <groupId>com.codenvy</groupId>
-        <version>1.8.11-SNAPSHOT</version>
+        <version>1.8.18-SNAPSHOT</version>
     </parent>
     <groupId>com.codenvy.ide</groupId>
     <artifactId>codenvy-plugin-git-parent</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Codenvy :: Plugin Git Parent</name>
     <modules>
@@ -52,7 +52,38 @@
                     <artifactId>codenvy-dto-maven-plugin</artifactId>
                     <version>${codenvy.platform-api.version}</version>
                 </plugin>
+                <!-- To define the plugin version in your parent POM -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>cobertura-maven-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+
             </plugins>
         </pluginManagement>
+        <plugins>
+            <!-- To use the plugin goals in your POM or parent POM -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <aggregate>true</aggregate>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>cobertura-maven-plugin</artifactId>
+                <configuration>
+                    <formats>
+                        <format>html</format>
+                    </formats>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

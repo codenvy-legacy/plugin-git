@@ -11,9 +11,9 @@
 package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.ui.action.ActionEvent;
+import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.pull.PullPresenter;
@@ -28,11 +28,12 @@ public class PullAction extends GitAction {
 
     @Inject
     public PullAction(PullPresenter presenter,
-                      ResourceProvider resourceProvider,
+                      AppContext appContext,
                       GitResources resources,
                       GitLocalizationConstant constant,
-                      AnalyticsEventLogger eventLogger) {
-        super(constant.pullControlTitle(), constant.pullControlPrompt(), null, resources.pull(), resourceProvider);
+                      AnalyticsEventLogger eventLogger,
+                      SelectionAgent selectionAgent) {
+        super(constant.pullControlTitle(), constant.pullControlPrompt(), null, resources.pull(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }

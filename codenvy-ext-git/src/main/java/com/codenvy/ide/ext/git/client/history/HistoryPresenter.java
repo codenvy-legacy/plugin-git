@@ -10,28 +10,26 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.history;
 
-import com.codenvy.ide.api.event.ActivePartChangedEvent;
-import com.codenvy.ide.api.event.ActivePartChangedHandler;
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.event.ProjectActionEvent;
 import com.codenvy.ide.api.event.ProjectActionHandler;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.parts.PartPresenter;
+import com.codenvy.ide.api.parts.PartStackType;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.parts.base.BasePresenter;
-import com.codenvy.ide.api.resources.ResourceProvider;
+import com.codenvy.ide.api.projecttree.generic.StorableNode;
 import com.codenvy.ide.api.selection.Selection;
-import com.codenvy.ide.api.ui.workspace.PartPresenter;
-import com.codenvy.ide.api.ui.workspace.PartStackType;
-import com.codenvy.ide.api.ui.workspace.PropertyListener;
-import com.codenvy.ide.api.ui.workspace.WorkspaceAgent;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.LogResponse;
 import com.codenvy.ide.ext.git.shared.Revision;
-import com.codenvy.ide.api.resources.model.Project;
-import com.codenvy.ide.api.resources.model.Resource;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
@@ -62,21 +60,20 @@ import static com.codenvy.ide.ext.git.shared.DiffRequest.DiffType.RAW;
  * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
  */
 @Singleton
-public class HistoryPresenter extends BasePresenter implements HistoryView.ActionDelegate, ActivePartChangedHandler, PropertyListener {
+public class HistoryPresenter extends BasePresenter implements HistoryView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private       HistoryView             view;
     private       GitServiceClient        service;
     private       GitLocalizationConstant constant;
     private       GitResources            resources;
-    private       ResourceProvider        resourceProvider;
+    private       AppContext              appContext;
     private       WorkspaceAgent          workspaceAgent;
     /** If <code>true</code> then show all changes in project, if <code>false</code> then show changes of the selected resource. */
     private       boolean                 showChangesInProject;
     private       DiffWith                diffType;
     private boolean isViewClosed = true;
     private Array<Revision>     revisions;
-    private Selection<Resource> selection;
-    private PartPresenter       activePart;
+    private SelectionAgent      selectionAgent;
     private Revision            selectedRevision;
     private NotificationManager notificationManager;
 
@@ -87,9 +84,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
      * @param service
      * @param constant
      * @param resources
-     * @param resourceProvider
+     * @param appContext
      * @param workspaceAgent
      * @param notificationManager
+     * @param selectionAgent
      */
     @Inject
     public HistoryPresenter(final HistoryView view,
@@ -98,9 +96,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
                             GitServiceClient service,
                             final WorkspaceAgent workspaceAgent,
                             GitLocalizationConstant constant,
-                            ResourceProvider resourceProvider,
+                            AppContext appContext,
                             NotificationManager notificationManager,
-                            DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                            SelectionAgent selectionAgent) {
         this.view = view;
         this.view.setDelegate(this);
         this.view.setTitle(constant.historyTitle());
@@ -108,10 +107,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         this.service = service;
         this.workspaceAgent = workspaceAgent;
         this.constant = constant;
-        this.resourceProvider = resourceProvider;
+        this.appContext = appContext;
         this.notificationManager = notificationManager;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
+        this.selectionAgent = selectionAgent;
         eventBus.addHandler(ProjectActionEvent.TYPE, new ProjectActionHandler() {
             @Override
             public void onProjectOpened(ProjectActionEvent event) {
@@ -124,18 +123,13 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
                 workspaceAgent.hidePart(HistoryPresenter.this);
                 view.clear();
             }
-
-            @Override
-            public void onProjectDescriptionChanged(ProjectActionEvent event) {
-
-            }
         });
     }
 
     /** Show dialog. */
     public void showDialog() {
-        Project project = resourceProvider.getActiveProject();
-        getCommitsLog(project.getPath());
+        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        getCommitsLog(project);
         selectedRevision = null;
 
         view.selectProjectChangesButton(true);
@@ -161,8 +155,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     }
 
     /** Get the log of the commits. If successfully received, then display in revision grid, otherwise - show error in output panel. */
-    private void getCommitsLog(@NotNull String projectPath) {
-        service.log(projectPath, false,
+    private void getCommitsLog(@NotNull ProjectDescriptor project) {
+        service.log(project, false,
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
                         protected void onSuccess(LogResponse result) {
@@ -231,8 +225,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     /** {@inheritDoc} */
     @Override
     public void onRefreshClicked() {
-        Project project = resourceProvider.getActiveProject();
-        getCommitsLog(project.getPath());
+        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        getCommitsLog(project);
     }
 
     /** {@inheritDoc} */
@@ -308,33 +302,35 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     /** Update content. */
     private void update() {
         getDiff();
-        Project project = resourceProvider.getActiveProject();
-        getCommitsLog(project.getPath());
+        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        getCommitsLog(project);
     }
 
     /** Get the changes between revisions. On success - display diff in text format, otherwise - show the error message in output panel. */
     private void getDiff() {
         String pattern = "";
-        Project project = resourceProvider.getActiveProject();
+        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
         if (!showChangesInProject && project != null) {
-            Resource element;
+            String path;
 
-            if (selection == null) {
-                element = project;
+            Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
+
+            if (selection == null || selection.getFirstElement() == null) {
+                path = project.getPath();
             } else {
-                element = selection.getFirstElement();
+                path = selection.getFirstElement().getPath();
             }
 
-            pattern = element.getPath().replaceFirst(project.getPath(), "");
+            pattern = path.replaceFirst(project.getPath(), "");
             pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
         }
 
         if (DiffWith.DIFF_WITH_INDEX.equals(diffType) || DiffWith.DIFF_WITH_WORK_TREE.equals(diffType)) {
             boolean isCached = DiffWith.DIFF_WITH_INDEX.equals(diffType);
-            doDiffWithNotCommitted((pattern.length() > 0) ? new ArrayList<String>(Arrays.asList(pattern)) : new ArrayList<String>(),
+            doDiffWithNotCommitted((pattern.length() > 0) ? new ArrayList<>(Arrays.asList(pattern)) : new ArrayList<String>(),
                                    selectedRevision, isCached);
         } else {
-            doDiffWithPrevVersion((pattern.length() > 0) ? new ArrayList<String>(Arrays.asList(pattern)) : new ArrayList<String>(),
+            doDiffWithPrevVersion((pattern.length() > 0) ? new ArrayList<>(Arrays.asList(pattern)) : new ArrayList<String>(),
                                   selectedRevision);
         }
     }
@@ -354,8 +350,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             return;
         }
 
-        String projectPath = resourceProvider.getActiveProject().getPath();
-        service.diff(projectPath, filePatterns, RAW, false, 0, revision.getId(), isCached,
+        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        service.diff(project, filePatterns, RAW, false, 0, revision.getId(), isCached,
                      new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                          @Override
                          protected void onSuccess(String result) {
@@ -391,8 +387,8 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         int index = revisions.indexOf(revisionB);
         if (index + 1 < revisions.size()) {
             final Revision revisionA = revisions.get(index + 1);
-            String projectPath = resourceProvider.getActiveProject().getPath();
-            service.diff(projectPath, filePatterns, RAW, false, 0, revisionA.getId(),
+            ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+            service.diff(project, filePatterns, RAW, false, 0, revisionA.getId(),
                          revisionB.getId(),
                          new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                              @Override
@@ -450,35 +446,6 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     @Override
     public int getSize() {
         return 450;
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onActivePartChanged(ActivePartChangedEvent event) {
-        //This method is necessary for to be able to get the changes for the selected resource
-        // and change a dedicated resource with the history-window open
-
-        // remove listener from previous active part
-        if (activePart != null) {
-            activePart.removePropertyListener(this);
-        }
-        // set new active part
-        activePart = event.getActivePart();
-        if (activePart != null) {
-            activePart.addPropertyListener(this);
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void propertyChanged(PartPresenter source, int propId) {
-        //This method is necessary for to be able to get the changes for the selected resource
-        // and change a dedicated resource with the history-window open
-
-        Selection<?> sel = activePart.getSelection();
-        if (sel != null && sel.getFirstElement() instanceof Resource) {
-            selection = (Selection<Resource>)sel;
-        }
     }
 
     protected enum DiffWith {

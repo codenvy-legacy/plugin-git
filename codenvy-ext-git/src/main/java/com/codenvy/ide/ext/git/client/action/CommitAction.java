@@ -11,8 +11,9 @@
 package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.ui.action.ActionEvent;
+import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.commit.CommitPresenter;
@@ -27,11 +28,12 @@ public class CommitAction extends GitAction {
 
     @Inject
     public CommitAction(CommitPresenter presenter,
-                        ResourceProvider resourceProvider,
+                        AppContext appContext,
                         GitResources resources,
                         GitLocalizationConstant constant,
-                        AnalyticsEventLogger eventLogger) {
-        super(constant.commitControlTitle(), constant.commitControlPrompt(), null, resources.commit(), resourceProvider);
+                        AnalyticsEventLogger eventLogger,
+                        SelectionAgent selectionAgent) {
+        super(constant.commitControlTitle(), constant.commitControlPrompt(), null, resources.commit(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }

@@ -11,8 +11,9 @@
 package com.codenvy.ide.ext.git.client.action;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
-import com.codenvy.ide.api.resources.ResourceProvider;
-import com.codenvy.ide.api.ui.action.ActionEvent;
+import com.codenvy.ide.api.action.ActionEvent;
+import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.delete.DeleteRepositoryPresenter;
@@ -30,11 +31,12 @@ public class DeleteRepositoryAction extends GitAction {
 
     @Inject
     public DeleteRepositoryAction(DeleteRepositoryPresenter presenter,
-                                  ResourceProvider resourceProvider,
+                                  AppContext appContext,
                                   GitResources resources,
                                   GitLocalizationConstant constant,
-                                  AnalyticsEventLogger eventLogger) {
-        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), resourceProvider);
+                                  AnalyticsEventLogger eventLogger,
+                                  SelectionAgent selectionAgent) {
+        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.constant = constant;
         this.eventLogger = eventLogger;
@@ -45,7 +47,7 @@ public class DeleteRepositoryAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log("IDE: Git delete repository");
         Ask ask = new Ask(constant.deleteGitRepositoryTitle(),
-                          constant.deleteGitRepositoryQuestion(getActiveProject().getPath()), new AskHandler() {
+                          constant.deleteGitRepositoryQuestion(getActiveProject().getProjectDescription().getPath()), new AskHandler() {
             @Override
             public void onOk() {
                 presenter.deleteRepository();

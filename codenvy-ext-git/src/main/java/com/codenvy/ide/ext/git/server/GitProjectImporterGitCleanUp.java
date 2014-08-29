@@ -23,6 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * @author Vitalii Parfonov
@@ -45,7 +46,7 @@ public class GitProjectImporterGitCleanUp extends GitProjectImporter {
 
     @Override
     public String getDescription() {
-        return "Add possibility to import project from GIT repository. And remove .git folder after cloning. Useful for creation project from templates";
+        return "Adds possibility to import project from GIT repository. Removes .git folder after cloning. Useful for creation project from templates";
     }
 
     @Override
@@ -54,16 +55,18 @@ public class GitProjectImporterGitCleanUp extends GitProjectImporter {
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location)
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
             throws IOException, ForbiddenException, ServerException, UnauthorizedException, ConflictException {
-        super.importSources(baseFolder, location);
+        super.importSources(baseFolder, location, parameters);
 
         //cleanup git
         VirtualFileEntry gitFolder = baseFolder.getChild(".git");
-        if (gitFolder != null)
+        if (gitFolder != null) {
             gitFolder.remove();
+        }
         VirtualFileEntry gitIgnore = baseFolder.getChild(".gitignore");
-        if (gitIgnore != null)
+        if (gitIgnore != null) {
             gitIgnore.remove();
+        }
     }
 }

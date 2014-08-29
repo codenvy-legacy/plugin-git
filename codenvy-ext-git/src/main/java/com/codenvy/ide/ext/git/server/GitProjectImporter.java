@@ -32,6 +32,8 @@ import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Vladyslav Zhukovskii
@@ -71,7 +73,7 @@ public class GitProjectImporter implements ProjectImporter {
 
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location)
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         try {
             if (!baseFolder.isFolder()) {
@@ -81,25 +83,39 @@ public class GitProjectImporter implements ProjectImporter {
             String fullPathToClonedProject =
                     localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             GitConnection gitConnection = nativeGitConnectionFactory.getConnection(fullPathToClonedProject);
-
+            String branch = null;
+            if (parameters != null) {
+                branch = parameters.get("vcsbranch");
+            }
+            final DtoFactory dtoFactory = DtoFactory.getInstance();
             if (!isFolderEmpty(baseFolder)) {
-                gitConnection = gitConnection.init(DtoFactory.getInstance().createDto(InitRequest.class)
+                gitConnection = gitConnection.init(dtoFactory.createDto(InitRequest.class)
                                                              .withWorkingDir(fullPathToClonedProject)
                                                              .withInitCommit(false)
                                                              .withBare(false));
-                gitConnection.remoteAdd(DtoFactory.getInstance().createDto(RemoteAddRequest.class)
+                gitConnection.remoteAdd(dtoFactory.createDto(RemoteAddRequest.class)
                                                   .withName(DEFAULT_REMOTE)
                                                   .withUrl(location));
-                gitConnection.fetch(DtoFactory.getInstance().createDto(FetchRequest.class)
-                                              .withRemote(DEFAULT_REMOTE)
-                                              .withRefSpec(Collections.singletonList("refs/heads/master:refs/remotes/origin/master")));
-                gitConnection.branchCheckout(DtoFactory.getInstance().createDto(BranchCheckoutRequest.class)
-                                                       .withName("master"));
+                List<String> refSpec;
+                if (branch == null || "master".equals(branch)) {
+                    refSpec = Collections.singletonList("refs/heads/master:refs/remotes/origin/master");
+                } else {
+                    refSpec = Collections.singletonList(String.format("refs/heads/%1$s:refs/remotes/origin/%1$s", branch));
+                }
+                gitConnection.fetch(dtoFactory.createDto(FetchRequest.class).withRemote(DEFAULT_REMOTE).withRefSpec(refSpec));
+                if (branch == null || "master".equals(branch)) {
+                    gitConnection.branchCheckout(dtoFactory.createDto(BranchCheckoutRequest.class).withName("master"));
+                } else {
+                    gitConnection.branchCheckout(dtoFactory.createDto(BranchCheckoutRequest.class).withName(branch));
+                }
             } else {
-                gitConnection.clone(DtoFactory.getInstance().createDto(CloneRequest.class)
+                gitConnection.clone(dtoFactory.createDto(CloneRequest.class)
                                               .withWorkingDir(fullPathToClonedProject)
                                               .withRemoteName(DEFAULT_REMOTE)
                                               .withRemoteUri(location));
+                if (branch != null) {
+                    gitConnection.branchCheckout(dtoFactory.createDto(BranchCheckoutRequest.class).withName(branch));
+                }
             }
 
             if (!baseFolder.isProjectFolder()) {

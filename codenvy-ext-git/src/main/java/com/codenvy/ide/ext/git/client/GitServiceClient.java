@@ -101,7 +101,7 @@ public interface GitServiceClient {
      * @param name
      *         name of the branch to delete
      * @param force
-     *         force if <code>true</code> delete branch {@link #name} even if it is not fully merged
+     *         force if <code>true</code> delete branch {@code name} even if it is not fully merged
      * @param callback
      */
     void branchDelete(@NotNull ProjectDescriptor project, @NotNull String name, boolean force,
@@ -143,7 +143,7 @@ public interface GitServiceClient {
      * @param name
      *         branch's name
      * @param startPoint
-     *         if {@link #createNew} is <code>true</code> then the name of a commit at which to start the new branch
+     *         if {@code createNew} is <code>true</code> then the name of a commit at which to start the new branch
      * @param createNew
      *         if <code>true</code> then create a new branch
      * @param callback
@@ -335,7 +335,7 @@ public interface GitServiceClient {
               @NotNull AsyncRequestCallback<String> callback);
 
     /**
-     * Compare commit with index or working tree (depends on {@link #cached}), get the diff for pointed file(s) or for the whole project in
+     * Compare commit with index or working tree (depends on {@code cached}), get the diff for pointed file(s) or for the whole project in
      * text format.
      *
      * @param project

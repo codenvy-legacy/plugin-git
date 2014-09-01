@@ -10,9 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
-import com.codenvy.ide.ext.git.server.GitException;
-
 import java.io.File;
+
+import com.codenvy.ide.ext.git.server.GitException;
 
 /**
  * This command used for cloning repositories.
@@ -37,6 +37,8 @@ public class CloneCommand extends GitCommand<Void> {
             commandLine.add("--origin", remoteName);
         } //else default origin name
         commandLine.add(uri, getRepository().getAbsolutePath());
+        // Progress not shown if not a terminal. Activating progress output. See git clone man page.
+        commandLine.add("--progress");
         start();
         return null;
     }

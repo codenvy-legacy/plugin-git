@@ -10,10 +10,17 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ProjectManager;
@@ -27,12 +34,6 @@ import com.codenvy.ide.ext.git.shared.RemoteAddRequest;
 import com.codenvy.vfs.impl.fs.LocalPathResolver;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Vladyslav Zhukovskii
@@ -73,6 +74,12 @@ public class GitProjectImporter implements ProjectImporter {
 
     @Override
     public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
+        throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+        importSources(baseFolder, location, parameters, null);
+    }
+
+    @Override
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumer consumer)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         try {
             if (!baseFolder.isFolder()) {
@@ -81,12 +88,13 @@ public class GitProjectImporter implements ProjectImporter {
 
             String fullPathToClonedProject =
                     localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
-            GitConnection gitConnection = nativeGitConnectionFactory.getConnection(fullPathToClonedProject);
+            GitConnection gitConnection = nativeGitConnectionFactory.getConnection(fullPathToClonedProject, consumer);
             String branch = null;
             if (parameters != null) {
                 branch = parameters.get("vcsbranch");
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
+
             if (!isFolderEmpty(baseFolder)) {
                 gitConnection = gitConnection.init(dtoFactory.createDto(InitRequest.class)
                                                              .withWorkingDir(fullPathToClonedProject)

@@ -28,7 +28,6 @@ import com.codenvy.vfs.impl.fs.LocalPathResolver;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
@@ -118,11 +117,11 @@ public class GitProjectImporter implements ProjectImporter {
                 }
             }
 
-            if (!baseFolder.isProjectFolder()) {
-                String propertyFileContent = "{\"type\":\"" + com.codenvy.api.project.shared.Constants.BLANK_ID + "\"}";
-                FolderEntry projectMetaFolder = baseFolder.createFolder(".codenvy");
-                projectMetaFolder.createFile("project.json", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
-            }
+//            if (!baseFolder.isProjectFolder()) {
+//                String propertyFileContent = "{\"type\":\"" + com.codenvy.api.project.shared.Constants.BLANK_ID + "\"}";
+//                FolderEntry projectMetaFolder = baseFolder.createFolder(".codenvy");
+//                projectMetaFolder.createFile("project.json", propertyFileContent.getBytes(), MediaType.APPLICATION_JSON_TYPE.getType());
+//            }
 
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(

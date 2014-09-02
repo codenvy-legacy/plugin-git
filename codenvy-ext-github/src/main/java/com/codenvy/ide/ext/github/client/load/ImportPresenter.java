@@ -205,7 +205,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         view.close();
         ImportSourceDescriptor importSourceDescriptor =
                 dtoFactory.createDto(ImportSourceDescriptor.class).withType(importer).withLocation(url);
-        projectServiceClient.importProject(projectName, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
+        projectServiceClient.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 eventBus.fireEvent(new OpenProjectEvent(result.getName()));

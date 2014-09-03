@@ -83,7 +83,7 @@ public class CommandProcess {
 
         Process process;
         try {
-            process = ProcessUtil.start(pb, consumer);
+            process = ProcessUtil.execute(pb, consumer);
         } catch (IOException e) {
             LOG.error("Process creating failed", e);
             throw new GitException("It is not possible to execute command");

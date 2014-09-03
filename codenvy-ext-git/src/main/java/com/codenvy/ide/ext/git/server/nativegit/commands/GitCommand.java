@@ -10,13 +10,14 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
-import com.codenvy.api.core.util.CommandLine;
-import com.codenvy.ide.ext.git.server.GitException;
-import com.codenvy.ide.ext.git.server.nativegit.CommandProcess;
-
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+
+import com.codenvy.api.core.util.CommandLine;
+import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.ext.git.server.nativegit.CommandProcess;
 
 /**
  * Base class for all git commands
@@ -31,6 +32,7 @@ public abstract class GitCommand<T> {
     private   String       askPassScriptPath;
     protected List<String> output;
     protected CommandLine  commandLine;
+    private LineConsumer   processLineConsumer;
 
     /**
      * @param repository
@@ -128,7 +130,7 @@ public abstract class GitCommand<T> {
      *         when command execution failed or command execution exit value is not 0
      */
     protected void start() throws GitException {
-        CommandProcess.executeGitCommand(this, output);
+        CommandProcess.executeGitCommand(this, output, processLineConsumer);
     }
 
     @Override
@@ -138,5 +140,15 @@ public abstract class GitCommand<T> {
             builder.append(command).append(" ");
         }
         return builder.toString();
+    }
+
+    /**
+     * Set a process line consumer to be used to capture process output
+     *
+     * @param processLineConsumer
+     */
+    public GitCommand withProcessLineConsumer(LineConsumer processLineConsumer) {
+        this.processLineConsumer = processLineConsumer;
+        return this;
     }
 }

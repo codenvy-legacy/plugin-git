@@ -11,7 +11,17 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.DiffPage;
 import com.codenvy.ide.ext.git.server.GitConnection;
@@ -67,15 +77,6 @@ import com.codenvy.ide.ext.git.shared.Tag;
 import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
-
-import java.io.File;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Native implementation of GitConnection
@@ -223,7 +224,9 @@ public class NativeGitConnection implements GitConnection {
                                            .setNewUrl(remoteUri)
                                            .execute();
         nativeGit.createConfig().setUser(user).saveUser();
-        return new NativeGitConnection(repository, user, keysManager, credentialsLoader, credentialsProviders);
+        NativeGitConnection newNativeGit = new NativeGitConnection(repository, user, keysManager, credentialsLoader, credentialsProviders);
+        newNativeGit.setOutputLineConsumer(nativeGit.gitOutputPublisher);
+        return newNativeGit;
     }
 
     @Override
@@ -341,7 +344,9 @@ public class NativeGitConnection implements GitConnection {
                 //if nothing to commit
             }
         }
-        return new NativeGitConnection(nativeGit.getRepository(), user, keysManager, credentialsLoader, credentialsProviders);
+        NativeGitConnection newNativeGit = new NativeGitConnection(nativeGit.getRepository(), user, keysManager, credentialsLoader, credentialsProviders);
+        newNativeGit.setOutputLineConsumer(nativeGit.gitOutputPublisher);
+        return newNativeGit;
     }
 
     @Override
@@ -630,5 +635,9 @@ public class NativeGitConnection implements GitConnection {
         } else {
             return null;
         }
+    }
+
+    public void setOutputLineConsumer(LineConsumer gitOutputPublisher) {
+        nativeGit.setOutputLineConsumer(gitOutputPublisher);
     }
 }

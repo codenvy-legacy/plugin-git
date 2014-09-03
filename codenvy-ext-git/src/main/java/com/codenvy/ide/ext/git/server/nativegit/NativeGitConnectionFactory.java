@@ -10,8 +10,19 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
+import java.io.File;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.user.server.dao.Profile;
 import com.codenvy.api.user.server.dao.UserProfileDao;
 import com.codenvy.commons.env.EnvironmentContext;
@@ -21,16 +32,6 @@ import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.GitUser;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Native implementation for GitConnectionFactory
@@ -92,5 +93,11 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         gitUser.withEmail(email != null ? email : EnvironmentContext.getCurrent().getUser().getName());
 
         return gitUser;
+    }
+
+    public GitConnection getConnection(String absoluteProjectPath, LineConsumer gitOutputPublisher) throws GitException {
+        NativeGitConnection gitConnection = (NativeGitConnection)getConnection(absoluteProjectPath);
+        gitConnection.setOutputLineConsumer(gitOutputPublisher);
+        return gitConnection;
     }
 }

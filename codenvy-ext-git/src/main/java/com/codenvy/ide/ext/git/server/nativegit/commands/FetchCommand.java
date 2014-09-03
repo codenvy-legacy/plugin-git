@@ -40,6 +40,8 @@ public class FetchCommand extends GitCommand<Void> {
         if (prune) {
             commandLine.add("--prune");
         }
+        // Progress not shown if not a terminal. Activating progress output. See git fetch man page.
+        commandLine.add("--progress");
         start();
         return null;
     }

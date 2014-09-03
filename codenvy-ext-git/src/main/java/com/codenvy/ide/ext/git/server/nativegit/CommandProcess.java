@@ -11,6 +11,15 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codenvy.api.core.util.CancellableProcessWrapper;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
@@ -18,14 +27,6 @@ import com.codenvy.api.core.util.ShellFactory;
 import com.codenvy.api.core.util.Watchdog;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Executes GitCommand.
@@ -45,25 +46,44 @@ public class CommandProcess {
      * @throws GitException
      *         when command execution error occurs
      */
-    public static void executeGitCommand(GitCommand command, List<String> output) throws GitException {
-        List<String> environment = new LinkedList<>();
-        //set up needed environment
-        environment.add("HOME=" + System.getProperty("user.home"));
-        //if command should be executed with ssh key
-        if (command.getSSHScriptPath() != null) {
-            environment.add("GIT_SSH=" + command.getSSHScriptPath());
+    public static void executeGitCommand(GitCommand command, List<String> output, LineConsumer lineConsumer) throws GitException {
+        if (lineConsumer != null) {
+            try {
+                lineConsumer.writeLine("Executing Git command: " + command.getCommandLine().toString());
+            } catch (Exception e1) {
+                LOG.error("An error occured while trying to write line on the lineConsumer", e1);
+            }
         }
-        //if command should be executed with credentials
-        if (command.getAskPassScriptPath() != null) {
-            environment.add("GIT_ASKPASS=" + command.getAskPassScriptPath());
-        }
-        String[] env = new String[environment.size()];
-        environment.toArray(env);
+
         String[] line = ShellFactory.getShell().createShellCommand(command.getCommandLine());
-        LOG.debug("Executing " + command);
+        ProcessBuilder pb = new ProcessBuilder(Arrays.asList(line));
+
+        Map<String, String> environment = pb.environment();
+
+
+        environment.put("HOME" , System.getProperty("user.home"));
+        // if command should be executed with ssh key
+        if (command.getSSHScriptPath() != null) {
+            environment.put("GIT_SSH",  command.getSSHScriptPath());
+        }
+        // if command should be executed with credentials
+        if (command.getAskPassScriptPath() != null) {
+            environment.put("GIT_ASKPASS" , command.getAskPassScriptPath());
+        }
+
+        pb.directory(command.getRepository());
+
+
+        ProcessLineConsumer processLineConsumer = new ProcessLineConsumer(output);
+        LineConsumer consumer = processLineConsumer;
+        // if any, add an external line consumer. It is typically a consumer that sends message events to the client.
+        if (lineConsumer != null) {
+            consumer = new CompositeLineConsumer(lineConsumer, processLineConsumer);
+        }
+
         Process process;
         try {
-            process = Runtime.getRuntime().exec(line, env, command.getRepository());
+            process = ProcessUtil.start(pb, consumer);
         } catch (IOException e) {
             LOG.error("Process creating failed", e);
             throw new GitException("It is not possible to execute command");
@@ -74,17 +94,15 @@ public class CommandProcess {
             watcher = new Watchdog(command.getTimeout(), DEFAULT_UNIT);
             watcher.start(new CancellableProcessWrapper(process));
         }
-        //read all process output and store it
-        ProcessLineConsumer consumer = new ProcessLineConsumer(output);
+
         try {
-            ProcessUtil.process(process, consumer, consumer);
             process.waitFor();
             /*
             * Check process exit value and search for correct error message
             * without hint and warning messages ant throw it to user.
             * */
             if (process.exitValue() != 0) {
-                String message = searchErrorMessage(consumer.getOutput());
+                String message = searchErrorMessage(processLineConsumer.getOutput());
                 LOG.debug("Command execution failed!\n" + message);
                 throw new GitException(message);
             } else {
@@ -92,9 +110,6 @@ public class CommandProcess {
             }
         } catch (InterruptedException e) {
             Thread.interrupted();
-        } catch (IOException e) {
-            LOG.error("Cant listen process", e);
-            throw new GitException("It is not possible to execute command");
         } finally {
             if (watcher != null) {
                 watcher.stop();
@@ -130,6 +145,42 @@ public class CommandProcess {
             builder.append("SSH key doesn't exist or it is not valid");
         }
         return builder.toString();
+    }
+
+
+    public static class CompositeLineConsumer implements LineConsumer {
+
+
+        private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.CompositeLineConsumer.class);
+        protected LineConsumer[]    lineConsumers;
+
+        public CompositeLineConsumer(LineConsumer... lineConsumers) {
+            this.lineConsumers = lineConsumers;
+
+        }
+
+        @Override
+        public void close() throws IOException {
+            for (LineConsumer lineConsumer : lineConsumers) {
+                try {
+                    lineConsumer.close();
+                } catch (IOException e) {
+                    LOG.error("An error occured while closing the git process line consumer", e);
+                }
+            }
+        }
+
+        @Override
+        public void writeLine(String line) throws IOException {
+            for (LineConsumer lineConsumer : lineConsumers) {
+                try {
+                    lineConsumer.writeLine(line);
+                } catch (IOException e) {
+                    LOG.error("An error occured while writing line to the git process line consumer", e);
+                }
+            }
+        }
+
     }
 
     public static class ProcessLineConsumer implements LineConsumer {

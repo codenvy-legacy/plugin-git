@@ -35,8 +35,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,9 +68,11 @@ public class GitHubKeyUploader extends SshKeyUploader {
             throw new UnauthorizedException("To upload SSH key you need to authorize.");
         }
 
+        StringBuilder answer = new StringBuilder();
         final String publicKeyString = new String(publicKey.getBytes());
+        final String url = String.format("https://api.github.com/user/keys?access_token=%s", token.getToken());
 
-        final List<GitHubKey> gitHubUserPublicKeys = getUserPublicKeys(token);
+        final List<GitHubKey> gitHubUserPublicKeys = getUserPublicKeys(url, answer);
         for (GitHubKey gitHubUserPublicKey : gitHubUserPublicKeys) {
             if (publicKeyString.startsWith(gitHubUserPublicKey.getKey())) {
                 return;
@@ -86,8 +86,6 @@ public class GitHubKeyUploader extends SshKeyUploader {
         final String postBody = JsonHelper.toJson(postParams);
 
         LOG.debug("Upload public key: {}", postBody);
-
-        final String url = String.format("https://api.github.com/user/keys?access_token=%s", token.getToken());
 
         int responseCode;
         HttpURLConnection conn = null;
@@ -116,8 +114,7 @@ public class GitHubKeyUploader extends SshKeyUploader {
         }
     }
 
-    private List<GitHubKey> getUserPublicKeys(OAuthToken token) {
-        final String url = String.format("https://api.github.com/user/keys?access_token=%s", token.getToken());
+    private List<GitHubKey> getUserPublicKeys(String url, StringBuilder answer) {
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection)new URL(url).openConnection();
@@ -125,11 +122,26 @@ public class GitHubKeyUploader extends SshKeyUploader {
             conn.setRequestMethod(HTTPMethod.GET);
             conn.setRequestProperty(HTTPHeader.ACCEPT, MimeType.APPLICATION_JSON);
             if (conn.getResponseCode() == HTTPStatus.OK) {
-                final StringBuilder answer = new StringBuilder();
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
                     String line;
                     while ((line = reader.readLine()) != null) {
                         answer.append(line).append('\n');
+                    }
+                }
+                if (conn.getHeaderFields().containsKey("Link")) {
+                    String strForParsing = conn.getHeaderFields().get("Link").get(0);
+                    int indexNext = strForParsing.indexOf("rel=\"next\"");
+                    int indexPrev = strForParsing.indexOf("rel=\"prev\"");
+
+                    if (indexNext != -1 && indexPrev == -1) {
+                        String nextSubStr = strForParsing.substring(0, indexNext);
+                        String nextPageLink = nextSubStr.substring(nextSubStr.indexOf("<") + 1, nextSubStr.indexOf(">"));
+
+                        getUserPublicKeys(nextPageLink, answer);
+                    }
+                    int indexToReplace;
+                    while ((indexToReplace = answer.indexOf("]\n[")) != -1) {
+                        answer.replace(indexToReplace, indexToReplace + 3, ",");
                     }
                 }
                 return DtoFactory.getInstance().createListDtoFromJson(answer.toString(), GitHubKey.class);

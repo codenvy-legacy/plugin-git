@@ -14,6 +14,7 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.VirtualFileEntry;
@@ -60,6 +61,19 @@ public class GitProjectImporterGitCleanUp extends GitProjectImporter {
         super.importSources(baseFolder, location, parameters);
 
         //cleanup git
+        cleanupGit(baseFolder);
+    }
+
+    @Override
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumer consumer)
+            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+        super.importSources(baseFolder, location, parameters, LineConsumer.DEV_NULL);
+        //cleanup git
+        cleanupGit(baseFolder);
+    }
+
+
+    private void cleanupGit(FolderEntry baseFolder) throws ForbiddenException, ServerException {
         VirtualFileEntry gitFolder = baseFolder.getChild(".git");
         if (gitFolder != null) {
             gitFolder.remove();

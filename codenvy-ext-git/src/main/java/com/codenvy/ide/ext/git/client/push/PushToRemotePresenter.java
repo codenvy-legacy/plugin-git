@@ -86,7 +86,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * If remote repositories are found, then get the list of branches (remote and local).
      */
     private void getRemotes() {
-        service.remoteList(project.getProjectDescription(), null, true,
+        service.remoteList(project.getRootProject(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
@@ -114,7 +114,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      *         is a remote mode
      */
     private void getBranches(@NotNull final String remoteMode) {
-        service.branchList(project.getProjectDescription(), remoteMode,
+        service.branchList(project.getRootProject(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -214,7 +214,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         final String repository = view.getRepository();
 
         try {
-            service.push(project.getProjectDescription(), getRefs(), repository, false, new RequestCallback<String>() {
+            service.push(project.getRootProject(), getRefs(), repository, false, new RequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
                     Notification notification = new Notification(constant.pushSuccess(repository), INFO);

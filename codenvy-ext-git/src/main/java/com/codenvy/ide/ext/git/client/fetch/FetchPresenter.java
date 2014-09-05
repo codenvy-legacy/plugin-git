@@ -88,7 +88,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      * local).
      */
     private void getRemotes() {
-        service.remoteList(project.getProjectDescription(), null, true,
+        service.remoteList(project.getRootProject(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
@@ -115,7 +115,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      *         is a remote mode
      */
     private void getBranches(@NotNull final String remoteMode) {
-        service.branchList(project.getProjectDescription(), remoteMode,
+        service.branchList(project.getRootProject(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -206,7 +206,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
         boolean removeDeletedRefs = view.isRemoveDeletedRefs();
 
         try {
-            service.fetch(project.getProjectDescription(), remoteName, getRefs(), removeDeletedRefs,
+            service.fetch(project.getRootProject(), remoteName, getRefs(), removeDeletedRefs,
                           new RequestCallback<String>() {
                               @Override
                               protected void onSuccess(String result) {

@@ -129,8 +129,8 @@ public class MergePresenterTest extends BaseTest {
         verify(appContext).getCurrentProject();
         verify(view).setEnableMergeButton(eq(DISABLE_BUTTON));
         verify(view).showDialog();
-        verify(service).branchList(eq(projectDescriptor), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(service).branchList(eq(projectDescriptor), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(rootProjectDescriptor), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(rootProjectDescriptor), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view).setRemoteBranches((Array<Reference>)anyObject());
         verify(view).setLocalBranches((Array<Reference>)anyObject());
         verify(eventBus, never()).fireEvent((ExceptionThrownEvent)anyObject());
@@ -162,8 +162,8 @@ public class MergePresenterTest extends BaseTest {
 
         presenter.showDialog();
 
-        verify(service).branchList(eq(projectDescriptor), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(service).branchList(eq(projectDescriptor), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(rootProjectDescriptor), eq(LIST_LOCAL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(rootProjectDescriptor), eq(LIST_REMOTE), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(eventBus, times(2)).fireEvent((ExceptionThrownEvent)anyObject());
         verify(notificationManager, times(2)).showNotification((Notification)anyObject());
     }
@@ -193,7 +193,7 @@ public class MergePresenterTest extends BaseTest {
 
         verify(view).close();
         verify(editorAgent).getOpenedEditors();
-        verify(service).merge(eq(projectDescriptor), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
+        verify(service).merge(eq(rootProjectDescriptor), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();
         verify(partPresenter).init((EditorInput)anyObject());

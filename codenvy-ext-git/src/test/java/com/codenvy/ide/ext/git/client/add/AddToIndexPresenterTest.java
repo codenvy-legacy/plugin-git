@@ -138,7 +138,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         verify(view).isUpdated();
         verify(view).close();
-        verify(service).add(eq(projectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
+        verify(service).add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                             (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).addSuccess();
@@ -164,7 +164,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         verify(view).isUpdated();
         verify(view).close();
-        verify(service).add(eq(projectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
+        verify(service).add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                             (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).addFailed();
@@ -182,7 +182,7 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         verify(view).isUpdated();
         verify(service)
-                .add(eq(projectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
+                .add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                      (RequestCallback<Void>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());

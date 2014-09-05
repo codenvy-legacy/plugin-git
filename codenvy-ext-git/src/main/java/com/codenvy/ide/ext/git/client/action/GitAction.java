@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.action;
 
+import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
@@ -41,7 +42,8 @@ public abstract class GitAction extends Action {
         boolean isGitRepository = false;
 
         if (getActiveProject() != null) {
-            List<String> listVcsProvider = getActiveProject().getAttributeValues("vcs.provider.name");
+            ProjectDescriptor rootProjectDescriptor = getActiveProject().getRootProject();
+            List<String> listVcsProvider = rootProjectDescriptor.getAttributes().get("vcs.provider.name");;
 
             if (listVcsProvider != null && (!listVcsProvider.isEmpty()) && listVcsProvider.contains("git")) {
                 isGitRepository = true;

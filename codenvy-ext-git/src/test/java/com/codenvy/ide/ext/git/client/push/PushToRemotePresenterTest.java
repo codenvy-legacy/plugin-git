@@ -106,7 +106,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view).setEnablePushButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
@@ -156,9 +156,9 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(rootProjectDescriptor), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view).setEnablePushButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
         verify(view).showDialog();
@@ -209,7 +209,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -233,7 +233,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));
@@ -256,7 +256,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onPushClicked();
 
-        verify(service).push(eq(projectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
+        verify(service).push(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
                              (RequestCallback<String>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -280,7 +280,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onPushClicked();
 
-        verify(service).push(eq(projectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
+        verify(service).push(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
                              (RequestCallback<String>)anyObject());
         verify(view).close();
         verify(constant).pushFail();

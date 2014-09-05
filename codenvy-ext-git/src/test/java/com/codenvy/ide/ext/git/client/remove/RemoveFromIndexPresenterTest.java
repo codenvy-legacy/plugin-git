@@ -128,7 +128,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onRemoveClicked();
 
-        verify(service).remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
+        verify(service).remove(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REMOVED),
                                (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).removeFilesSuccessfull();
@@ -154,7 +154,7 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onRemoveClicked();
 
-        verify(service).remove(eq(projectDescriptor), (List<String>)anyObject(), eq(REMOVED),
+        verify(service).remove(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REMOVED),
                                (AsyncRequestCallback<String>)anyObject());
         verify(constant).removeFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

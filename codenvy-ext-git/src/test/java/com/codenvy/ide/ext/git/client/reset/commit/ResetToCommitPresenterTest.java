@@ -113,7 +113,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).log(eq(projectDescriptor), eq(!IS_TEXT_FORMATTED), (AsyncRequestCallback<LogResponse>)anyObject());
+        verify(service).log(eq(rootProjectDescriptor), eq(!IS_TEXT_FORMATTED), (AsyncRequestCallback<LogResponse>)anyObject());
         verify(view).setRevisions((ArrayList<Revision>)anyObject());
         verify(view).setMixMode(eq(IS_MIXED));
         verify(view).setEnableResetButton(eq(DISABLE_BUTTON));
@@ -137,7 +137,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).log(eq(projectDescriptor), eq(!IS_TEXT_FORMATTED), (AsyncRequestCallback<LogResponse>)anyObject());
+        verify(service).log(eq(rootProjectDescriptor), eq(!IS_TEXT_FORMATTED), (AsyncRequestCallback<LogResponse>)anyObject());
         verify(constant).logFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -154,7 +154,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, DIFF_WITH_NEW_FILE);
                 return callback;
             }
-        }).when(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                               (AsyncRequestCallback<String>)anyObject());
 
         doAnswer(new Answer() {
@@ -175,7 +175,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(view).close();
         verify(selectedRevision, times(2)).getId();
         verify(appContext, times(2)).getCurrentProject();
-        verify(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                              (AsyncRequestCallback<String>)anyObject());
         verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MIXED), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -195,7 +195,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, DIFF_WITH_NEW_FILE);
                 return callback;
             }
-        }).when(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                               (AsyncRequestCallback<String>)anyObject());
 
         doAnswer(new Answer() {
@@ -216,7 +216,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(view).close();
         verify(selectedRevision, times(2)).getId();
         verify(appContext, times(3)).getCurrentProject();
-        verify(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                              (AsyncRequestCallback<String>)anyObject());
         verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(HARD), (AsyncRequestCallback<Void>)anyObject());
         verify(eventBus, times(2)).fireEvent((FileEvent)anyObject());
@@ -238,7 +238,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, DIFF_FILE_CHANGED);
                 return callback;
             }
-        }).when(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                               (AsyncRequestCallback<String>)anyObject());
 
         doAnswer(new Answer() {
@@ -259,7 +259,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(view).close();
         verify(selectedRevision, times(2)).getId();
         verify(appContext, times(3)).getCurrentProject();
-        verify(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                              (AsyncRequestCallback<String>)anyObject());
         verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MERGE), (AsyncRequestCallback<Void>)anyObject());
         verify(partPresenter).init(eq(editorInput));
@@ -286,7 +286,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(view).close();
         verify(selectedRevision).getId();
         verify(appContext).getCurrentProject();
-        verify(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                              (AsyncRequestCallback<String>)anyObject());
         verify(service, never()).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(),
                                        (AsyncRequestCallback<Void>)anyObject());
@@ -303,7 +303,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, DIFF_FILE_CHANGED);
                 return callback;
             }
-        }).when(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                               (AsyncRequestCallback<String>)anyObject());
 
         doAnswer(new Answer() {
@@ -324,7 +324,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(view).close();
         verify(selectedRevision, times(2)).getId();
         verify(appContext, times(2)).getCurrentProject();
-        verify(service).diff(eq(projectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
                              (AsyncRequestCallback<String>)anyObject());
         verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MIXED), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());

@@ -96,7 +96,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
 
     /** Show dialog. */
     public void showDialog() {
-        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
         selectedReference = null;
         view.setEnableMergeButton(false);
 
@@ -173,7 +173,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
         for (EditorPartPresenter partPresenter : editorAgent.getOpenedEditors().getValues().asIterable()) {
             openedEditors.add(partPresenter);
         }
-        service.merge(appContext.getCurrentProject().getProjectDescription(), selectedReference.getDisplayName(),
+        service.merge(appContext.getCurrentProject().getRootProject(), selectedReference.getDisplayName(),
                       new AsyncRequestCallback<MergeResult>(dtoUnmarshallerFactory.newUnmarshaller(MergeResult.class)) {
                           @Override
                           protected void onSuccess(final MergeResult result) {

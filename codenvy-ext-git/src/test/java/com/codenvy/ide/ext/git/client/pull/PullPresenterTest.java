@@ -124,7 +124,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view, times(2)).setEnablePullButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
@@ -175,9 +175,9 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(rootProjectDescriptor), anyString(), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(view, times(2)).setEnablePullButton(eq(ENABLE_BUTTON));
         verify(view).setRepositories((Array<Remote>)anyObject());
         verify(view).showDialog();
@@ -228,7 +228,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
@@ -252,7 +252,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
         verify(view).setEnablePullButton(eq(DISABLE_BUTTON));
@@ -278,7 +278,7 @@ public class PullPresenterTest extends BaseTest {
         verify(view).getRepositoryUrl();
         verify(view).close();
         verify(editorAgent).getOpenedEditors();
-        verify(service).pull(eq(projectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).pullSuccess(eq(REMOTE_URI));
         verify(appContext).getCurrentProject();
@@ -304,7 +304,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onPullClicked();
 
-        verify(service).pull(eq(projectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -329,7 +329,7 @@ public class PullPresenterTest extends BaseTest {
         presenter.onPullClicked();
 
         verify(view).close();
-        verify(service).pull(eq(projectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();

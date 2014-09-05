@@ -63,10 +63,10 @@ public class DeleteRepositoryPresenter {
     /** Delete Git repository. */
     public void deleteRepository() {
         final CurrentProject project = appContext.getCurrentProject();
-        service.deleteRepository(project.getProjectDescription(), new AsyncRequestCallback<Void>() {
+        service.deleteRepository(project.getRootProject(), new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
-                project.getProjectDescription().getAttributes().get("vcs.provider.name").clear();
+                project.getRootProject().getAttributes().get("vcs.provider.name").clear();
 
                 Notification notification = new Notification(constant.deleteGitRepositorySuccess(), INFO);
                 notificationManager.showNotification(notification);

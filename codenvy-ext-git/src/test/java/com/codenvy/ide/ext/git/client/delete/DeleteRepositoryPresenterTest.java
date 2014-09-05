@@ -64,7 +64,7 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
     public void testDeleteRepositoryWhenDeleteRepositoryIsSuccessful() throws Exception {
         Map attributes = mock(Map.class);
         List vcsProvider = mock(List.class);
-        when(projectDescriptor.getAttributes()).thenReturn(attributes);
+        when(rootProjectDescriptor.getAttributes()).thenReturn(attributes);
         when(attributes.get("vcs.provider.name")).thenReturn(vcsProvider);
         doAnswer(new Answer() {
             @Override
@@ -80,10 +80,10 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         presenter.deleteRepository();
 
         verify(appContext).getCurrentProject();
-        verify(service).deleteRepository(eq(projectDescriptor), (AsyncRequestCallback<Void>)anyObject());
+        verify(service).deleteRepository(eq(rootProjectDescriptor), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).deleteGitRepositorySuccess();
-        verify(projectDescriptor).getAttributes();
+        verify(rootProjectDescriptor).getAttributes();
         verify(attributes).get(anyString());
         verify(vcsProvider).clear();
     }
@@ -104,7 +104,7 @@ public class DeleteRepositoryPresenterTest extends BaseTest {
         presenter.deleteRepository();
 
         verify(appContext).getCurrentProject();
-        verify(service).deleteRepository(eq(projectDescriptor), (AsyncRequestCallback<Void>)anyObject());
+        verify(service).deleteRepository(eq(rootProjectDescriptor), (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(eventBus).fireEvent((ExceptionThrownEvent)anyObject());
     }

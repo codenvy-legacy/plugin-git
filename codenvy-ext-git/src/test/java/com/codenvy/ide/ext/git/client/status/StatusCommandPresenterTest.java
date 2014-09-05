@@ -72,7 +72,7 @@ public class StatusCommandPresenterTest extends BaseTest {
         presenter.showStatus();
 
         verify(appContext).getCurrentProject();
-        verify(service).statusText(eq(projectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
+        verify(service).statusText(eq(rootProjectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class StatusCommandPresenterTest extends BaseTest {
         presenter.showStatus();
 
         verify(appContext).getCurrentProject();
-        verify(service).statusText(eq(projectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
+        verify(service).statusText(eq(rootProjectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).statusFailed();
     }

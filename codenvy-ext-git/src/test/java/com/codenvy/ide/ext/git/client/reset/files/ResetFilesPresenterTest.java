@@ -78,7 +78,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).status(eq(projectDescriptor), (AsyncRequestCallback<Status>)anyObject());
+        verify(service).status(eq(rootProjectDescriptor), (AsyncRequestCallback<Status>)anyObject());
         verify(view).setIndexedFiles((Array<IndexFile>)anyObject());
         verify(view).showDialog();
     }
@@ -99,7 +99,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).status(eq(projectDescriptor), (AsyncRequestCallback<Status>)anyObject());
+        verify(service).status(eq(rootProjectDescriptor), (AsyncRequestCallback<Status>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).statusFailed();
     }
@@ -168,7 +168,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(rootProjectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).resetFilesSuccessfully();
@@ -208,7 +208,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onResetClicked();
 
-        verify(service).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(rootProjectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(constant).resetFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

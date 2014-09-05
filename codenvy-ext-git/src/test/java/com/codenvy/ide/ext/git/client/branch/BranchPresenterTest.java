@@ -136,7 +136,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(view).setEnableDeleteButton(eq(DISABLE_BUTTON));
         verify(view).setEnableRenameButton(eq(DISABLE_BUTTON));
         verify(view).showDialog();
-        verify(service).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).branchesListFailed();
     }
@@ -165,10 +165,10 @@ public class BranchPresenterTest extends BaseTest {
         presenter.onRenameClicked();
 
         verify(selectedBranch).getDisplayName();
-        verify(service).branchRename(eq(projectDescriptor), eq(BRANCH_NAME), eq(RETURNED_MESSAGE),
+        verify(service).branchRename(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(RETURNED_MESSAGE),
                                      (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2))
-                .branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+                .branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(notificationManager, never()).showNotification((Notification)anyObject());
         verify(constant, never()).branchRenameFailed();
     }
@@ -196,7 +196,7 @@ public class BranchPresenterTest extends BaseTest {
         presenter.onRenameClicked();
 
         verify(selectedBranch).getDisplayName();
-        verify(service).branchRename(eq(projectDescriptor), eq(BRANCH_NAME), eq(RETURNED_MESSAGE),
+        verify(service).branchRename(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(RETURNED_MESSAGE),
                                      (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).branchRenameFailed();
@@ -220,9 +220,9 @@ public class BranchPresenterTest extends BaseTest {
 
         verify(selectedBranch).getName();
         verify(service)
-                .branchDelete(eq(projectDescriptor), eq(BRANCH_NAME), eq(NEED_DELETING), (AsyncRequestCallback<String>)anyObject());
+                .branchDelete(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(NEED_DELETING), (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2))
-                .branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+                .branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(constant, never()).branchDeleteFailed();
         verify(notificationManager, never()).showNotification((Notification)anyObject());
     }
@@ -244,7 +244,7 @@ public class BranchPresenterTest extends BaseTest {
         presenter.onDeleteClicked();
 
         verify(selectedBranch).getName();
-        verify(service).branchDelete(eq(projectDescriptor), anyString(), eq(NEED_DELETING), (AsyncRequestCallback<String>)anyObject());
+        verify(service).branchDelete(eq(rootProjectDescriptor), anyString(), eq(NEED_DELETING), (AsyncRequestCallback<String>)anyObject());
         verify(constant).branchDeleteFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -280,9 +280,9 @@ public class BranchPresenterTest extends BaseTest {
         verify(editorAgent).getOpenedEditors();
         verify(selectedBranch, times(2)).getDisplayName();
         verify(selectedBranch).isRemote();
-        verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
+        verify(service).branchCheckout(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
                                        (AsyncRequestCallback<String>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter, times(2)).getEditorInput();
         verify(file).getPath();
@@ -324,9 +324,9 @@ public class BranchPresenterTest extends BaseTest {
         verify(editorAgent).getOpenedEditors();
         verify(selectedBranch, times(2)).getDisplayName();
         verify(selectedBranch).isRemote();
-        verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
+        verify(service).branchCheckout(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
                                        (AsyncRequestCallback<String>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
+        verify(service, times(2)).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();
         verify(file).getPath();
@@ -353,7 +353,7 @@ public class BranchPresenterTest extends BaseTest {
 
         verify(selectedBranch, times(2)).getDisplayName();
         verify(selectedBranch).isRemote();
-        verify(service).branchCheckout(eq(projectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
+        verify(service).branchCheckout(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
                                        (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).branchCheckoutFailed();
@@ -376,8 +376,8 @@ public class BranchPresenterTest extends BaseTest {
         presenter.onCreateClicked();
 
         verify(constant).branchTypeNew();
-        verify(service).branchCreate(eq(projectDescriptor), anyString(), anyString(), (AsyncRequestCallback<Branch>)anyObject());
-        verify(service, times(2)).branchList(eq(projectDescriptor), eq(LIST_ALL),
+        verify(service).branchCreate(eq(rootProjectDescriptor), anyString(), anyString(), (AsyncRequestCallback<Branch>)anyObject());
+        verify(service, times(2)).branchList(eq(rootProjectDescriptor), eq(LIST_ALL),
                                              (AsyncRequestCallback<Array<Branch>>)anyObject());
     }
 
@@ -397,7 +397,7 @@ public class BranchPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onCreateClicked();
 
-        verify(service).branchCreate(eq(projectDescriptor), anyString(), anyString(), (AsyncRequestCallback<Branch>)anyObject());
+        verify(service).branchCreate(eq(rootProjectDescriptor), anyString(), anyString(), (AsyncRequestCallback<Branch>)anyObject());
         verify(constant).branchCreateFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }

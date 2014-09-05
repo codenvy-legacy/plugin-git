@@ -76,7 +76,7 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
 
     /** Show dialog. */
     public void showDialog() {
-        view.setWorkDir(appContext.getCurrentProject().getProjectDescription().getPath());
+        view.setWorkDir(appContext.getCurrentProject().getRootProject().getPath());
         view.setEnableOkButton(true);
         view.showDialog();
     }
@@ -87,7 +87,7 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
         final CurrentProject currentProject = appContext.getCurrentProject();
         view.close();
         try {
-            service.init(currentProject.getProjectDescription(), false, new RequestCallback<Void>() {
+            service.init(currentProject.getRootProject(), false, new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
                     Notification notification = new Notification(constant.initSuccess(), INFO);
@@ -95,11 +95,11 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
 
                     // update 'vcs.provider.name' attribute value
                     Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-                    projectServiceClient.getProject(currentProject.getProjectDescription().getPath(),
+                    projectServiceClient.getProject(currentProject.getRootProject().getPath(),
                                                     new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
                                                         @Override
                                                         protected void onSuccess(ProjectDescriptor projectDescriptor) {
-                                                            currentProject.setProjectDescription(projectDescriptor);
+                                                            currentProject.setRootProject(projectDescriptor);
                                                         }
 
                                                         @Override

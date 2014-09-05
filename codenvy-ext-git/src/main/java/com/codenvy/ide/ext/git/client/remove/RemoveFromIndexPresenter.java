@@ -71,7 +71,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     /** Show dialog. */
     public void showDialog() {
         project = appContext.getCurrentProject();
-        String workDir = project.getProjectDescription().getPath();
+        String workDir = project.getRootProject().getPath();
         view.setMessage(formMessage(workDir));
         view.setRemoved(false);
         view.showDialog();
@@ -88,7 +88,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
 
         String path;
         if (selection == null || selection.getFirstElement() == null) {
-            path = project.getProjectDescription().getPath();
+            path = project.getRootProject().getPath();
         } else {
             path = selection.getFirstElement().getPath();
         }
@@ -111,7 +111,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     /** {@inheritDoc} */
     @Override
     public void onRemoveClicked() {
-        service.remove(project.getProjectDescription(), getFilePatterns(), view.isRemoved(),
+        service.remove(project.getRootProject(), getFilePatterns(), view.isRemoved(),
                        new AsyncRequestCallback<String>() {
                            @Override
                            protected void onSuccess(String result) {
@@ -138,12 +138,12 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
         Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
         String path;
         if (selection == null || selection.getFirstElement() == null) {
-            path = project.getProjectDescription().getPath();
+            path = project.getRootProject().getPath();
         } else {
             path = selection.getFirstElement().getPath();
         }
 
-        String pattern = path.replaceFirst(project.getProjectDescription().getPath(), "");
+        String pattern = path.replaceFirst(project.getRootProject().getPath(), "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
         return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<>(Arrays.asList(".")) : new ArrayList<>(Arrays.asList(pattern));

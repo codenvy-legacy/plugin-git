@@ -112,7 +112,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         final String currentBranchName = selectedBranch.getDisplayName();
         String name = Window.prompt(constant.branchTypeNew(), currentBranchName);
         if (!name.isEmpty()) {
-            service.branchRename(project.getProjectDescription(), currentBranchName, name, new AsyncRequestCallback<String>() {
+            service.branchRename(project.getRootProject(), currentBranchName, name, new AsyncRequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
                     getBranches();
@@ -135,7 +135,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     public void onDeleteClicked() {
         final String name = selectedBranch.getName();
 
-        service.branchDelete(project.getProjectDescription(), name, true, new AsyncRequestCallback<String>() {
+        service.branchDelete(project.getRootProject(), name, true, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
                 getBranches();
@@ -168,7 +168,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
             return;
         }
 
-        service.branchCheckout(project.getProjectDescription(), name, startingPoint, remote, new AsyncRequestCallback<String>() {
+        service.branchCheckout(project.getRootProject(), name, startingPoint, remote, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
                 getBranches();
@@ -237,7 +237,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
     /** Get the list of branches. */
     private void getBranches() {
-        service.branchList(project.getProjectDescription(), LIST_ALL,
+        service.branchList(project.getRootProject(), LIST_ALL,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -261,7 +261,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         String name = Window.prompt(constant.branchTypeNew(), "");
         if (!name.isEmpty()) {
 
-            service.branchCreate(project.getProjectDescription(), name, null,
+            service.branchCreate(project.getRootProject(), name, null,
                                  new AsyncRequestCallback<Branch>(dtoUnmarshallerFactory.newUnmarshaller(Branch.class)) {
                                      @Override
                                      protected void onSuccess(Branch result) {

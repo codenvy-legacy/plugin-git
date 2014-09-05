@@ -128,7 +128,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
 
     /** Show dialog. */
     public void showDialog() {
-        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
         getCommitsLog(project);
         selectedRevision = null;
 
@@ -225,7 +225,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     /** {@inheritDoc} */
     @Override
     public void onRefreshClicked() {
-        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
         getCommitsLog(project);
     }
 
@@ -302,14 +302,14 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     /** Update content. */
     private void update() {
         getDiff();
-        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
         getCommitsLog(project);
     }
 
     /** Get the changes between revisions. On success - display diff in text format, otherwise - show the error message in output panel. */
     private void getDiff() {
         String pattern = "";
-        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
         if (!showChangesInProject && project != null) {
             String path;
 
@@ -350,7 +350,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             return;
         }
 
-        ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+        ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
         service.diff(project, filePatterns, RAW, false, 0, revision.getId(), isCached,
                      new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                          @Override
@@ -387,7 +387,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
         int index = revisions.indexOf(revisionB);
         if (index + 1 < revisions.size()) {
             final Revision revisionA = revisions.get(index + 1);
-            ProjectDescriptor project = appContext.getCurrentProject().getProjectDescription();
+            ProjectDescriptor project = appContext.getCurrentProject().getRootProject();
             service.diff(project, filePatterns, RAW, false, 0, revisionA.getId(),
                          revisionB.getId(),
                          new AsyncRequestCallback<String>(new StringUnmarshaller()) {

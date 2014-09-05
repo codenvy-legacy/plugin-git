@@ -77,7 +77,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     /** Show dialog. */
     public void showDialog() {
         project = appContext.getCurrentProject();
-        final String workDir = project.getProjectDescription().getPath();
+        final String workDir = project.getRootProject().getPath();
         view.setMessage(formMessage(workDir));
         view.setUpdated(false);
         view.showDialog();
@@ -94,7 +94,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
 
         String path;
         if (selection == null || selection.getFirstElement() == null) {
-            path = project.getProjectDescription().getPath();
+            path = project.getRootProject().getPath();
         } else {
             path = selection.getFirstElement().getPath();
         }
@@ -120,7 +120,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         boolean update = view.isUpdated();
 
         try {
-            service.add(project.getProjectDescription(), update, getFilePatterns(), new RequestCallback<Void>() {
+            service.add(project.getRootProject(), update, getFilePatterns(), new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
                     Notification notification = new Notification(constant.addSuccess(), INFO);
@@ -145,12 +145,12 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      */
     @NotNull
     private List<String> getFilePatterns() {
-        String projectPath = project.getProjectDescription().getPath();
+        String projectPath = project.getRootProject().getPath();
 
         Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
         String path;
         if (selection == null || selection.getFirstElement() == null) {
-            path = project.getProjectDescription().getPath();
+            path = project.getRootProject().getPath();
         } else {
             path = selection.getFirstElement().getPath();
         }

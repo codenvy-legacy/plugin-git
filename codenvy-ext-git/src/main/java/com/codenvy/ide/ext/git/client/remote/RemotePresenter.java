@@ -73,7 +73,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
 
     /** Show dialog. */
     public void showDialog() {
-        project = appContext.getCurrentProject().getProjectDescription();
+        project = appContext.getCurrentProject().getRootProject();
         getRemotes();
     }
 

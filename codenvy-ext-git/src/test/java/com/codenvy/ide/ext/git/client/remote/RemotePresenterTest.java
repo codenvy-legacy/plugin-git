@@ -85,7 +85,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(view).setEnableDeleteButton(eq(DISABLE_BUTTON));
         verify(view).setRemotes((Array<Remote>)anyObject());
@@ -109,7 +109,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.showDialog();
 
         verify(appContext).getCurrentProject();
-        verify(service).remoteList(eq(projectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
+        verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
     }
@@ -177,7 +177,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.onRemoteSelected(selectedRemote);
         presenter.onDeleteClicked();
 
-        verify(service).remoteDelete(eq(projectDescriptor), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
+        verify(service).remoteDelete(eq(rootProjectDescriptor), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2)).remoteList((ProjectDescriptor)anyObject(), anyString(), eq(SHOW_ALL_INFORMATION),
                                              (AsyncRequestCallback<Array<Remote>>)anyObject());
     }
@@ -199,7 +199,7 @@ public class RemotePresenterTest extends BaseTest {
         presenter.onRemoteSelected(selectedRemote);
         presenter.onDeleteClicked();
 
-        verify(service).remoteDelete(eq(projectDescriptor), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
+        verify(service).remoteDelete(eq(rootProjectDescriptor), eq(REPOSITORY_NAME), (AsyncRequestCallback<String>)anyObject());
         verify(constant).remoteDeleteFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }

@@ -98,7 +98,7 @@ public class PullPresenter implements PullView.ActionDelegate {
     private void getRemotes() {
         view.setEnablePullButton(true);
 
-        service.remoteList(project.getProjectDescription(), null, true,
+        service.remoteList(project.getRootProject(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
@@ -126,7 +126,7 @@ public class PullPresenter implements PullView.ActionDelegate {
      *         is a remote mode
      */
     private void getBranches(@NotNull final String remoteMode) {
-        service.branchList(project.getProjectDescription(), remoteMode,
+        service.branchList(project.getRootProject(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
@@ -223,7 +223,7 @@ public class PullPresenter implements PullView.ActionDelegate {
         }
 
         try {
-            service.pull(project.getProjectDescription(), getRefs(), remoteName, new RequestCallback<String>() {
+            service.pull(project.getRootProject(), getRefs(), remoteName, new RequestCallback<String>() {
                 @Override
                 protected void onSuccess(String result) {
                     Notification notification = new Notification(constant.pullSuccess(remoteUrl), INFO);

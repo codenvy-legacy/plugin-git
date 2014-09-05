@@ -83,7 +83,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
 
     /** Show dialog. */
     public void showDialog() {
-        service.log(appContext.getCurrentProject().getProjectDescription(), false,
+        service.log(appContext.getCurrentProject().getRootProject(), false,
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
                         protected void onSuccess(LogResponse result) {
@@ -155,7 +155,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
      * @param callback
      */
     private void getDiff(List<String> listFiles, final String commit, final AsyncCallback<String> callback) {
-        service.diff(appContext.getCurrentProject().getProjectDescription(), listFiles, DiffRequest.DiffType.RAW, true, 0, commit, false,
+        service.diff(appContext.getCurrentProject().getRootProject(), listFiles, DiffRequest.DiffType.RAW, true, 0, commit, false,
                      new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                          @Override
                          protected void onSuccess(String diff) {
@@ -183,7 +183,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
         type = (type == null && view.isMergeMode()) ? ResetRequest.ResetType.MERGE : type;
 
         final ResetRequest.ResetType finalType = type;
-        service.reset(appContext.getCurrentProject().getProjectDescription(), selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
+        service.reset(appContext.getCurrentProject().getRootProject(), selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
 
@@ -213,7 +213,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
      *         diff between the specified state and current state for pointed file(s) in text format.
      */
     private void refreshProject(final String diff) {
-        final String projectPath = appContext.getCurrentProject().getProjectDescription().getPath();
+        final String projectPath = appContext.getCurrentProject().getRootProject().getPath();
         eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
             final FileNode file = partPresenter.getEditorInput().getFile();

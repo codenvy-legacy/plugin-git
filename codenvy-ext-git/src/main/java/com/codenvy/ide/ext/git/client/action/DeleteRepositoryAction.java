@@ -47,7 +47,7 @@ public class DeleteRepositoryAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log("IDE: Git delete repository");
         Ask ask = new Ask(constant.deleteGitRepositoryTitle(),
-                          constant.deleteGitRepositoryQuestion(getActiveProject().getProjectDescription().getPath()), new AskHandler() {
+                          constant.deleteGitRepositoryQuestion(getActiveProject().getRootProject().getPath()), new AskHandler() {
             @Override
             public void onOk() {
                 presenter.deleteRepository();

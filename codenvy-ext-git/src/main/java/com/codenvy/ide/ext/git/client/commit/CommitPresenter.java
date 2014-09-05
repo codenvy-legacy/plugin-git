@@ -85,7 +85,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
         boolean all = view.isAllFilesInclued();
         boolean amend = view.isAmend();
 
-        service.commit(appContext.getCurrentProject().getProjectDescription(), message, all, amend,
+        service.commit(appContext.getCurrentProject().getRootProject(), message, all, amend,
                        new AsyncRequestCallback<Revision>(dtoUnmarshallerFactory.newUnmarshaller(Revision.class)) {
                            @Override
                            protected void onSuccess(Revision result) {

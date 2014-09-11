@@ -34,7 +34,7 @@ public class BranchListCommand extends GitCommand<List<Branch>> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public List<Branch> execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("branch");
         if (showRemotes) {
             commandLine.add("-r");

@@ -31,7 +31,7 @@ public class CloneCommand extends GitCommand<Void> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("clone");
         if (remoteName != null) {
             commandLine.add("--origin", remoteName);

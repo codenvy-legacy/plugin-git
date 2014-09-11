@@ -32,7 +32,7 @@ public class PullCommand extends GitCommand<Void> {
     @Override
     public Void execute() throws GitException {
         remote = remote == null ? "origin" : remote;
-        clear();
+        reset();
         commandLine.add("pull");
         if (remote != null) {
             commandLine.add(remote);

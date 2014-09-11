@@ -34,7 +34,7 @@ public class PushCommand extends GitCommand<Void> {
     @Override
     public Void execute() throws GitException {
         remote = remote == null ? "origin" : remote;
-        clear();
+        reset();
         commandLine.add("push");
         commandLine.add(remote);
         if (refSpec != null) {

@@ -36,7 +36,7 @@ public class RemoteListCommand extends GitCommand<List<Remote>> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public List<Remote> execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("remote", "-v");
         start();
         //get all remotes with urls

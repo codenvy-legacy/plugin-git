@@ -35,7 +35,7 @@ public class RemoteAddCommand extends GitCommand<Void> {
         if (name == null || url == null) {
             throw new GitException("Name or url is not set.");
         }
-        clear();
+        reset();
         commandLine.add("remote", "add", name, url);
         if (branches != null) {
             for (String branch : branches) {

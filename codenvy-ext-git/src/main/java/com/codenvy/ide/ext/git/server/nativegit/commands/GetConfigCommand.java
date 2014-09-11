@@ -21,8 +21,9 @@ import java.io.File;
  */
 public class GetConfigCommand extends GitCommand<Void> {
 
-    private String  attribute;
+    private String  name;
     private boolean getList;
+    private boolean getAll;
 
     public GetConfigCommand(File place) {
         super(place);
@@ -31,27 +32,31 @@ public class GetConfigCommand extends GitCommand<Void> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("config");
         if (getList) {
             commandLine.add("--list");
         } else {
-            if (attribute == null) {
-                throw new GitException("Nothing to get, attribute wasn't set.");
+            if (name == null) {
+                throw new GitException("Nothing to get, name wasn't set.");
             }
-            commandLine.add("--get", attribute);
+            if (getAll) {
+                commandLine.add("--get-all", name);
+            } else {
+                commandLine.add("--get", name);
+            }
         }
         start();
         return null;
     }
 
     /**
-     * @param attribute
+     * @param name
      *         what to get from config
-     * @return GetConfigCommand with established attribute
+     * @return GetConfigCommand with established name
      */
-    public GetConfigCommand setAttribute(String attribute) {
-        this.attribute = attribute;
+    public GetConfigCommand setValue(String name) {
+        this.name = name;
         return this;
     }
 
@@ -62,6 +67,16 @@ public class GetConfigCommand extends GitCommand<Void> {
      */
     public GetConfigCommand setGetList(boolean getList) {
         this.getList = getList;
+        return this;
+    }
+
+    /**
+     * @param getAll
+     *         if <code>true</code> all values matched to #name
+     * @return GetConfigCommand with established getAll parameter
+     */
+    public GetConfigCommand setGetAll(boolean getAll) {
+        this.getAll = getAll;
         return this;
     }
 }

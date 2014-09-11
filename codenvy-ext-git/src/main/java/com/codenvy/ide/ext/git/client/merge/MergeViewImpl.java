@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.merge;
 
+import elemental.events.KeyboardEvent;
 import elemental.events.MouseEvent;
 
 import com.codenvy.ide.collections.Array;
@@ -124,6 +125,11 @@ public class MergeViewImpl extends Window implements MergeView {
 
             @Override
             public void onRootDragDrop(MouseEvent event) {
+                //do nothing
+            }
+            
+            @Override
+            public void onKeyboard(KeyboardEvent event) {
                 //do nothing
             }
         });

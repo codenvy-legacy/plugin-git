@@ -36,7 +36,7 @@ public class AddCommand extends GitCommand<Void> {
         if (filePattern == null) {
             throw new GitException("No file pattern was set.");
         }
-        clear();
+        reset();
         commandLine.add("add");
         for (String line : filePattern) {
             commandLine.add(line);

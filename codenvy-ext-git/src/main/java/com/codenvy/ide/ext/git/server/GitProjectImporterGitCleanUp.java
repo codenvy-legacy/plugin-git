@@ -16,7 +16,6 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.ProjectManager;
 import com.codenvy.api.project.server.VirtualFileEntry;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
 import com.codenvy.vfs.impl.fs.LocalPathResolver;
@@ -33,9 +32,8 @@ import java.util.Map;
 public class GitProjectImporterGitCleanUp extends GitProjectImporter {
 
     @Inject
-    public GitProjectImporterGitCleanUp(NativeGitConnectionFactory nativeGitConnectionFactory, LocalPathResolver localPathResolver,
-                                        ProjectManager projectManager) {
-        super(nativeGitConnectionFactory, localPathResolver, projectManager);
+    public GitProjectImporterGitCleanUp(NativeGitConnectionFactory nativeGitConnectionFactory, LocalPathResolver localPathResolver) {
+        super(nativeGitConnectionFactory, localPathResolver);
 
     }
 

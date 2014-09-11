@@ -34,7 +34,7 @@ public class FetchCommand extends GitCommand<Void> {
     @Override
     public Void execute() throws GitException {
         remote = remote == null ? "origin" : remote;
-        clear();
+        reset();
         commandLine.add("fetch", remote);
         commandLine.add(refSpec);
         if (prune) {

@@ -35,7 +35,7 @@ public class RemoveCommand extends GitCommand<Void> {
         if (listOfFiles == null) {
             throw new GitException("Nothing to remove.");
         }
-        clear();
+        reset();
         commandLine.add("rm");
         commandLine.add(listOfFiles);
         if (cached) {

@@ -11,7 +11,6 @@
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
 import com.codenvy.ide.ext.git.server.GitException;
-import com.codenvy.ide.ext.git.server.nativegit.Config;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
 import java.io.File;
@@ -25,7 +24,6 @@ public class CommitCommand extends GitCommand<Void> {
 
     private String  message;
     private GitUser author;
-    private GitUser committer;
     private boolean amend;
     private boolean all;
 
@@ -39,7 +37,7 @@ public class CommitCommand extends GitCommand<Void> {
         if (message == null) {
             throw new GitException("Message wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("commit");
         if (amend) {
             commandLine.add("--amend");
@@ -51,21 +49,7 @@ public class CommitCommand extends GitCommand<Void> {
         if (author != null) {
             commandLine.add(String.format("--author=%s \\<%s>", author.getName(), author.getEmail()));
         }
-        if (committer != null) {
-            //save config
-            Config config = new Config(getRepository());
-            GitUser defaultCommitter = config.loadUser().getUser();
-            //set new committer
-            config.setUser(committer).saveUser();
-            try {
-                start();
-            } finally {
-                //set default user back
-                config.setUser(defaultCommitter).saveUser();
-            }
-        } else {
-            start();
-        }
+        start();
         return null;
     }
 
@@ -106,19 +90,6 @@ public class CommitCommand extends GitCommand<Void> {
      */
     public CommitCommand setAuthor(GitUser author) {
         this.author = author;
-        return this;
-    }
-
-    /**
-     * If committer is <code>null</code> then default configuration person
-     * will be used.
-     *
-     * @param committer
-     *         who makes commit
-     * @return CommitCommand with established committer
-     */
-    public CommitCommand setCommitter(GitUser committer) {
-        this.committer = committer;
         return this;
     }
 }

@@ -36,7 +36,7 @@ public class BranchCheckoutCommand extends GitCommand<Void> {
         if (branchName == null) {
             throw new GitException("Branch name was not set.");
         }
-        clear();
+        reset();
         commandLine.add("checkout");
         if (createNew) {
             commandLine.add("-b");

@@ -34,7 +34,7 @@ public class BranchCreateCommand extends GitCommand<Void> {
         if (branchName == null) {
             throw new GitException("Branch name was not set.");
         }
-        clear();
+        reset();
         commandLine.add("branch").add(branchName);
         if (startPoint != null) {
             commandLine.add(startPoint);

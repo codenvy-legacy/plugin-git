@@ -406,6 +406,9 @@ public interface GitConnection {
      */
     List<GitUser> getCommiters() throws GitException;
 
+    /** Gte configuration. */
+    Config getConfig() throws GitException;
+
     /** Close connection, release associated resources. */
     void close();
 }

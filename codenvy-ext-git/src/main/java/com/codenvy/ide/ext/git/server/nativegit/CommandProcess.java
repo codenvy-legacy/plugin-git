@@ -21,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.codenvy.api.core.util.CancellableProcessWrapper;
+import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.ProcessUtil;
-import com.codenvy.api.core.util.ShellFactory;
 import com.codenvy.api.core.util.Watchdog;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand;
@@ -47,19 +47,18 @@ public class CommandProcess {
      *         when command execution error occurs
      */
     public static void executeGitCommand(GitCommand command, List<String> output, LineConsumer lineConsumer) throws GitException {
+        CommandLine commandLine = command.getCommandLine();
         if (lineConsumer != null) {
             try {
-                lineConsumer.writeLine("Executing Git command: " + command.getCommandLine().toString());
-            } catch (Exception e1) {
-                LOG.error("An error occured while trying to write line on the lineConsumer", e1);
+                lineConsumer.writeLine("Executing Git command: " + commandLine.toString());
+            } catch (IOException ioe) {
+                LOG.error("An error occurred while trying to write line on the lineConsumer", ioe);
             }
         }
 
-        String[] line = ShellFactory.getShell().createShellCommand(command.getCommandLine());
-        ProcessBuilder pb = new ProcessBuilder(Arrays.asList(line));
+        ProcessBuilder pb = new ProcessBuilder(commandLine.toShellCommand());
 
         Map<String, String> environment = pb.environment();
-
 
         environment.put("HOME" , System.getProperty("user.home"));
         // if command should be executed with ssh key
@@ -72,7 +71,6 @@ public class CommandProcess {
         }
 
         pb.directory(command.getRepository());
-
 
         ProcessLineConsumer processLineConsumer = new ProcessLineConsumer(output);
         LineConsumer consumer = processLineConsumer;
@@ -103,10 +101,10 @@ public class CommandProcess {
             * */
             if (process.exitValue() != 0) {
                 String message = searchErrorMessage(processLineConsumer.getOutput());
-                LOG.debug("Command execution failed!\n" + message);
+                LOG.debug(String.format("Command failed!\ncommand: %s\nerror: %s", commandLine.toString(), message));
                 throw new GitException(message);
             } else {
-                LOG.debug("Command was executed successful!");
+                LOG.debug(String.format("Command successful!\ncommand: %s", commandLine.toString()));
             }
         } catch (InterruptedException e) {
             Thread.interrupted();

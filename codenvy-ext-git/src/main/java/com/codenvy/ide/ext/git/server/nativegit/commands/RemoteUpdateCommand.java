@@ -42,7 +42,7 @@ public class RemoteUpdateCommand extends GitCommand<Void> {
         if (remoteName == null) {
             throw new GitException("Remote name wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("remote");
         if (branchesToAdd != null) {
             commandLine.add("set-branches");

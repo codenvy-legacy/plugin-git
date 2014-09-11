@@ -36,7 +36,7 @@ public class TagListCommand extends GitCommand<List<Tag>> {
      */
     @Override
     public List<Tag> execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("tag", "-l");
         if (pattern != null) {
             commandLine.add(pattern);

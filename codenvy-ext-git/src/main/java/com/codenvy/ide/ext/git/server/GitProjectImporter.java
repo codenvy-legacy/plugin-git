@@ -82,7 +82,7 @@ public class GitProjectImporter implements ProjectImporter {
             String branch = null;
             if (parameters != null) {
                 commitId = parameters.get("vcsCommitId");
-                branch = parameters.get("vcsbranch"); // TODO: rename to "branch"
+                branch = parameters.get("branch");
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();

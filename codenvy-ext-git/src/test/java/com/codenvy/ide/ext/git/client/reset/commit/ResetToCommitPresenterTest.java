@@ -227,7 +227,7 @@ public class ResetToCommitPresenterTest extends BaseTest {
     public void testOnResetClickedWhenResetTypeEqualsHardOrMergeAndWhenFileIsChangedInCommitToResetAndDiffAndResetRequestsIsSuccessful()
             throws Exception {
         when(view.isMixMode()).thenReturn(false);
-        when(view.isMergeMode()).thenReturn(true);
+//        when(view.isMergeMode()).thenReturn(true);
 
         doAnswer(new Answer() {
             @Override

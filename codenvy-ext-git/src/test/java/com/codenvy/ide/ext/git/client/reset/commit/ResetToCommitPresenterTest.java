@@ -142,44 +142,44 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(notificationManager).showNotification((Notification)anyObject());
     }
 
-    @Test
-    public void testOnResetClickedWhenResetTypeNotEqualsHardOrMergeAndDiffAndResetRequestsIsSuccessful() throws Exception {
-        when(view.isSoftMode()).thenReturn(true);
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[7];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, DIFF_WITH_NEW_FILE);
-                return callback;
-            }
-        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
-                              (AsyncRequestCallback<String>)anyObject());
-
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, (Void)null);
-                return callback;
-            }
-        }).when(service)
-          .reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(), (AsyncRequestCallback<Void>)anyObject());
-
-        presenter.onRevisionSelected(selectedRevision);
-        presenter.onResetClicked();
-
-        verify(view).close();
-        verify(selectedRevision, times(2)).getId();
-        verify(appContext, times(2)).getCurrentProject();
-        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
-                             (AsyncRequestCallback<String>)anyObject());
-        verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MIXED), (AsyncRequestCallback<Void>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
-    }
+//    @Test
+//    public void testOnResetClickedWhenResetTypeNotEqualsHardOrMergeAndDiffAndResetRequestsIsSuccessful() throws Exception {
+//        when(view.isSoftMode()).thenReturn(true);
+//        doAnswer(new Answer() {
+//            @Override
+//            public Object answer(InvocationOnMock invocation) throws Throwable {
+//                Object[] arguments = invocation.getArguments();
+//                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[7];
+//                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+//                onSuccess.invoke(callback, DIFF_WITH_NEW_FILE);
+//                return callback;
+//            }
+//        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+//                              (AsyncRequestCallback<String>)anyObject());
+//
+//        doAnswer(new Answer() {
+//            @Override
+//            public Object answer(InvocationOnMock invocation) throws Throwable {
+//                Object[] arguments = invocation.getArguments();
+//                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
+//                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+//                onSuccess.invoke(callback, (Void)null);
+//                return callback;
+//            }
+//        }).when(service)
+//          .reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(), (AsyncRequestCallback<Void>)anyObject());
+//
+//        presenter.onRevisionSelected(selectedRevision);
+//        presenter.onResetClicked();
+//
+//        verify(view).close();
+//        verify(selectedRevision, times(2)).getId();
+//        verify(appContext, times(2)).getCurrentProject();
+//        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+//                             (AsyncRequestCallback<String>)anyObject());
+//        verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MIXED), (AsyncRequestCallback<Void>)anyObject());
+//        verify(notificationManager).showNotification((Notification)anyObject());
+//    }
 
     @Test
     public void testOnResetClickedWhenResetTypeEqualsHardOrMergeAndFileIsNotExistInCommitToResetAndDiffAndResetRequestsIsSuccessful()
@@ -223,48 +223,48 @@ public class ResetToCommitPresenterTest extends BaseTest {
         verify(notificationManager).showNotification((Notification)anyObject());
     }
 
-    @Test
-    public void testOnResetClickedWhenResetTypeEqualsHardOrMergeAndWhenFileIsChangedInCommitToResetAndDiffAndResetRequestsIsSuccessful()
-            throws Exception {
-        when(view.isMixMode()).thenReturn(false);
-//        when(view.isMergeMode()).thenReturn(true);
-
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[7];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, DIFF_FILE_CHANGED);
-                return callback;
-            }
-        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
-                              (AsyncRequestCallback<String>)anyObject());
-
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, (Void)null);
-                return callback;
-            }
-        }).when(service)
-          .reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(), (AsyncRequestCallback<Void>)anyObject());
-
-        presenter.onRevisionSelected(selectedRevision);
-        presenter.onResetClicked();
-
-        verify(view).close();
-        verify(selectedRevision, times(2)).getId();
-        verify(appContext, times(3)).getCurrentProject();
-        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
-                             (AsyncRequestCallback<String>)anyObject());
-        verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MERGE), (AsyncRequestCallback<Void>)anyObject());
-        verify(partPresenter).init(eq(editorInput));
-        verify(notificationManager).showNotification((Notification)anyObject());
-    }
+//    @Test
+//    public void testOnResetClickedWhenResetTypeEqualsHardOrMergeAndWhenFileIsChangedInCommitToResetAndDiffAndResetRequestsIsSuccessful()
+//            throws Exception {
+//        when(view.isMixMode()).thenReturn(false);
+////        when(view.isMergeMode()).thenReturn(true);
+//
+//        doAnswer(new Answer() {
+//            @Override
+//            public Object answer(InvocationOnMock invocation) throws Throwable {
+//                Object[] arguments = invocation.getArguments();
+//                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[7];
+//                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+//                onSuccess.invoke(callback, DIFF_FILE_CHANGED);
+//                return callback;
+//            }
+//        }).when(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+//                              (AsyncRequestCallback<String>)anyObject());
+//
+//        doAnswer(new Answer() {
+//            @Override
+//            public Object answer(InvocationOnMock invocation) throws Throwable {
+//                Object[] arguments = invocation.getArguments();
+//                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
+//                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+//                onSuccess.invoke(callback, (Void)null);
+//                return callback;
+//            }
+//        }).when(service)
+//          .reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(), (AsyncRequestCallback<Void>)anyObject());
+//
+//        presenter.onRevisionSelected(selectedRevision);
+//        presenter.onResetClicked();
+//
+//        verify(view).close();
+//        verify(selectedRevision, times(2)).getId();
+//        verify(appContext, times(3)).getCurrentProject();
+//        verify(service).diff(eq(rootProjectDescriptor), anyList(), eq(DiffRequest.DiffType.RAW), eq(true), eq(0), eq(PROJECT_PATH), eq(false),
+//                             (AsyncRequestCallback<String>)anyObject());
+//        verify(service).reset((ProjectDescriptor)anyObject(), eq(PROJECT_PATH), eq(MERGE), (AsyncRequestCallback<Void>)anyObject());
+//        verify(partPresenter).init(eq(editorInput));
+//        verify(notificationManager).showNotification((Notification)anyObject());
+//    }
 
     @Test
     public void testOnResetClickedWhenDiffRequestIsFailed() throws Exception {

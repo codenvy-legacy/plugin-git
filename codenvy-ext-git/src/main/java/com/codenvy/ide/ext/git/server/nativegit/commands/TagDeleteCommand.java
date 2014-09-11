@@ -35,7 +35,7 @@ public class TagDeleteCommand extends GitCommand<Void> {
         if (name == null) {
             throw new GitException("Tag name wasn't set. Nothing to delete.");
         }
-        clear();
+        reset();
         commandLine.add("tag", "--delete", name);
         start();
         return null;

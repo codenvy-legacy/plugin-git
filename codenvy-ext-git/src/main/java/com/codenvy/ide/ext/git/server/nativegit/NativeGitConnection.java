@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.ext.git.server.Config;
 import com.codenvy.ide.ext.git.server.DiffPage;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitException;
@@ -223,7 +224,7 @@ public class NativeGitConnection implements GitConnection {
         new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
                                            .setNewUrl(remoteUri)
                                            .execute();
-        nativeGit.createConfig().setUser(user).saveUser();
+        nativeGit.createConfig().set("user.name", user.getName()).set("user.email", user.getEmail());
         NativeGitConnection newNativeGit = new NativeGitConnection(repository, user, keysManager, credentialsLoader, credentialsProviders);
         newNativeGit.setOutputLineConsumer(nativeGit.gitOutputPublisher);
         return newNativeGit;
@@ -259,12 +260,12 @@ public class NativeGitConnection implements GitConnection {
             }
         }
 
-        if (committer == null) committer = user;
+        if (committer == null) {
+            committer = user;
+        }
 
-        nativeGit.createConfig().setUser(committer).saveUser();
         CommitCommand command = nativeGit.createCommitCommand();
         command.setAuthor(committer);
-        command.setCommitter(committer);
         command.setAll(request.isAll());
         command.setAmend(request.isAmend());
         command.setMessage(request.getMessage());
@@ -305,7 +306,7 @@ public class NativeGitConnection implements GitConnection {
         } else {
             fetchCommand = nativeGit.createFetchCommand();
         }
-        fetchCommand.setRemote(remoteUri)
+        fetchCommand.setRemote(request.getRemote())
                     .setPrune(request.isRemoveDeletedRefs())
                     .setRefSpec(request.getRefSpec())
                     .setTimeout(request.getTimeout());
@@ -330,7 +331,7 @@ public class NativeGitConnection implements GitConnection {
         InitCommand initCommand = nativeGit.createInitCommand();
         initCommand.setBare(request.isBare());
         initCommand.execute();
-        nativeGit.createConfig().setUser(user).saveUser();
+        nativeGit.createConfig().set("user.name", user.getName()).set("user.email", user.getEmail());
         //make initial commit.
         if (!request.isBare() && request.isInitCommit()) {
             try {
@@ -344,9 +345,7 @@ public class NativeGitConnection implements GitConnection {
                 //if nothing to commit
             }
         }
-        NativeGitConnection newNativeGit = new NativeGitConnection(nativeGit.getRepository(), user, keysManager, credentialsLoader, credentialsProviders);
-        newNativeGit.setOutputLineConsumer(nativeGit.gitOutputPublisher);
-        return newNativeGit;
+        return this;
     }
 
     @Override
@@ -529,6 +528,11 @@ public class NativeGitConnection implements GitConnection {
             users.add(rev.getCommitter());
         }
         return users;
+    }
+
+    @Override
+    public Config getConfig() throws GitException {
+        return nativeGit.createConfig();
     }
 
     @Override

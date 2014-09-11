@@ -30,7 +30,7 @@ public class InitCommand extends GitCommand<Void> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("init");
         if (bare) {
             commandLine.add("--bare");

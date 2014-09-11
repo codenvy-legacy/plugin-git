@@ -36,7 +36,7 @@ public class BranchDeleteCommand extends GitCommand<Void> {
         if (branchName == null) {
             throw new GitException("Branch name was not set.");
         }
-        clear();
+        reset();
         commandLine.add("branch");
         commandLine.add(deleteFullyMerged ? "-D" : "-d");
         commandLine.add(branchName);

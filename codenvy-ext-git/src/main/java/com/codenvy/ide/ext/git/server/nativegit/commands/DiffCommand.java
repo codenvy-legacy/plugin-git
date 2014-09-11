@@ -38,7 +38,7 @@ public class DiffCommand extends GitCommand<String> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public String execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("diff");
         if (!(type == null || type.equals(DiffRequest.DiffType.RAW.toString()))) {
             commandLine.add(type);

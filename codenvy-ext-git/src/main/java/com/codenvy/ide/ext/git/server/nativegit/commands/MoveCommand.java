@@ -34,7 +34,7 @@ public class MoveCommand extends GitCommand<Void> {
         if (source == null || target == null) {
             throw new GitException("Target or source wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("mv", source, target);
         start();
         return null;

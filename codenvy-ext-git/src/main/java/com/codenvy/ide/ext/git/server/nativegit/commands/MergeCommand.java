@@ -39,7 +39,7 @@ public class MergeCommand extends GitCommand<MergeResult> {
         if (commit == null) {
             throw new GitException("Commit wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("merge", commit);
         //result of merging
         NativeGitMergeResult mergeResult = new NativeGitMergeResult();

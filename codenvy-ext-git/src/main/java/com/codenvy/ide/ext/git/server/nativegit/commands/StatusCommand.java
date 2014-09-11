@@ -31,7 +31,7 @@ public class StatusCommand extends GitCommand<List<String>> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public List<String> execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("status");
         if (isShort) {
             commandLine.add("--short");

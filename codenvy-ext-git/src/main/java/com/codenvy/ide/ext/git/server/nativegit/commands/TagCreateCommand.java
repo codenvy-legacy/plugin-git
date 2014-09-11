@@ -38,7 +38,7 @@ public class TagCreateCommand extends GitCommand<Tag> {
         if (name == null) {
             throw new GitException("Name wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("tag", name);
         if (commit != null) {
             commandLine.add(commit);

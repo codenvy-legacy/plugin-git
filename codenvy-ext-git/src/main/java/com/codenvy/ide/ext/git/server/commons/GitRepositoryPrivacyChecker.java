@@ -49,49 +49,51 @@ public class GitRepositoryPrivacyChecker {
      * @return <code>true</code> when repository is public
      */
     public boolean isRepositoryPublic(String gitUrl) {
-        Matcher matcher = SSH_URL.matcher(gitUrl);
-        if (!matcher.matches()) {
-            // call git ls-remote
-            GitConnection gitConnection = null;
+        // Calls git ls-remote
+        GitConnection gitConnection = null;
+        try {
             try {
-                gitConnection = gitConnectionFactory.getConnection("/tmp");
-                gitConnection.lsRemote(DtoFactory.getInstance().createDto(LsRemoteRequest.class).withRemoteUrl(gitUrl));
-                return true;
-            } catch (GitException | UnauthorizedException e) {
-                return false;
-            } finally {
-                if (gitConnection != null) {
-                    gitConnection.close();
-                }
+                // Any directory is OK for init GitConnection instance. Command 'git ls-remote <URL>' doesn't need git working directory.
+                gitConnection = gitConnectionFactory.getConnection(System.getProperty("java.io.tmpdir"));
+            } catch (GitException e) {
+                // Can't continue
+                throw new RuntimeException(e);
             }
-        } else {
-            // if url is ssh, use special check
-            // order is important
-            String host = matcher.group(1);
-            String port = matcher.group(2);
-            String path = matcher.group(3);
-            List<String> gitUrls = new ArrayList<>();
-            gitUrls.add(createHttpsUrl(host, port, path));
-            gitUrls.add(createHttpUrl(host, port, path));
-            gitUrls.add(createHttpsWithoutPortUrl(host, path));
-            gitUrls.add(createHttpWithoutPortUrl(host, path));
-            for (String repoUrl : gitUrls) {
-                GitConnection gitConnection = null;
+            Matcher matcher = SSH_URL.matcher(gitUrl);
+            DtoFactory dtoFactory = DtoFactory.getInstance();
+            if (!matcher.matches()) {
                 try {
-                    gitConnection = gitConnectionFactory.getConnection("/tmp", null);
-                    gitConnection.lsRemote(DtoFactory.getInstance().createDto(LsRemoteRequest.class)
-                                                     .withRemoteUrl(repoUrl)
-                                                     .withUseAuthorization(false));
+                    gitConnection.lsRemote(dtoFactory.createDto(LsRemoteRequest.class).withRemoteUrl(gitUrl).withUseAuthorization(false));
                     return true;
-                } catch (GitException | UnauthorizedException ignored) {
-                    // try another url to check for
-                } finally {
-                    if (gitConnection != null) {
-                        gitConnection.close();
+                } catch (GitException | UnauthorizedException e) {
+                    return false;
+                }
+            } else {
+                // If url is ssh, use special check order is important
+                String host = matcher.group(1);
+                String port = matcher.group(2);
+                String path = matcher.group(3);
+                List<String> gitUrls = new ArrayList<>();
+                gitUrls.add(createHttpsUrl(host, port, path));
+                gitUrls.add(createHttpUrl(host, port, path));
+                gitUrls.add(createHttpsWithoutPortUrl(host, path));
+                gitUrls.add(createHttpWithoutPortUrl(host, path));
+                LsRemoteRequest lsRemoteRequest = dtoFactory.createDto(LsRemoteRequest.class).withUseAuthorization(false);
+                for (String repoUrl : gitUrls) {
+                    try {
+                        lsRemoteRequest.setRemoteUrl(repoUrl);
+                        gitConnection.lsRemote(lsRemoteRequest);
+                        return true;
+                    } catch (GitException | UnauthorizedException ignored) {
+                        // try another url to check for
                     }
                 }
+                return false;
             }
-            return false;
+        } finally {
+            if (gitConnection != null) {
+                gitConnection.close();
+            }
         }
     }
 

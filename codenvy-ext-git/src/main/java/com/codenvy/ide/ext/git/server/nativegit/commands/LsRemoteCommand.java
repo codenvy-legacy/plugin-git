@@ -33,7 +33,7 @@ public class LsRemoteCommand extends GitCommand<Void> {
         if (url == null) {
             throw new GitException("Remote repository URL wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("ls-remote", url);
         start();
         return null;

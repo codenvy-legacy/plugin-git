@@ -33,7 +33,7 @@ public class RemoteDeleteCommand extends GitCommand<Void> {
         if (name == null) {
             throw new GitException("Name was not set.");
         }
-        clear();
+        reset();
         commandLine.add("remote", "rm", name);
         start();
         return null;

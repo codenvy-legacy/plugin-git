@@ -34,7 +34,7 @@ public class BranchRenameCommand extends GitCommand<Void> {
         if (oldName == null || newName == null) {
             throw new GitException("Old name or new name was not set.");
         }
-        clear();
+        reset();
         commandLine.add("branch");
         commandLine.add("-m", oldName, newName);
         start();

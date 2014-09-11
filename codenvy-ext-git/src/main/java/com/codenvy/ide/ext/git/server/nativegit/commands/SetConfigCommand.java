@@ -11,8 +11,11 @@
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
 import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.util.Pair;
 
 import java.io.File;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Set git configuration.
@@ -21,8 +24,9 @@ import java.io.File;
  */
 public class SetConfigCommand extends GitCommand<Void> {
 
-    private String parameter;
-    private String value;
+    private List<Pair<String, String>> set;
+    private List<Pair<String, String>> add;
+    private List<String>               unset;
 
     public SetConfigCommand(File place) {
         super(place);
@@ -31,25 +35,71 @@ public class SetConfigCommand extends GitCommand<Void> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("config");
-        value = value == null || value.length() == 0 ? "\"\"" : value;
-        commandLine.add(parameter, value);
+        if (set != null) {
+            for (Pair<String, String> pair : set) {
+                commandLine.add(pair.first, pair.second);
+            }
+        }
+        if (add != null) {
+            for (Pair<String, String> pair : add) {
+                commandLine.add("--add", pair.first, pair.second);
+            }
+        }
+        if (unset != null) {
+            for (String name : unset) {
+                commandLine.add("--unset", name);
+            }
+        }
         start();
         return null;
     }
 
     /**
-     * @param parameter
-     *         git config parameter suck as user.name
+     * @param name
+     *         git config parameter such as user.name
      * @param value
      *         value that will used with parameter
-     * @return SetConfigCommand with with established value and parameter
+     * @return SetConfigCommand with with established name and value
      */
-    public SetConfigCommand setValue(String parameter, String value) {
-        this.parameter = parameter;
-        this.value = value;
+    public SetConfigCommand setValue(String name, String value) {
+        if (set == null) {
+            set = new LinkedList<>();
+        }
+        set.add(Pair.of(name, value == null || value.isEmpty() ? "\"\"" : value));
         return this;
     }
 
+    /**
+     * Add multiple line in config.
+     *
+     * @param name
+     *         git config parameter such as user.name
+     * @param value
+     *         value that will used with parameter
+     * @return SetConfigCommand with with established name and value
+     */
+    public SetConfigCommand addValue(String name, String value) {
+        if (add == null) {
+            add = new LinkedList<>();
+        }
+        add.add(Pair.of(name, value == null || value.isEmpty() ? "\"\"" : value));
+        return this;
+    }
+
+    /**
+     * Remove configuration variable.
+     *
+     * @param name
+     *         name of configuration variable
+     * @return SetConfigCommand with with established name and value
+     */
+    public SetConfigCommand unsetValue(String name) {
+        if (unset == null) {
+            unset = new LinkedList<>();
+        }
+        unset.add(name);
+        return this;
+    }
 }

@@ -34,7 +34,7 @@ public class ResetCommand extends GitCommand<Void> {
         if (mode == null) {
             throw new GitException("Reset mode wasn't set.");
         }
-        clear();
+        reset();
         commandLine.add("reset", mode);
         if (commit != null) {
             commandLine.add(commit);

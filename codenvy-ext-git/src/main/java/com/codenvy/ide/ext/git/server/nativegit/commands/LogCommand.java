@@ -36,7 +36,7 @@ public class LogCommand extends GitCommand<List<Revision>> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public List<Revision> execute() throws GitException {
-        clear();
+        reset();
         commandLine.add("log")
                    .add("--format=%an#%ae#%cn#%ce#%cd#%H#%s")
                    .add("--date=raw");

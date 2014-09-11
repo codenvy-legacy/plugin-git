@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.ide.ext.git.server.Config;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.AddCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.BranchCheckoutCommand;
@@ -53,7 +54,7 @@ import java.io.InputStreamReader;
 /**
  * Git commands factory.
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class NativeGit {
 
@@ -225,8 +226,8 @@ public class NativeGit {
     }
 
     /** @return config */
-    public Config createConfig() {
-        return new Config(repository);
+    public Config createConfig() throws GitException {
+        return new ConfigImpl(repository);
     }
 
     /** @return branch checkout command */

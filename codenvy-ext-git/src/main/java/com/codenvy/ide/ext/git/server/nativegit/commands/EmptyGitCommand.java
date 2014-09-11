@@ -32,7 +32,7 @@ public class EmptyGitCommand extends GitCommand<Void> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        clear();
+        reset();
         commandLine.add(parameters);
         start();
         return null;

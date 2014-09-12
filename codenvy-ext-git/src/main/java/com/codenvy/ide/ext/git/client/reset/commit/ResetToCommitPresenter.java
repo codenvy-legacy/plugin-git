@@ -179,8 +179,8 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
         ResetRequest.ResetType type = view.isMixMode() ? ResetRequest.ResetType.MIXED : null;
         type = (type == null && view.isSoftMode()) ? ResetRequest.ResetType.SOFT : type;
         type = (type == null && view.isHardMode()) ? ResetRequest.ResetType.HARD : type;
-        type = (type == null && view.isKeepMode()) ? ResetRequest.ResetType.KEEP : type;
-        type = (type == null && view.isMergeMode()) ? ResetRequest.ResetType.MERGE : type;
+//        type = (type == null && view.isKeepMode()) ? ResetRequest.ResetType.KEEP : type;
+//        type = (type == null && view.isMergeMode()) ? ResetRequest.ResetType.MERGE : type;
 
         final ResetRequest.ResetType finalType = type;
         service.reset(appContext.getCurrentProject().getRootProject(), selectedRevision.getId(), finalType, new AsyncRequestCallback<Void>() {
@@ -240,8 +240,6 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
     /**
      * Update content of the file.
      *
-     * @param file
-     *         file to refresh
      * @param partPresenter
      *        editor that corresponds to the <code>file</code>.
      */

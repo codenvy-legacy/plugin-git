@@ -27,10 +27,7 @@ import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
-import com.google.gwt.user.client.ui.Button;
-import com.google.gwt.user.client.ui.RadioButton;
-import com.google.gwt.user.client.ui.UIObject;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
@@ -45,7 +42,7 @@ import java.util.List;
 /**
  * The implementation of {@link ResetToCommitView}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
@@ -60,10 +57,10 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
     RadioButton         mixed;
     @UiField
     RadioButton         hard;
-    @UiField
-    RadioButton         keep;
-    @UiField
-    RadioButton         merge;
+//    @UiField
+//    RadioButton         keep;
+//    @UiField
+//    RadioButton         merge;
     Button              btnReset;
     Button              btnCancel;
     @UiField(provided = true)
@@ -118,8 +115,8 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
         addDescription(soft, locale.resetSoftTypeDescription());
         addDescription(mixed, locale.resetMixedTypeDescription());
         addDescription(hard, locale.resetHardTypeDescription());
-        addDescription(keep, locale.resetKeepTypeDescription());
-        addDescription(merge, locale.resetMergeTypeDescription());
+//        addDescription(keep, locale.resetKeepTypeDescription());
+//        addDescription(merge, locale.resetMergeTypeDescription());
     }
 
     /**
@@ -137,9 +134,18 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
         radioItem.getElement().appendChild(descElement);
     }
 
+    public interface TableRes extends CellTable.Resources {
+        @Source({CellTable.Style.DEFAULT_CSS, "com/codenvy/ide/ext/git/client/reset/commit/custom.css"})
+        TableStyle cellTableStyle();
+
+        interface TableStyle extends CellTable.Style {}
+    }
+
+    private CellTable.Resources tableRes = GWT.create(TableRes.class);
+
     /** Creates table what contains list of available commits. */
     private void createCommitsTable() {
-        commits = new CellTable<Revision>();
+        commits = new CellTable<Revision>(15, tableRes);
 
         Column<Revision, String> dateColumn = new Column<Revision, String>(new TextCell()) {
             @Override
@@ -173,9 +179,9 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
         commits.addColumn(dateColumn, locale.commitGridDate());
         commits.setColumnWidth(dateColumn, "20%");
         commits.addColumn(commiterColumn, locale.commitGridCommiter());
-        commits.setColumnWidth(commiterColumn, "30%");
+        commits.setColumnWidth(commiterColumn, "20%");
         commits.addColumn(commentColumn, locale.commitGridComment());
-        commits.setColumnWidth(commentColumn, "50%");
+        commits.setColumnWidth(commentColumn, "60%");
 
         final SingleSelectionModel<Revision> selectionModel = new SingleSelectionModel<Revision>();
         selectionModel.addSelectionChangeHandler(new SelectionChangeEvent.Handler() {
@@ -236,29 +242,29 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
         hard.setValue(isHard);
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public boolean isKeepMode() {
-        return keep.getValue();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setKeepMode(boolean isKeep) {
-        keep.setValue(isKeep);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public boolean isMergeMode() {
-        return merge.getValue();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setMergeMode(boolean isMerge) {
-        merge.setValue(isMerge);
-    }
+//    /** {@inheritDoc} */
+//    @Override
+//    public boolean isKeepMode() {
+//        return keep.getValue();
+//    }
+//
+//    /** {@inheritDoc} */
+//    @Override
+//    public void setKeepMode(boolean isKeep) {
+//        keep.setValue(isKeep);
+//    }
+//
+//    /** {@inheritDoc} */
+//    @Override
+//    public boolean isMergeMode() {
+//        return merge.getValue();
+//    }
+//
+//    /** {@inheritDoc} */
+//    @Override
+//    public void setMergeMode(boolean isMerge) {
+//        merge.setValue(isMerge);
+//    }
 
     /** {@inheritDoc} */
     @Override

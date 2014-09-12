@@ -15,10 +15,9 @@ import com.codenvy.dto.shared.DTO;
 import java.util.List;
 
 /**
- * Clone repository to {@link #workingDir}.
+ * Clone repository.
  *
- * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id: CloneRequest.java 22817 2011-03-22 09:17:52Z andrew00x $
+ * @author andrew00x
  */
 @DTO
 public interface CloneRequest extends GitRequest {
@@ -38,9 +37,9 @@ public interface CloneRequest extends GitRequest {
 
     /** @return work directory for cloning */
     String getWorkingDir();
-    
+
     void setWorkingDir(String workingDir);
-    
+
     CloneRequest withWorkingDir(String workingDir);
 
     /** @return remote name. If <code>null</code> then 'origin' will be used */

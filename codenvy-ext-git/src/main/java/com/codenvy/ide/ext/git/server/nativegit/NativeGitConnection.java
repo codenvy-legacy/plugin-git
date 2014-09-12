@@ -122,6 +122,11 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
+    public File getWorkingDir() {
+        return nativeGit.getRepository();
+    }
+
+    @Override
     public void add(AddRequest request) throws GitException {
         AddCommand command = nativeGit.createAddCommand();
         command.setFilePattern(request.getFilepattern() == null ?
@@ -202,10 +207,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public GitConnection clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
-        if (request.getWorkingDir() != null) {
-            nativeGit.setRepository(new File(request.getWorkingDir()));
-        }
+    public void clone(CloneRequest request) throws URISyntaxException, UnauthorizedException, GitException {
         CloneCommand clone;
         final String remoteUri = request.getRemoteUri();
         if (Util.isSSH(remoteUri)) {
@@ -220,52 +222,16 @@ public class NativeGitConnection implements GitConnection {
         }
         executeWithCredentials(clone, remoteUri);
         File repository = clone.getRepository();
-        //set up back default url
         new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
                                            .setNewUrl(remoteUri)
                                            .execute();
         nativeGit.createConfig().set("user.name", user.getName()).set("user.email", user.getEmail());
-        NativeGitConnection newNativeGit = new NativeGitConnection(repository, user, keysManager, credentialsLoader, credentialsProviders);
-        newNativeGit.setOutputLineConsumer(nativeGit.gitOutputPublisher);
-        return newNativeGit;
     }
 
     @Override
     public Revision commit(CommitRequest request) throws GitException {
-        //Add this block for getting original Git url from that repository was cloned
-        //may be temporary solution because potential can be problem if user add one more remote repository
-        //But for now we get always first remote.
-        //in common use it must be enough
-        RemoteListCommand remoteListCommand = new RemoteListCommand(nativeGit.getRepository());
-        GitUser committer = null;
-        List<Remote> remotes = remoteListCommand.execute();
-        if (remotes != null && !remotes.isEmpty()) {
-            Remote remote = remotes.get(0);
-            final String remoteOriginURL = remote.getUrl();
-            CredentialItem.AuthenticatedUserName authenticatedUserName = new CredentialItem.AuthenticatedUserName();
-            CredentialItem.AuthenticatedUserEmail authenticatedUserEmail = new CredentialItem.AuthenticatedUserEmail();
-            boolean isCredentialsPresent = false;
-            for (CredentialsProvider cp : credentialsProviders) {
-                if (isCredentialsPresent = cp.getUser(remoteOriginURL, authenticatedUserName, authenticatedUserEmail)) {
-                    break;
-                }
-            }
-
-            if (isCredentialsPresent) {
-                committer = DtoFactory.getInstance().createDto(GitUser.class)
-                                      .withName(authenticatedUserName.getValue())
-                                      .withEmail(authenticatedUserEmail.getValue());
-            } else {
-                committer = user;
-            }
-        }
-
-        if (committer == null) {
-            committer = user;
-        }
-
         CommitCommand command = nativeGit.createCommitCommand();
-        command.setAuthor(committer);
+        command.setAuthor(user);
         command.setAll(request.isAll());
         command.setAmend(request.isAmend());
         command.setMessage(request.getMessage());
@@ -314,20 +280,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public GitConnection init(InitRequest request) throws GitException {
-        if (request.getWorkingDir() != null) {
-            nativeGit.setRepository(new File(request.getWorkingDir()));
-        }
-        if (request.isBare()) {
-            File dotGit = new File(request.getWorkingDir(), ".git");
-            if (!dotGit.exists()) {
-                dotGit.mkdir();
-            }
-            nativeGit.setRepository(dotGit);
-        }
-        if (!nativeGit.getRepository().exists()) {
-            throw new GitException("Working folder " + nativeGit.getRepository() + " not exists . ");
-        }
+    public void init(InitRequest request) throws GitException {
         InitCommand initCommand = nativeGit.createInitCommand();
         initCommand.setBare(request.isBare());
         initCommand.execute();
@@ -345,7 +298,6 @@ public class NativeGitConnection implements GitConnection {
                 //if nothing to commit
             }
         }
-        return this;
     }
 
     @Override
@@ -641,6 +593,7 @@ public class NativeGitConnection implements GitConnection {
         }
     }
 
+    @Override
     public void setOutputLineConsumer(LineConsumer gitOutputPublisher) {
         nativeGit.setOutputLineConsumer(gitOutputPublisher);
     }

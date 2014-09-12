@@ -33,7 +33,6 @@ public class GitModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(WSO2OAuthCredentialsProvider.class);
         Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
-        projectImporterMultibinder.addBinding().to(GitProjectImporterGitCleanUp.class);
         bind(GitConfigurationChecker.class).asEagerSingleton();
         bind(GitRepositoryPrivacyChecker.class);
 

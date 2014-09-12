@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
-
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
 import java.io.File;
@@ -29,7 +29,7 @@ public abstract class GitConnectionFactory {
      *         if can't initialize connection
      */
     public final GitConnection getConnection(String workDir, GitUser user) throws GitException {
-        return getConnection(new File(workDir), user);
+        return getConnection(new File(workDir), user, LineConsumer.DEV_NULL);
     }
 
     /**
@@ -41,8 +41,8 @@ public abstract class GitConnectionFactory {
      * @throws GitException
      *         if can't initialize connection
      */
-    public GitConnection getConnection(String workDir) throws GitException {
-        return getConnection(new File(workDir));
+    public final GitConnection getConnection(String workDir) throws GitException {
+        return getConnection(new File(workDir), LineConsumer.DEV_NULL);
     }
 
     /**
@@ -52,20 +52,56 @@ public abstract class GitConnectionFactory {
      *         repository directory
      * @param user
      *         user
+     * @param outputPublisher
+     *         consumer for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection
      */
-    public abstract GitConnection getConnection(File workDir, GitUser user) throws GitException;
+    public final GitConnection getConnection(String workDir, GitUser user, LineConsumer outputPublisher) throws GitException {
+        return getConnection(new File(workDir), user, outputPublisher);
+    }
+
+    /**
+     * Get connection to Git repository located in <code>workDir</code>
+     *
+     * @param workDir
+     *         repository directory
+     * @param outputPublisher
+     *         consumer for git output
+     * @return connection to Git repository
+     * @throws GitException
+     *         if can't initialize connection
+     */
+    public final GitConnection getConnection(String workDir, LineConsumer outputPublisher) throws GitException {
+        return getConnection(new File(workDir), outputPublisher);
+    }
+
+    /**
+     * Get connection to Git repository located in <code>workDir</code>.
+     *
+     * @param workDir
+     *         repository directory
+     * @param user
+     *         user
+     * @param outputPublisher
+     *         consumer for git output
+     * @return connection to Git repository
+     * @throws GitException
+     *         if can't initialize connection
+     */
+    public abstract GitConnection getConnection(File workDir, GitUser user, LineConsumer outputPublisher) throws GitException;
 
     /**
      * Get connection to Git repository locate in <code>workDir</code>
      *
      * @param workDir
      *         repository directory
+     * @param outputPublisher
+     *         consumer for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection
      */
-    public abstract GitConnection getConnection(File workDir) throws GitException;
+    public abstract GitConnection getConnection(File workDir, LineConsumer outputPublisher) throws GitException;
 }

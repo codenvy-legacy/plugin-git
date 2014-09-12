@@ -15,18 +15,17 @@ import com.codenvy.dto.shared.DTO;
 
 
 /**
- * Request to create new git repository.
+ * Request to init git repository.
  *
- * @author <a href="mailto:andrey.parfonov@exoplatform.com">Andrey Parfonov</a>
- * @version $Id: InitRequest.java 22811 2011-03-22 07:28:35Z andrew00x $
+ * @author andrew00x
  */
 @DTO
 public interface InitRequest extends GitRequest {
     /** @return working directory for new git repository */
     String getWorkingDir();
-    
+
     void setWorkingDir(String workingDir);
-    
+
     InitRequest withWorkingDir(String workingDir);
     
     /** @return <code>true</code> then bare repository created */

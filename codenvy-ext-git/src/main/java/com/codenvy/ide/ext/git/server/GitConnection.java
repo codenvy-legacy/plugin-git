@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.ide.ext.git.shared.AddRequest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
@@ -45,6 +46,7 @@ import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
 
+import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
 
@@ -54,6 +56,8 @@ import java.util.List;
  * @author andrew00x
  */
 public interface GitConnection {
+    File getWorkingDir();
+
     /**
      * Add content of working tree to Git index. This action prepares content to next commit.
      *
@@ -130,14 +134,13 @@ public interface GitConnection {
      *
      * @param request
      *         clone request
-     * @return connection to cloned repository
      * @throws URISyntaxException
      *         if {@link CloneRequest#getRemoteUri()} return invalid value
      * @throws GitException
      *         if any other error occurs
      * @see CloneRequest
      */
-    GitConnection clone(CloneRequest request) throws URISyntaxException, ServerException, UnauthorizedException;
+    void clone(CloneRequest request) throws URISyntaxException, ServerException, UnauthorizedException;
 
     /**
      * Commit current state of index in new commit.
@@ -182,12 +185,11 @@ public interface GitConnection {
      *
      * @param request
      *         init request
-     * @return connection to newly created repository
      * @throws GitException
      *         if any error occurs
      * @see InitRequest
      */
-    GitConnection init(InitRequest request) throws GitException;
+    void init(InitRequest request) throws GitException;
 
     /**
      * Get commit logs.
@@ -411,4 +413,7 @@ public interface GitConnection {
 
     /** Close connection, release associated resources. */
     void close();
+
+    /** Set publisher for git output, e.g. for sending git command output to the client side. */
+    void setOutputLineConsumer(LineConsumer outputPublisher);
 }

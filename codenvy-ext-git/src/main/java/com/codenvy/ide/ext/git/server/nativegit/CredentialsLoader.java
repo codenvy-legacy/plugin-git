@@ -49,7 +49,7 @@ public class CredentialsLoader {
     }
 
     /**
-     * Searches for available CredentialsProviders in container and stores it if any exists
+     * Searches "GIT_ASKPASS" script.
      *
      * @param username
      *         user name that will be stored

@@ -20,27 +20,27 @@ import org.junit.Test;
  */
 public class GetHostNameFromSshUrlTest {
     @Test
-    public void test1() {
+    public void testSshWithAuthority() {
         Assert.assertEquals("host.com", Util.getHost("ssh://user@host.com/some/path"));
     }
 
     @Test
-    public void test2() {
+    public void testSsh() {
         Assert.assertEquals("host.com", Util.getHost("ssh://host.com/some/path"));
     }
 
     @Test
-    public void test3() {
+    public void testGit() {
         Assert.assertEquals("host.com", Util.getHost("git://host.com/user/repo"));
     }
 
     @Test
-    public void test4() {
+    public void testSshWithPort() {
         Assert.assertEquals("host.com", Util.getHost("ssh://host.com:port/some/path"));
     }
 
     @Test
-    public void test5() {
+    public void testWithAuthority() {
         Assert.assertEquals("host.com", Util.getHost("user@host.com:login/repo"));
     }
 }

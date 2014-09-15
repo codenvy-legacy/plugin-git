@@ -11,15 +11,6 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 
-import java.io.File;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.dto.server.DtoFactory;
@@ -79,6 +70,14 @@ import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.regex.Pattern;
+
 /**
  * Native implementation of GitConnection
  *
@@ -86,11 +85,10 @@ import com.codenvy.ide.ext.git.shared.TagListRequest;
  */
 public class NativeGitConnection implements GitConnection {
 
-    private final NativeGit                nativeGit;
-    private final CredentialsLoader        credentialsLoader;
-    private final Set<CredentialsProvider> credentialsProviders;
-    private       GitUser                  user;
-    private       SshKeysManager           keysManager;
+    private final NativeGit         nativeGit;
+    private final CredentialsLoader credentialsLoader;
+    private       GitUser           user;
+    private       SshKeysManager    keysManager;
 
     private static final Pattern authErrorPattern =
             Pattern.compile(
@@ -107,17 +105,14 @@ public class NativeGitConnection implements GitConnection {
      *         manager for ssh keys. If it is null default ssh will be used;
      * @param credentialsLoader
      *         loader for credentials
-     * @param credentialsProviders
-     *         set of credentials providers
      * @throws GitException
      *         when some error occurs
      */
-    public NativeGitConnection(File repository, GitUser user, SshKeysManager keysManager, CredentialsLoader credentialsLoader,
-                               Set<CredentialsProvider> credentialsProviders) throws GitException {
+    public NativeGitConnection(File repository, GitUser user, SshKeysManager keysManager, CredentialsLoader credentialsLoader)
+            throws GitException {
         this.user = user;
         this.keysManager = keysManager;
         this.credentialsLoader = credentialsLoader;
-        this.credentialsProviders = credentialsProviders;
         nativeGit = new NativeGit(repository);
     }
 
@@ -528,21 +523,11 @@ public class NativeGitConnection implements GitConnection {
      *         authentication failed or command execution failed
      */
     public void executeWithCredentials(GitCommand command, String url) throws GitException, UnauthorizedException {
-        //create empty credentials
-        CredentialItem.Username username = new CredentialItem.Username();
-        username.setValue("");
-        CredentialItem.Password password = new CredentialItem.Password();
-        password.setValue("");
-        //set up empty credentials
         try {
-            command.setAskPassScriptPath(credentialsLoader.createGitAskPassScript(username, password).toString());
+            // execute without any credentials
+            command.execute();
+        } catch (GitException e) {
             try {
-                //after failed clone, git will remove directory
-                if (!nativeGit.getRepository().exists()) {
-                    nativeGit.getRepository().mkdirs();
-                }
-                command.execute();
-            } catch (GitException e) {
                 if (isOperationNeedAuth(e.getMessage())) {
                     //try to search available credentials and execute command with it
                     command.setAskPassScriptPath(credentialsLoader.findCredentialsAndCreateGitAskPassScript(url).toString());
@@ -563,9 +548,9 @@ public class NativeGitConnection implements GitConnection {
                 } else {
                     throw e;
                 }
+            } finally {
+                credentialsLoader.removeAskPassScript();
             }
-        } finally {
-            credentialsLoader.removeAskPassScript();
         }
     }
 

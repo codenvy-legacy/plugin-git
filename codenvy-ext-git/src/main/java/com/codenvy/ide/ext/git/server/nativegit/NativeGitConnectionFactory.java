@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.File;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Native implementation for GitConnectionFactory
@@ -42,23 +41,20 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
 
     private static final Logger LOG = LoggerFactory.getLogger(NativeGitConnectionFactory.class);
 
-    private final SshKeysManager           keysManager;
-    private final CredentialsLoader        credentialsLoader;
-    private final UserProfileDao           userProfileDao;
-    private final Set<CredentialsProvider> credentialsProviders;
+    private final SshKeysManager    keysManager;
+    private final CredentialsLoader credentialsLoader;
+    private final UserProfileDao    userProfileDao;
 
     @Inject
-    public NativeGitConnectionFactory(SshKeysManager keysManager, CredentialsLoader credentialsLoader, UserProfileDao userProfileDao,
-                                      Set<CredentialsProvider> credentialsProviders) {
+    public NativeGitConnectionFactory(SshKeysManager keysManager, CredentialsLoader credentialsLoader, UserProfileDao userProfileDao) {
         this.keysManager = keysManager;
         this.credentialsLoader = credentialsLoader;
         this.userProfileDao = userProfileDao;
-        this.credentialsProviders = credentialsProviders;
     }
 
     @Override
     public GitConnection getConnection(File workDir, GitUser user, LineConsumer outputPublisher) throws GitException {
-        final GitConnection gitConnection = new NativeGitConnection(workDir, user, keysManager, credentialsLoader, credentialsProviders);
+        final GitConnection gitConnection = new NativeGitConnection(workDir, user, keysManager, credentialsLoader);
         gitConnection.setOutputLineConsumer(outputPublisher);
         return gitConnection;
     }
@@ -82,7 +78,7 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         }
         final String firstName = profileAttributes.get("firstName");
         final String lastName = profileAttributes.get("lastName");
-        final String email = profileAttributes.get("lastName");
+        final String email = profileAttributes.get("email");
         if (firstName != null || lastName != null) {
             gitUser.withName(Strings.join(" ", Strings.nullToEmpty(firstName), Strings.nullToEmpty(lastName)));
         } else {

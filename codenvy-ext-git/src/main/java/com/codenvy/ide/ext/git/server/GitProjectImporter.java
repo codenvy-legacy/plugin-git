@@ -65,7 +65,7 @@ public class GitProjectImporter implements ProjectImporter {
 
     @Override
     public String getDescription() {
-        return "Add possibility to import project from GIT repository";
+        return "Import project from hosted GIT repository URL.";
     }
 
     @Override

@@ -278,7 +278,7 @@ public class GitHub {
                 response = doJsonRequest(collaborator.getUrl() + "?access_token=" + oauthToken, method, 200);
                 GitHubUser gitHubUser = parseJsonResponse(response, GitHubUser.class, null);
                 String email = gitHubUser.getEmail();
-                if (!(email == null || email.isEmpty() || email.equals(userId) || isAlreadyInvited(email))) {
+                if (!(email == null || email.isEmpty() || email.equals(userId))) {
                     myCollaborators.getCollaborators().add(gitHubUser);
                 }
             }
@@ -286,16 +286,6 @@ public class GitHub {
         return myCollaborators;
     }
 
-
-    private boolean isAlreadyInvited(String collaborator) throws GitHubException {
-        /*
-         * try { String currentId = getUserId(); for (Invite invite : inviteService.getInvites(false)) { if (invite .getFrom() != null &&
-         * invite.getFrom().equals(currentId) && invite.getEmail().equals(collaborator)) { return true; } } return false; } catch
-         * (InviteException e) { throw new GitHubException(500, e.getMessage(), "text/plain"); }
-         */
-        // TODO : temporary, just to be able compile. Re-work it after update invitation mechanism.
-        return false;
-    }
 
     public String getToken(String user) throws GitHubException, IOException {
         OAuthToken token = oauthTokenProvider.getToken("github", user);

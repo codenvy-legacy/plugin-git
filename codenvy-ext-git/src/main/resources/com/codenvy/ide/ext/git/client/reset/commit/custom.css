@@ -29,7 +29,8 @@
 }
 
 .cellTableOddRow {
-    background: transparent;
+    /*background: transparent;*/
+    background: #313131;
 }
 
 .cellTableEvenRowCell {
@@ -41,7 +42,7 @@
 }
 
 .cellTableHoveredRow {
-    background: rgba(37, 108, 159, 0.3);
+    background: rgba(37, 108, 159, 0.1);
 }
 
 .cellTableHoveredRowCell {

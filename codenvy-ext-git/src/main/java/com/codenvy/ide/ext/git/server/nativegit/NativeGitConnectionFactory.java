@@ -10,28 +10,27 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-import java.io.File;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.util.LineConsumer;
-import com.codenvy.api.user.server.dao.Profile;
 import com.codenvy.api.user.server.dao.UserProfileDao;
 import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.commons.lang.Strings;
+import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.GitUser;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.io.File;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Native implementation for GitConnectionFactory
@@ -57,47 +56,40 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         this.credentialsProviders = credentialsProviders;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public GitConnection getConnection(File workDir, GitUser user) throws GitException {
-        return new NativeGitConnection(workDir, user, keysManager, credentialsLoader, credentialsProviders);
+    public GitConnection getConnection(File workDir, GitUser user, LineConsumer outputPublisher) throws GitException {
+        final GitConnection gitConnection = new NativeGitConnection(workDir, user, keysManager, credentialsLoader, credentialsProviders);
+        gitConnection.setOutputLineConsumer(outputPublisher);
+        return gitConnection;
     }
 
-    /** {@inheritDoc} */
     @Override
-    public GitConnection getConnection(File workDir) throws GitException {
-        return getConnection(workDir, getGitUser());
+    public GitConnection getConnection(File workDir, LineConsumer outputPublisher) throws GitException {
+        return getConnection(workDir, getGitUser(), outputPublisher);
     }
 
-    private GitUser getGitUser() throws GitException {
+    private GitUser getGitUser() {
+        final User user = EnvironmentContext.getCurrent().getUser();
         Map<String, String> profileAttributes = null;
         try {
-            Profile userProfile = userProfileDao.getById(EnvironmentContext.getCurrent().getUser().getId());
-            if (userProfile != null) {
-                profileAttributes = userProfile.getAttributes();
-            }
+            profileAttributes = userProfileDao.getById(user.getId()).getAttributes();
         } catch (NotFoundException | ServerException e) {
             LOG.warn("Failed to obtain user information.", e);
-            throw new GitException("Failed to obtain user information.");
         }
-        String firstName = profileAttributes.get("firstName");
-        String lastName = profileAttributes.get("lastName");
-        String email = profileAttributes.get("lastName");
-
-        GitUser gitUser = DtoFactory.getInstance().createDto(GitUser.class);
+        final GitUser gitUser = DtoFactory.getInstance().createDto(GitUser.class);
+        if (profileAttributes == null) {
+            return gitUser.withName(user.getName());
+        }
+        final String firstName = profileAttributes.get("firstName");
+        final String lastName = profileAttributes.get("lastName");
+        final String email = profileAttributes.get("lastName");
         if (firstName != null || lastName != null) {
             gitUser.withName(Strings.join(" ", Strings.nullToEmpty(firstName), Strings.nullToEmpty(lastName)));
         } else {
-            gitUser.withName(EnvironmentContext.getCurrent().getUser().getName());
+            gitUser.withName(user.getName());
         }
-        gitUser.withEmail(email != null ? email : EnvironmentContext.getCurrent().getUser().getName());
+        gitUser.withEmail(email != null ? email : user.getName());
 
         return gitUser;
-    }
-
-    public GitConnection getConnection(String absoluteProjectPath, LineConsumer gitOutputPublisher) throws GitException {
-        NativeGitConnection gitConnection = (NativeGitConnection)getConnection(absoluteProjectPath);
-        gitConnection.setOutputLineConsumer(gitOutputPublisher);
-        return gitConnection;
     }
 }

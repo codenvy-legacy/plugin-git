@@ -14,7 +14,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
-import com.codenvy.ide.api.projecttree.generic.ProjectRootNode;
+import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.BaseTest;
@@ -63,7 +63,7 @@ public class AddToIndexPresenterTest extends BaseTest {
     @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
-        ProjectRootNode project = mock(ProjectRootNode.class);
+        ProjectNode project = mock(ProjectNode.class);
         when(project.getPath()).thenReturn(PROJECT_PATH);
         when(selection.getFirstElement()).thenReturn(project);
         when(selectionAgent.getSelection()).thenReturn(selection);

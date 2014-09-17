@@ -481,19 +481,9 @@ public class GitService {
     private Item getGitProjectByPath(VirtualFileSystem vfs, String projectPath)
             throws NotFoundException, ForbiddenException, ServerException {
         final Item project = vfs.getItemByPath(projectPath, null, false, PropertyFilter.ALL_FILTER);
-//        Item parent = vfs.getItem(project.getParentId(), false, PropertyFilter.ALL_FILTER);
-//        if (parent.getItemType().equals(ItemType.PROJECT)) // MultiModule project
-//            return parent;
         return project;
     }
 
-    private Item getGitProject(VirtualFileSystem vfs, String projectId) throws NotFoundException, ForbiddenException, ServerException {
-        final Item project = vfs.getItem(projectId, false, PropertyFilter.ALL_FILTER);
-//        Item parent = vfs.getItem(project.getParentId(), false, PropertyFilter.ALL_FILTER);
-//        if (parent.getItemType().equals(ItemType.PROJECT)) // MultiModule project
-//            return parent;
-        return project;
-    }
 
 
     // TODO: this is temporary method

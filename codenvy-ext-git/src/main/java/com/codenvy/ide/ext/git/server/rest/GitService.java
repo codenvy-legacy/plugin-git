@@ -14,6 +14,7 @@ import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
+import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.vfs.server.MountPoint;
 import com.codenvy.api.vfs.server.VirtualFile;
 import com.codenvy.api.vfs.server.VirtualFileSystem;
@@ -446,11 +447,28 @@ public class GitService {
     }
 
     @Path("read-only-url")
+    @Produces(MediaType.TEXT_PLAIN)
     @GET
-    public String readOnlyGitUrl(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
+    public String readOnlyGitUrlTextPlain(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
         if (virtualFile.getChild(".git") != null) {
             return gitUrlResolver.resolve(uriInfo.getBaseUri(), (com.codenvy.vfs.impl.fs.VirtualFileImpl)virtualFile);
+        } else {
+            throw new ServerException("Not git repository");
+        }
+    }
+
+    @Path("import-source-descriptor")
+    @Produces(MediaType.APPLICATION_JSON)
+    @GET
+    public ImportSourceDescriptor importDescriptor(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
+        final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
+        if (virtualFile.getChild(".git") != null) {
+
+
+            return DtoFactory.getInstance().createDto(ImportSourceDescriptor.class)
+                      .withType("git")
+                      .withLocation(gitUrlResolver.resolve(uriInfo.getBaseUri(), (com.codenvy.vfs.impl.fs.VirtualFileImpl)virtualFile));
         } else {
             throw new ServerException("Not git repository");
         }

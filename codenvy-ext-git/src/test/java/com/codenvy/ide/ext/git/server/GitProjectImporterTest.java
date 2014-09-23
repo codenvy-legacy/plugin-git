@@ -216,7 +216,7 @@ public class GitProjectImporterTest {
 
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
-        parameters.put("vcsCommitId", commit.getId());
+        parameters.put("commitId", commit.getId());
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));

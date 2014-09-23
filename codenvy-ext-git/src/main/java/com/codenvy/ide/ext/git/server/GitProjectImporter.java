@@ -97,7 +97,7 @@ public class GitProjectImporter implements ProjectImporter {
             // Clean all info related to the vcs. In case of Git remove ".git" directory and ".gitignore" file.
             boolean cleanVcs = false;
             if (parameters != null) {
-                commitId = parameters.get("vcsCommitId");
+                commitId = parameters.get("commitId");
                 branch = parameters.get("branch");
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
                 keepDirectory = parameters.get("keepDirectory");

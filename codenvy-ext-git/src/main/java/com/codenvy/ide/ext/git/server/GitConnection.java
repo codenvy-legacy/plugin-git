@@ -46,6 +46,7 @@ import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
 
+import java.io.Closeable;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -55,7 +56,7 @@ import java.util.List;
  *
  * @author andrew00x
  */
-public interface GitConnection {
+public interface GitConnection extends AutoCloseable {
     File getWorkingDir();
 
     /**

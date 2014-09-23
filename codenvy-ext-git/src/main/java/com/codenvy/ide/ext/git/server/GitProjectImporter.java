@@ -67,6 +67,12 @@ public class GitProjectImporter implements ProjectImporter {
     public String getDescription() {
         return "Import project from hosted GIT repository URL.";
     }
+    
+    /** {@inheritDoc} */
+    @Override
+    public String getCategory() {
+        return "Source Control";
+    }
 
     @Override
     public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)

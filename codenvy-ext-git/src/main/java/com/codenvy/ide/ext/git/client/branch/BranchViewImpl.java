@@ -77,6 +77,7 @@ public class BranchViewImpl extends Window implements BranchView {
                              com.codenvy.ide.Resources coreRes) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-branches-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

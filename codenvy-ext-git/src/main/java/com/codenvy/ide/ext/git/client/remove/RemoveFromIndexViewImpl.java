@@ -61,6 +61,7 @@ public class RemoveFromIndexViewImpl extends Window implements RemoveFromIndexVi
     protected RemoveFromIndexViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-removeFromIndex-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

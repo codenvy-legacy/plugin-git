@@ -66,6 +66,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     protected PushToRemoteViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-remotes-push-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

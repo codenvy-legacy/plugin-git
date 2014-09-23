@@ -66,6 +66,7 @@ public class PullViewImpl extends Window implements PullView {
     protected PullViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-remotes-pull-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

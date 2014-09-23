@@ -75,6 +75,7 @@ public class MergeViewImpl extends Window implements MergeView {
     protected MergeViewImpl(GitResources resources, GitLocalizationConstant locale, ReferenceTreeNodeRenderer.Resources rendererResources) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-merge-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

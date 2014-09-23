@@ -78,6 +78,7 @@ public class RemoteViewImpl extends Window implements RemoteView {
                              com.codenvy.ide.Resources ideResources) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-remotes-remotes-window");
 
         initRepositoriesTable(ideResources);
 

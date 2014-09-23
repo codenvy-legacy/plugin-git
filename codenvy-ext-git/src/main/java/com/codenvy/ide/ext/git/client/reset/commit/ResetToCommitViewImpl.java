@@ -81,6 +81,7 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
     protected ResetToCommitViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-reset-window");
 
         createCommitsTable();
 

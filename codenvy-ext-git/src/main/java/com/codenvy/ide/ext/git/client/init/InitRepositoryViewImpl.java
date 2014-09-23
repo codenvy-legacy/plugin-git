@@ -61,6 +61,7 @@ public class InitRepositoryViewImpl extends Window implements InitRepositoryView
     protected InitRepositoryViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-initializeRepository-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

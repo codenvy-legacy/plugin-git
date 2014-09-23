@@ -42,7 +42,7 @@
 			line-height: 20px;	
 		}
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="450px" height="140px" addStyleNames="{style.emptyBorder}">
+    <g:DockLayoutPanel unit="PX" width="450px" height="140px" addStyleNames="{style.emptyBorder}" debugId="git-remotes-fetch-mainForm">
         <g:north size="26.0">
             <g:FlowPanel>
                 <g:Label width="160px" height="22px" text="{locale.fetchRemoteFieldTitle}" addStyleNames="{res.gitCSS.textFont} {style.alignLeft} {style.textAlignMiddle}"/>

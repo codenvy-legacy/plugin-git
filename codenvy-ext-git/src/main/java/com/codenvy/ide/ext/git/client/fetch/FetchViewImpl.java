@@ -72,6 +72,7 @@ public class FetchViewImpl extends Window implements FetchView {
     protected FetchViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-remotes-fetch-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

@@ -66,6 +66,7 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
     @Inject
     protected ResetFilesViewImpl(GitLocalizationConstant locale) {
         this.locale = locale;
+        this.ensureDebugId("git-resetFiles-window");
 
         initColumns();
 
@@ -74,7 +75,7 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
         this.setTitle(locale.resetFilesViewTitle());
         this.setWidget(widget);
         
-        btnCancel = createButton(locale.buttonCancel(), "", new ClickHandler() {
+        btnCancel = createButton(locale.buttonCancel(), "git-resetFiles-btnCancel", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -83,7 +84,7 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
         });
         getFooter().add(btnCancel);
 
-        btnReset = createButton(locale.buttonReset(), "", new ClickHandler() {
+        btnReset = createButton(locale.buttonReset(), "git-resetFiles-btnReset", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {

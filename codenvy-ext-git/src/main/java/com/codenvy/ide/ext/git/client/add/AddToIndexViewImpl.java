@@ -61,13 +61,14 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
     protected AddToIndexViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-addToIndex-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
         this.setTitle(locale.addToIndexTitle());
         this.setWidget(widget);
         
-        btnCancel = createButton(locale.buttonCancel(), "", new ClickHandler() {
+        btnCancel = createButton(locale.buttonCancel(), "git-addToIndex-btnCancel", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -76,7 +77,7 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
         });
         getFooter().add(btnCancel);
 
-        btnAdd = createButton(locale.buttonAdd(), "", new ClickHandler() {
+        btnAdd = createButton(locale.buttonAdd(), "git-addToIndex-btnAdd", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {

@@ -65,6 +65,7 @@ public class CommitViewImpl extends Window implements CommitView {
     protected CommitViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-commit-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 

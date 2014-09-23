@@ -32,7 +32,7 @@
         }
 
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="750px" height="450px" addStyleNames="{style.emptyBorder}">
+    <g:DockLayoutPanel unit="PX" width="750px" height="450px" addStyleNames="{style.emptyBorder}" debugId="git-reset-mainForm">
         <g:south size="70">
             <g:DockLayoutPanel unit="PX" width="100%" height="100%" addStyleNames="{style.selector}">
                 <g:north size="20">

@@ -28,7 +28,7 @@
             margin-right: 5px;
         }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="400px" height="80px" addStyleNames="{style.emptyBorder}">
+    <g:DockLayoutPanel unit="PX" width="400px" height="80px" addStyleNames="{style.emptyBorder}" debugId="git-addToIndex-mainForm">
         <g:center>
             <g:DockLayoutPanel unit="PX" width="100%" height="100%" styleName="{style.spacing}">
                 <g:north size="20.0">

@@ -70,8 +70,8 @@ public class GitProjectImporter implements ProjectImporter {
     
     /** {@inheritDoc} */
     @Override
-    public String getCategory() {
-        return "Source Control";
+    public ImporterCategory getCategory() {
+        return ImporterCategory.SOURCE_CONTROL;
     }
 
     @Override

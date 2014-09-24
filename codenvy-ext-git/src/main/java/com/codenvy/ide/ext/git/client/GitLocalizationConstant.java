@@ -218,6 +218,9 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.use.ssh.protocol")
     String useSshProtocol();
 
+    @Key("messages.workspaceRamLessRequiredRam")
+    String messagesWorkspaceRamLessRequiredRam(int requiredMemorySize, int workspaceMemorySize);
+
     // Unmarshaller Errors
     @Key("merge.unmarshal.failed")
     String mergeUnmarshallerFailed();
@@ -520,6 +523,9 @@ public interface GitLocalizationConstant extends Messages {
 
     @Key("view.pull.local.branches.title")
     String pullLocalBranches();
+
+    @Key("view.warning.title")
+    String warningTitle();
 
     // Merge
     @Key("view.merge.title")

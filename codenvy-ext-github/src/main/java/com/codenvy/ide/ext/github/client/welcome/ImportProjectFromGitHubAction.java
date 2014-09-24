@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.github.client.welcome;
 
 import com.codenvy.api.analytics.logger.AnalyticsEventLogger;
 import com.codenvy.api.user.gwt.client.UserServiceClient;
-import com.codenvy.api.user.shared.dto.User;
+import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.action.Action;
 import com.codenvy.ide.api.action.ActionEvent;
 import com.codenvy.ide.ext.github.client.GitHubLocalizationConstant;
@@ -53,9 +53,9 @@ public class ImportProjectFromGitHubAction extends Action {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log("IDE: Import project from GitHub");
-        service.getCurrentUser(new AsyncRequestCallback<User>(dtoUnmarshallerFactory.newUnmarshaller(User.class)) {
+        service.getCurrentUser(new AsyncRequestCallback<UserDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(UserDescriptor.class)) {
             @Override
-            protected void onSuccess(User result) {
+            protected void onSuccess(UserDescriptor result) {
                 importPresenter.showDialog(result);
             }
 

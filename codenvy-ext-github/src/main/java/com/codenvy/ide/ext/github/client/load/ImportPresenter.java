@@ -17,7 +17,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.project.shared.dto.RunnerEnvironmentConfigurationDescriptor;
 import com.codenvy.api.runner.dto.ResourcesDescriptor;
 import com.codenvy.api.runner.gwt.client.RunnerServiceClient;
-import com.codenvy.api.user.shared.dto.User;
+import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.ResourceNameValidator;
 import com.codenvy.ide.api.event.OpenProjectEvent;
 import com.codenvy.ide.api.notification.Notification;
@@ -105,7 +105,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
     }
 
     /** Show dialog. */
-    public void showDialog(User user) {
+    public void showDialog(UserDescriptor user) {
         AsyncCallback<Void> callback = new AsyncCallback<Void>() {
             @Override
             public void onSuccess(Void result) {

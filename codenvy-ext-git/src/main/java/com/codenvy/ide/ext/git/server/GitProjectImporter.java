@@ -141,7 +141,7 @@ public class GitProjectImporter implements ProjectImporter {
                     initRepository(git, dtoFactory);
                     addRemote(git, "origin", location, dtoFactory);
                     if (commitId != null) {
-                        fetchBranch(git, "origin", branch == null ? "master" : branch, dtoFactory);
+                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
                         checkoutCommit(git, commitId, dtoFactory);
                     } else if (remoteOriginFetch != null) {
                         git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
@@ -193,6 +193,7 @@ public class GitProjectImporter implements ProjectImporter {
 
     private void fetchBranch(GitConnection gitConnection, String remote, String branch, DtoFactory dtoFactory)
             throws UnauthorizedException, GitException {
+
         final List<String> refSpecs = Collections.singletonList(String.format("refs/heads/%1$s:refs/remotes/origin/%1$s", branch));
         fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
     }

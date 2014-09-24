@@ -56,7 +56,7 @@ import java.util.List;
  *
  * @author andrew00x
  */
-public interface GitConnection extends AutoCloseable {
+public interface GitConnection extends Closeable {
     File getWorkingDir();
 
     /**

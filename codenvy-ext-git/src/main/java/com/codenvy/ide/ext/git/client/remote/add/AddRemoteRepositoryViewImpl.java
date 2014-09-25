@@ -62,13 +62,14 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
     protected AddRemoteRepositoryViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-addRemoteRepository-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
         this.setTitle("Add remote repository");
         this.setWidget(widget);
         
-        btnCancel = createButton(locale.buttonCancel(), "", new ClickHandler() {
+        btnCancel = createButton(locale.buttonCancel(), "git-addRemoteRepository-btnCancel", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -77,7 +78,7 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
         });
         getFooter().add(btnCancel);
 
-        btnOk = createButton(locale.buttonOk(), "", new ClickHandler() {
+        btnOk = createButton(locale.buttonOk(), "git-addRemoteRepository-btnOk", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {

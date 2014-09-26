@@ -14,19 +14,23 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
-import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.notification.Notification;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.google.gwt.event.shared.GwtEvent;
+import com.google.web.bindery.event.shared.Event;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -57,25 +61,29 @@ public class BranchPresenterTest extends BaseTest {
     public static final boolean IS_REMOTE     = true;
     public static final boolean IS_ACTIVE     = true;
     @Mock
-    private BranchView          view;
+    private BranchView             view;
     @Mock
-    private FileNode            file;
+    private FileNode               file;
     @Mock
-    private EditorInput         editorInput;
+    private EditorInput            editorInput;
     @Mock
-    private EditorAgent         editorAgent;
+    private EditorAgent            editorAgent;
     @Mock
-    private Branch              selectedBranch;
+    private Branch                 selectedBranch;
     @Mock
-    private EditorPartPresenter partPresenter;
-    private BranchPresenter     presenter;
+    private EditorPartPresenter    partPresenter;
+    @Mock
+    private GitOutputPartPresenter gitConsole;
+    @Mock
+    private WorkspaceAgent         workspaceAgent;
+    private BranchPresenter        presenter;
 
     @Override
     public void disarm() {
         super.disarm();
 
         presenter = new BranchPresenter(view, eventBus, editorAgent, service, constant, appContext, notificationManager,
-                                        dtoUnmarshallerFactory, projectServiceClient);
+                                        dtoUnmarshallerFactory, projectServiceClient, gitConsole, workspaceAgent);
 
         StringMap<EditorPartPresenter> partPresenterMap = Collections.createStringMap();
         partPresenterMap.put("partPresenter", partPresenter);
@@ -331,7 +339,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(partPresenter).getEditorInput();
         verify(file).getPath();
         verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
-        verify(eventBus).fireEvent((FileEvent)anyObject());
+        verify(eventBus, times(2)).fireEvent(Matchers.<Event<GwtEvent>>anyObject());
     }
 
     @Test
@@ -355,8 +363,6 @@ public class BranchPresenterTest extends BaseTest {
         verify(selectedBranch).isRemote();
         verify(service).branchCheckout(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(BRANCH_NAME), eq(IS_REMOTE),
                                        (AsyncRequestCallback<String>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
-        verify(constant).branchCheckoutFailed();
     }
 
     @Test

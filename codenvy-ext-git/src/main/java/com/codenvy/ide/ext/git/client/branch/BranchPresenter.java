@@ -18,16 +18,22 @@ import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.FileEvent;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.parts.PartStackType;
+import com.codenvy.ide.api.parts.WorkspaceAgent;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
+import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -47,8 +53,11 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_ALL;
  */
 @Singleton
 public class BranchPresenter implements BranchView.ActionDelegate {
-    private BranchView view;
-    private ProjectServiceClient projectServiceClient;
+    private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private       BranchView              view;
+    private       ProjectServiceClient    projectServiceClient;
+    private       GitOutputPartPresenter  gitConsole;
+    private       WorkspaceAgent          workspaceAgent;
     private       EventBus                eventBus;
     private       CurrentProject          project;
     private       GitServiceClient        service;
@@ -57,7 +66,6 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     private       Branch                  selectedBranch;
     private       AppContext              appContext;
     private       NotificationManager     notificationManager;
-    private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
 
     /**
      * Create presenter.
@@ -77,9 +85,13 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                            AppContext appContext,
                            NotificationManager notificationManager,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                           ProjectServiceClient projectServiceClient) {
+                           ProjectServiceClient projectServiceClient,
+                           GitOutputPartPresenter gitConsole,
+                           WorkspaceAgent workspaceAgent) {
         this.view = view;
         this.projectServiceClient = projectServiceClient;
+        this.gitConsole = gitConsole;
+        this.workspaceAgent = workspaceAgent;
         this.view.setDelegate(this);
         this.eventBus = eventBus;
         this.editorAgent = editorAgent;
@@ -177,12 +189,31 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
             @Override
             protected void onFailure(Throwable exception) {
-                final String errorMessage = (exception.getMessage() != null) ? exception.getMessage()
-                                                                             : constant.branchCheckoutFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
+                printGitMessage(exception.getMessage());
             }
         });
+    }
+
+    private void printGitMessage(String messageText) {
+        if (messageText == null || messageText.isEmpty()) {
+            return;
+        }
+        JSONObject jsonObject = JSONParser.parseStrict(messageText).isObject();
+        if (jsonObject == null) {
+            return;
+        }
+        String message = "";
+        if (jsonObject.containsKey("message")) {
+            message = jsonObject.get("message").isString().stringValue();
+        }
+
+        workspaceAgent.openPart(gitConsole, PartStackType.INFORMATION);
+
+        gitConsole.print("");
+        String[] lines = message.split("\n");
+        for (String line : lines) {
+            gitConsole.printError(line);
+        }
     }
 
     /**
@@ -192,6 +223,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
      *         editors that corresponds to open files
      */
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
+        eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
             final FileNode file = partPresenter.getEditorInput().getFile();
             refreshFile(file, partPresenter);

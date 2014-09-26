@@ -41,7 +41,7 @@ public class InitRepositoryAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git initialize repository");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

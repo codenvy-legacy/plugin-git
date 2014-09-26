@@ -42,7 +42,7 @@ public class ResetToCommitAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git reset to commit");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

@@ -52,7 +52,7 @@ public class ImportProjectFromGitHubAction extends Action {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Import project from GitHub");
+        eventLogger.log(this);
         service.getCurrentUser(new AsyncRequestCallback<UserDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(UserDescriptor.class)) {
             @Override
             protected void onSuccess(UserDescriptor result) {

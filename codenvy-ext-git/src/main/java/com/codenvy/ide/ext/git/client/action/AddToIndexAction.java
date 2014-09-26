@@ -41,7 +41,7 @@ public class AddToIndexAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git add");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

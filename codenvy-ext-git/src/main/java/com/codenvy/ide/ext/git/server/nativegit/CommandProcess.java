@@ -12,7 +12,6 @@ package com.codenvy.ide.ext.git.server.nativegit;
 
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.codenvy.api.core.util.CancellableProcessWrapper;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.core.util.Watchdog;
 import com.codenvy.ide.ext.git.server.GitException;
@@ -46,9 +46,11 @@ public class CommandProcess {
      * @throws GitException
      *         when command execution error occurs
      */
-    public static void executeGitCommand(GitCommand command, List<String> output, LineConsumer lineConsumer) throws GitException {
+    public static void executeGitCommand(GitCommand command, List<String> output, LineConsumerFactory lineConsumerFactory) throws GitException {
         CommandLine commandLine = command.getCommandLine();
-        if (lineConsumer != null) {
+        LineConsumer lineConsumer = LineConsumer.DEV_NULL;
+        if (lineConsumerFactory != null) {
+            lineConsumer = lineConsumerFactory.newLineConsumer();
             try {
                 lineConsumer.writeLine("Executing Git command: " + commandLine.toString());
             } catch (IOException ioe) {

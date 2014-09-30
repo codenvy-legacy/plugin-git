@@ -11,7 +11,7 @@
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
 import com.codenvy.api.core.util.CommandLine;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.CommandProcess;
 
@@ -32,7 +32,7 @@ public abstract class GitCommand<T> {
     private   String       askPassScriptPath;
     protected List<String> output;
     protected CommandLine  commandLine;
-    private   LineConsumer processLineConsumer;
+    private   LineConsumerFactory processLineConsumerFactory;
 
     /**
      * @param repository
@@ -129,7 +129,7 @@ public abstract class GitCommand<T> {
      *         when command execution failed or command execution exit value is not 0
      */
     protected void start() throws GitException {
-        CommandProcess.executeGitCommand(this, output, processLineConsumer);
+        CommandProcess.executeGitCommand(this, output, processLineConsumerFactory);
     }
 
     @Override
@@ -147,8 +147,8 @@ public abstract class GitCommand<T> {
      * @param processLineConsumer
      *         consumer for command output
      */
-    public GitCommand withProcessLineConsumer(LineConsumer processLineConsumer) {
-        this.processLineConsumer = processLineConsumer;
+    public GitCommand withProcessLineConsumerFactory(LineConsumerFactory processLineConsumerFactory) {
+        this.processLineConsumerFactory = processLineConsumerFactory;
         return this;
     }
 }

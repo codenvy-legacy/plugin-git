@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.ide.ext.git.shared.AddRequest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
@@ -413,8 +413,9 @@ public interface GitConnection extends Closeable {
     Config getConfig() throws GitException;
 
     /** Close connection, release associated resources. */
+    @Override
     void close();
 
     /** Set publisher for git output, e.g. for sending git command output to the client side. */
-    void setOutputLineConsumer(LineConsumer outputPublisher);
+    void setOutputLineConsumerFactory(LineConsumerFactory outputPublisherFactory);
 }

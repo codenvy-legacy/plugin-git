@@ -18,7 +18,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * Presenter for adding remote repository.
@@ -48,7 +48,7 @@ public class AddRemoteRepositoryPresenter implements AddRemoteRepositoryView.Act
     }
 
     /** Show dialog. */
-    public void showDialog(@NotNull AsyncCallback<Void> callback) {
+    public void showDialog(@Nonnull AsyncCallback<Void> callback) {
         this.callback = callback;
         view.setUrl("");
         view.setName("");

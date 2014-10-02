@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.github.client.load;
 import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link ImportPresenter}.
@@ -35,7 +35,7 @@ public interface ImportView extends View<ImportView.ActionDelegate> {
          * @param repository
          *         selected repository
          */
-        void onRepositorySelected(@NotNull ProjectData repository);
+        void onRepositorySelected(@Nonnull ProjectData repository);
 
         /** Performs any actions appropriate in response to the user having changed account field. */
         void onAccountChanged();
@@ -47,10 +47,10 @@ public interface ImportView extends View<ImportView.ActionDelegate> {
      * @param projectName
      *         name what need to show
      */
-    void setProjectName(@NotNull String projectName);
+    void setProjectName(@Nonnull String projectName);
 
     /** @return project name */
-    @NotNull
+    @Nonnull
     String getProjectName();
 
     /**
@@ -59,7 +59,7 @@ public interface ImportView extends View<ImportView.ActionDelegate> {
      * @param repositories
      *         available repositories
      */
-    void setRepositories(@NotNull Array<ProjectData> repositories);
+    void setRepositories(@Nonnull Array<ProjectData> repositories);
 
     /**
      * Change the enable state of the finish button.
@@ -70,7 +70,7 @@ public interface ImportView extends View<ImportView.ActionDelegate> {
     void setEnableFinishButton(boolean enabled);
 
     /** @return account name */
-    @NotNull
+    @Nonnull
     String getAccountName();
 
     /**
@@ -79,7 +79,7 @@ public interface ImportView extends View<ImportView.ActionDelegate> {
      * @param names
      *         available names
      */
-    void setAccountNames(@NotNull Array<String> names);
+    void setAccountNames(@Nonnull Array<String> names);
 
     /** Close dialog. */
     void close();

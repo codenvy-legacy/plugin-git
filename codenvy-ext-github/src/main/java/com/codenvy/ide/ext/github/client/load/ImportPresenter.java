@@ -47,7 +47,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import java.util.Map;
 
@@ -151,7 +151,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
      * @param repositories
      *         loaded list of repositories
      */
-    private void onListLoaded(@NotNull StringMap<Array<GitHubRepository>> repositories) {
+    private void onListLoaded(@Nonnull StringMap<Array<GitHubRepository>> repositories) {
         this.repositories = repositories;
 
         view.setAccountNames(repositories.getKeys());
@@ -310,7 +310,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
 
     /** {@inheritDoc} */
     @Override
-    public void onRepositorySelected(@NotNull ProjectData repository) {
+    public void onRepositorySelected(@Nonnull ProjectData repository) {
         selectedRepository = repository;
         view.setProjectName(selectedRepository.getName());
         view.setEnableFinishButton(true);

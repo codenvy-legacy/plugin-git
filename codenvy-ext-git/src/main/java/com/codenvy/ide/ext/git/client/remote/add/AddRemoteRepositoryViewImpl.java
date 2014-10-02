@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link AddRemoteRepositoryView}.
@@ -89,7 +89,7 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return name.getText();
@@ -97,12 +97,12 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
 
     /** {@inheritDoc} */
     @Override
-    public void setName(@NotNull String name) {
+    public void setName(@Nonnull String name) {
         this.name.setText(name);
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getUrl() {
         return url.getText();
@@ -110,7 +110,7 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
 
     /** {@inheritDoc} */
     @Override
-    public void setUrl(@NotNull String url) {
+    public void setUrl(@Nonnull String url) {
         this.url.setText(url);
     }
 

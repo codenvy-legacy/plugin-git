@@ -23,7 +23,7 @@ import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.google.inject.Inject;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -82,8 +82,8 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      *
      * @return {@link String} message to display
      */
-    @NotNull
-    private String formMessage(@NotNull String workDir) {
+    @Nonnull
+    private String formMessage(@Nonnull String workDir) {
         Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
 
         String path;
@@ -133,7 +133,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      *
      * @return pattern of the files to be removed
      */
-    @NotNull
+    @Nonnull
     private List<String> getFilePatterns() {
         Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
         String path;
@@ -155,7 +155,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
      * @param e
      *         exception what happened
      */
-    private void handleError(@NotNull Throwable e) {
+    private void handleError(@Nonnull Throwable e) {
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.removeFilesFailed();
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);

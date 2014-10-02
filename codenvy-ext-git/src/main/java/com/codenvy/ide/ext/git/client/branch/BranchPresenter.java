@@ -39,7 +39,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -314,7 +314,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
     /** {@inheritDoc} */
     @Override
-    public void onBranchSelected(@NotNull Branch branch) {
+    public void onBranchSelected(@Nonnull Branch branch) {
         selectedBranch = branch;
         boolean enabled = !selectedBranch.isActive();
         view.setEnableCheckoutButton(enabled);

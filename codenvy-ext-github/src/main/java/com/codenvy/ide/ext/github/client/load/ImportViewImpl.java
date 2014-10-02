@@ -38,7 +38,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,12 +150,12 @@ public class ImportViewImpl extends DialogBox implements ImportView {
 
     /** {@inheritDoc} */
     @Override
-    public void setProjectName(@NotNull String projectName) {
+    public void setProjectName(@Nonnull String projectName) {
         this.projectName.setText(projectName);
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getProjectName() {
         return projectName.getText();
@@ -163,7 +163,7 @@ public class ImportViewImpl extends DialogBox implements ImportView {
 
     /** {@inheritDoc} */
     @Override
-    public void setRepositories(@NotNull Array<ProjectData> repositories) {
+    public void setRepositories(@Nonnull Array<ProjectData> repositories) {
         // Wraps Array in java.util.List
         List<ProjectData> list = new ArrayList<ProjectData>();
         for (int i = 0; i < repositories.size(); i++) {
@@ -179,7 +179,7 @@ public class ImportViewImpl extends DialogBox implements ImportView {
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getAccountName() {
         int index = accountName.getSelectedIndex();
@@ -188,7 +188,7 @@ public class ImportViewImpl extends DialogBox implements ImportView {
 
     /** {@inheritDoc} */
     @Override
-    public void setAccountNames(@NotNull Array<String> names) {
+    public void setAccountNames(@Nonnull Array<String> names) {
         this.accountName.clear();
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);

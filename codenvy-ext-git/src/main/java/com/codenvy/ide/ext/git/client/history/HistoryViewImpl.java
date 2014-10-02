@@ -41,7 +41,7 @@ import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -174,7 +174,7 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
 
     /** {@inheritDoc} */
     @Override
-    public void setRevisions(@NotNull Array<Revision> revisions) {
+    public void setRevisions(@Nonnull Array<Revision> revisions) {
         // Wraps Array in java.util.List
         List<Revision> list = new ArrayList<Revision>();
         for (int i = 0; i < revisions.size(); i++) {
@@ -215,37 +215,37 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
 
     /** {@inheritDoc} */
     @Override
-    public void setCommitADate(@NotNull String date) {
+    public void setCommitADate(@Nonnull String date) {
         commitADate.setText(date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setCommitBDate(@NotNull String date) {
+    public void setCommitBDate(@Nonnull String date) {
         commitBDate.setText(date);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setCommitARevision(@NotNull String revision) {
+    public void setCommitARevision(@Nonnull String revision) {
         commitARevision.setText(revision);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setCommitBRevision(@NotNull String revision) {
+    public void setCommitBRevision(@Nonnull String revision) {
         commitBRevision.setText(revision);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setCompareType(@NotNull String type) {
+    public void setCompareType(@Nonnull String type) {
         compareType.setHTML(type);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setDiffContext(@NotNull String diffContext) {
+    public void setDiffContext(@Nonnull String diffContext) {
         editor.setText(diffContext);
     }
 

@@ -12,7 +12,8 @@ package com.codenvy.ide.ext.git.client.add;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
 
 /**
  * The view of {@link AddToIndexPresenter}.
@@ -35,7 +36,7 @@ public interface AddToIndexView extends View<AddToIndexView.ActionDelegate> {
      * @param message
      *         content of message
      */
-    void setMessage(@NotNull String message);
+    void setMessage(@Nonnull String message);
 
     /** @return <code>true</code> if new file must be added to index, and <code>false</code> otherwise */
     boolean isUpdated();

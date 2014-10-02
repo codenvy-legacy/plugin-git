@@ -31,7 +31,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,7 +139,7 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
 
     /** {@inheritDoc} */
     @Override
-    public void setIndexedFiles(@NotNull Array<IndexFile> indexedFiles) {
+    public void setIndexedFiles(@Nonnull Array<IndexFile> indexedFiles) {
         // Wraps Array in java.util.List
         List<IndexFile> appList = new ArrayList<IndexFile>();
         for (int i = 0; i < indexedFiles.size(); i++) {

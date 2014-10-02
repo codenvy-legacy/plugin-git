@@ -14,7 +14,7 @@ import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.shared.Remote;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link FetchPresenter}.
@@ -63,7 +63,7 @@ public interface FetchView extends View<FetchView.ActionDelegate> {
      *
      * @return repository name.
      */
-    @NotNull
+    @Nonnull
     String getRepositoryName();
 
     /**
@@ -71,7 +71,7 @@ public interface FetchView extends View<FetchView.ActionDelegate> {
      *
      * @return repository url.
      */
-    @NotNull
+    @Nonnull
     String getRepositoryUrl();
 
     /**
@@ -80,10 +80,10 @@ public interface FetchView extends View<FetchView.ActionDelegate> {
      * @param repositories
      *         available repositories
      */
-    void setRepositories(@NotNull Array<Remote> repositories);
+    void setRepositories(@Nonnull Array<Remote> repositories);
 
     /** @return local branch */
-    @NotNull
+    @Nonnull
     String getLocalBranch();
 
     /**
@@ -92,10 +92,10 @@ public interface FetchView extends View<FetchView.ActionDelegate> {
      * @param branches
      *         local branches
      */
-    void setLocalBranches(@NotNull Array<String> branches);
+    void setLocalBranches(@Nonnull Array<String> branches);
 
     /** @return remote branches */
-    @NotNull
+    @Nonnull
     String getRemoteBranch();
 
     /**
@@ -104,21 +104,21 @@ public interface FetchView extends View<FetchView.ActionDelegate> {
      * @param branches
      *         remote branches
      */
-    void setRemoteBranches(@NotNull Array<String> branches);
+    void setRemoteBranches(@Nonnull Array<String> branches);
     
     /** 
      * Selects pointed local branch
      * 
      * @param branch local branch to select
      */
-    void selectLocalBranch(@NotNull String branch);
+    void selectLocalBranch(@Nonnull String branch);
     
     /** 
      * Selects pointed remote branch
      * 
      * @param branch remote branch to select
      */
-    void selectRemoteBranch(@NotNull String branch);
+    void selectRemoteBranch(@Nonnull String branch);
 
     /**
      * Change the enable state of the push button.

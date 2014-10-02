@@ -22,7 +22,7 @@ import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.Date;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -112,7 +112,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
      * @param revision
      *         a {@link Revision}
      */
-    private void onCommitSuccess(@NotNull final Revision revision) {
+    private void onCommitSuccess(@Nonnull final Revision revision) {
         DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
         String date = formatter.format(new Date(revision.getCommitTime()));
 
@@ -131,7 +131,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
      * @param e
      *         exception what happened
      */
-    private void handleError(@NotNull Throwable e) {
+    private void handleError(@Nonnull Throwable e) {
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.commitFailed();
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);

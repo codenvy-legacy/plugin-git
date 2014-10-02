@@ -28,7 +28,7 @@ import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -113,7 +113,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@NotNull final String remoteMode) {
+    private void getBranches(@Nonnull final String remoteMode) {
         service.branchList(project.getRootProject(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
@@ -163,8 +163,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param remoteBranches
      *         remote branches
      */
-    @NotNull
-    private Array<String> getRemoteBranchesToDisplay(@NotNull String remoteName, @NotNull Array<Branch> remoteBranches) {
+    @Nonnull
+    private Array<String> getRemoteBranchesToDisplay(@Nonnull String remoteName, @Nonnull Array<Branch> remoteBranches) {
         Array<String> branches = Collections.createArray();
 
         if (remoteBranches.isEmpty()) {
@@ -192,8 +192,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param localBranches
      *         local branches
      */
-    @NotNull
-    private Array<String> getLocalBranchesToDisplay(@NotNull Array<Branch> localBranches) {
+    @Nonnull
+    private Array<String> getLocalBranchesToDisplay(@Nonnull Array<Branch> localBranches) {
         Array<String> branches = Collections.createArray();
 
         if (localBranches.isEmpty()) {
@@ -241,7 +241,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     }
 
     /** @return list of refs to push */
-    @NotNull
+    @Nonnull
     private List<String> getRefs() {
         String localBranch = "refs/heads/" + view.getLocalBranch();
         String remoteBranch = "refs/heads/" + view.getRemoteBranch();
@@ -254,7 +254,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param t
      *         exception what happened
      */
-    private void handleError(@NotNull Throwable t) {
+    private void handleError(@Nonnull Throwable t) {
         String errorMessage = t.getMessage() != null ? t.getMessage() : constant.pushFail();
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);

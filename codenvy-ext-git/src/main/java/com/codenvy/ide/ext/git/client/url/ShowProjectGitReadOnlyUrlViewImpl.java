@@ -24,7 +24,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link ShowProjectGitReadOnlyUrlView}.
@@ -77,7 +77,7 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
 
     /** {@inheritDoc} */
     @Override
-    public void setUrl(@NotNull String url) {
+    public void setUrl(@Nonnull String url) {
         this.url.setText(url);
     }
 

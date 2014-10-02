@@ -23,7 +23,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -91,7 +91,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
 
     /** {@inheritDoc} */
     @Override
-    public void getUserToken(@NotNull String user, @NotNull AsyncRequestCallback<String> callback) {
+    public void getUserToken(@Nonnull String user, @Nonnull AsyncRequestCallback<String> callback) {
         String url = baseUrl + TOKEN + "/" + user;
         asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
     }
@@ -136,7 +136,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
 
     /** {@inheritDoc} */
     @Override
-    public void updatePublicKey(@NotNull AsyncRequestCallback<Void> callback) {
+    public void updatePublicKey(@Nonnull AsyncRequestCallback<Void> callback) {
         String url = baseUrl + SSH_GEN;
         asyncRequestFactory.createPostRequest(url, null).loader(loader).send(callback);
     }

@@ -14,7 +14,7 @@ import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.shared.Branch;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link BranchPresenter}.
@@ -45,7 +45,7 @@ public interface BranchView extends View<BranchView.ActionDelegate> {
          * @param branch
          *         selected revision
          */
-        void onBranchSelected(@NotNull Branch branch);
+        void onBranchSelected(@Nonnull Branch branch);
     }
 
     /**
@@ -54,7 +54,7 @@ public interface BranchView extends View<BranchView.ActionDelegate> {
      * @param branches
      *         git branches
      */
-    void setBranches(@NotNull Array<Branch> branches);
+    void setBranches(@Nonnull Array<Branch> branches);
 
     /**
      * Change the enable state of the delete button.

@@ -37,7 +37,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link BranchView}.
@@ -194,7 +194,7 @@ public class BranchViewImpl extends Window implements BranchView {
 
     /** {@inheritDoc} */
     @Override
-    public void setBranches(@NotNull Array<Branch> branches) {
+    public void setBranches(@Nonnull Array<Branch> branches) {
         this.branches.render(branches);
     }
 

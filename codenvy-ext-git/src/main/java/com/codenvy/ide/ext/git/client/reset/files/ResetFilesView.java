@@ -14,7 +14,7 @@ import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.shared.IndexFile;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link com.codenvy.ide.ext.git.client.reset.commit.ResetToCommitPresenter}.
@@ -39,7 +39,7 @@ public interface ResetFilesView extends View<ResetFilesView.ActionDelegate> {
      * @param indexedFiles
      *         indexed files
      */
-    void setIndexedFiles(@NotNull Array<IndexFile> indexedFiles);
+    void setIndexedFiles(@Nonnull Array<IndexFile> indexedFiles);
 
     /** Close dialog. */
     void close();

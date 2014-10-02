@@ -18,7 +18,7 @@ import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ public interface GitHubClientService {
      * @param callback
      *         the callback client has to implement
      */
-    public abstract void getRepositoriesList(@NotNull AsyncRequestCallback<GitHubRepositoryList> callback);
+    public abstract void getRepositoriesList(@Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
 
     /**
      * Get the list of available public repositories from GitHub user.
@@ -43,7 +43,7 @@ public interface GitHubClientService {
      * @param callback
      *         the callback client has to implement
      */
-    public abstract void getRepositoriesByUser(@NotNull String userName, @NotNull AsyncRequestCallback<GitHubRepositoryList> callback);
+    public abstract void getRepositoriesByUser(@Nonnull String userName, @Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
 
     /**
      * Get the page with GitHub repositories.
@@ -52,7 +52,7 @@ public interface GitHubClientService {
      *         page location
      * @param callback
      */
-    public abstract void getPage(@NotNull String pageLocation, @NotNull AsyncRequestCallback<GitHubRepositoryList> callback);
+    public abstract void getPage(@Nonnull String pageLocation, @Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
 
     /**
      * Get the list of available repositories by GitHub organization.
@@ -62,8 +62,8 @@ public interface GitHubClientService {
      * @param callback
      *         the callback client has to implement
      */
-    public abstract void getRepositoriesByOrganization(@NotNull String organization,
-                                                       @NotNull AsyncRequestCallback<GitHubRepositoryList> callback);
+    public abstract void getRepositoriesByOrganization(@Nonnull String organization,
+                                                       @Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
 
     /**
      * Get the list of available public repositories from GitHub account.
@@ -73,7 +73,7 @@ public interface GitHubClientService {
      * @param callback
      *         the callback client has to implement
      */
-    public abstract void getRepositoriesByAccount(@NotNull String account, @NotNull AsyncRequestCallback<GitHubRepositoryList> callback);
+    public abstract void getRepositoriesByAccount(@Nonnull String account, @Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
 
     /**
      * Get list of collaborators of GitHub repository. For detail see GitHub REST API http://developer.github.com/v3/repos/collaborators/.
@@ -82,8 +82,8 @@ public interface GitHubClientService {
      * @param repository
      * @param callback
      */
-    public abstract void getCollaborators(@NotNull String user, @NotNull String repository,
-                                          @NotNull AsyncRequestCallback<Collaborators> callback);
+    public abstract void getCollaborators(@Nonnull String user, @Nonnull String repository,
+                                          @Nonnull AsyncRequestCallback<Collaborators> callback);
 
     /**
      * Get the GitHub oAuth token for the pointed user.
@@ -92,7 +92,7 @@ public interface GitHubClientService {
      *         user's id
      * @param callback
      */
-    public abstract void getUserToken(@NotNull String user, @NotNull AsyncRequestCallback<String> callback);
+    public abstract void getUserToken(@Nonnull String user, @Nonnull AsyncRequestCallback<String> callback);
 
     /**
      * Get the map of available public and private repositories of the authorized user and organizations he exists in.
@@ -100,26 +100,26 @@ public interface GitHubClientService {
      * @param callback
      *         the callback client has to implement
      */
-    public abstract void getAllRepositories(@NotNull AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback);
+    public abstract void getAllRepositories(@Nonnull AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback);
 
     /**
      * Get the list of the organizations, where authorized user is a member.
      *
      * @param callback
      */
-    public abstract void getOrganizations(@NotNull AsyncRequestCallback<List<String>> callback);
+    public abstract void getOrganizations(@Nonnull AsyncRequestCallback<List<String>> callback);
 
     /**
      * Get authorized user information.
      *
      * @param callback
      */
-    public abstract void getUserInfo(@NotNull AsyncRequestCallback<GitHubUser> callback);
+    public abstract void getUserInfo(@Nonnull AsyncRequestCallback<GitHubUser> callback);
 
     /**
      * Generate and upload new public key if not exist on github.com.
      *
      * @param callback
      */
-    public abstract void updatePublicKey(@NotNull AsyncRequestCallback<Void> callback);
+    public abstract void updatePublicKey(@Nonnull AsyncRequestCallback<Void> callback);
 }

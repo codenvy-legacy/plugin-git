@@ -52,8 +52,8 @@ public abstract class GitConnectionFactory {
      *         repository directory
      * @param user
      *         user
-     * @param outputPublisher
-     *         a factory consumer for git output
+     * @param outputPublisherFactory
+     *         a consumer factory for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection

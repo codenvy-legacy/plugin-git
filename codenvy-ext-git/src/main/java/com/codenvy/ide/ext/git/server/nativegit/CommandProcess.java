@@ -11,14 +11,6 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.codenvy.api.core.util.CancellableProcessWrapper;
 import com.codenvy.api.core.util.CommandLine;
 import com.codenvy.api.core.util.LineConsumer;
@@ -27,6 +19,14 @@ import com.codenvy.api.core.util.ProcessUtil;
 import com.codenvy.api.core.util.Watchdog;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Executes GitCommand.
@@ -46,7 +46,8 @@ public class CommandProcess {
      * @throws GitException
      *         when command execution error occurs
      */
-    public static void executeGitCommand(GitCommand command, List<String> output, LineConsumerFactory lineConsumerFactory) throws GitException {
+    public static void executeGitCommand(GitCommand command, List<String> output, LineConsumerFactory lineConsumerFactory)
+            throws GitException {
         CommandLine commandLine = command.getCommandLine();
         LineConsumer lineConsumer = LineConsumer.DEV_NULL;
         if (lineConsumerFactory != null) {
@@ -62,24 +63,21 @@ public class CommandProcess {
 
         Map<String, String> environment = pb.environment();
 
-        environment.put("HOME" , System.getProperty("user.home"));
+        environment.put("HOME", System.getProperty("user.home"));
         // if command should be executed with ssh key
         if (command.getSSHScriptPath() != null) {
-            environment.put("GIT_SSH",  command.getSSHScriptPath());
+            environment.put("GIT_SSH", command.getSSHScriptPath());
         }
         // if command should be executed with credentials
         if (command.getAskPassScriptPath() != null) {
-            environment.put("GIT_ASKPASS" , command.getAskPassScriptPath());
+            environment.put("GIT_ASKPASS", command.getAskPassScriptPath());
         }
 
         pb.directory(command.getRepository());
 
         ProcessLineConsumer processLineConsumer = new ProcessLineConsumer(output);
-        LineConsumer consumer = processLineConsumer;
-        // if any, add an external line consumer. It is typically a consumer that sends message events to the client.
-        if (lineConsumer != null) {
-            consumer = new CompositeLineConsumer(lineConsumer, processLineConsumer);
-        }
+        // Add an external line consumer that comes with factory. It is typically a consumer that sends message events to the client.
+        LineConsumer consumer = new CompositeLineConsumer(lineConsumer, processLineConsumer);
 
         Process process;
         try {
@@ -150,13 +148,11 @@ public class CommandProcess {
 
     public static class CompositeLineConsumer implements LineConsumer {
 
-
         private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.CompositeLineConsumer.class);
-        protected LineConsumer[]    lineConsumers;
+        protected LineConsumer[] lineConsumers;
 
         public CompositeLineConsumer(LineConsumer... lineConsumers) {
             this.lineConsumers = lineConsumers;
-
         }
 
         @Override
@@ -165,7 +161,7 @@ public class CommandProcess {
                 try {
                     lineConsumer.close();
                 } catch (IOException e) {
-                    LOG.error("An error occured while closing the git process line consumer", e);
+                    LOG.error("An error occurred while closing the git process line consumer", e);
                 }
             }
         }
@@ -176,7 +172,7 @@ public class CommandProcess {
                 try {
                     lineConsumer.writeLine(line);
                 } catch (IOException e) {
-                    LOG.error("An error occured while writing line to the git process line consumer", e);
+                    LOG.error("An error occurred while writing line to the git process line consumer", e);
                 }
             }
         }

@@ -144,8 +144,8 @@ public abstract class GitCommand<T> {
     /**
      * Set a process line consumer to be used to capture process output
      *
-     * @param processLineConsumer
-     *         consumer for command output
+     * @param processLineConsumerFactory
+     *         factory that provides consumer for command output
      */
     public GitCommand withProcessLineConsumerFactory(LineConsumerFactory processLineConsumerFactory) {
         this.processLineConsumerFactory = processLineConsumerFactory;

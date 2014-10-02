@@ -286,7 +286,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         Notification notification = new Notification(gitConstant.cloneSuccess(url), INFO);
         notificationManager.showNotification(notification);
         WizardContext context = new WizardContext();
-        context.putData(ProjectWizard.PROJECT, projectDescriptor);
+        context.putData(ProjectWizard.PROJECT_FOR_UPDATE, projectDescriptor);
         wizardPresenter.show(context);
     }
 

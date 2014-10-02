@@ -95,13 +95,13 @@ public class GitProjectImporter implements ProjectImporter {
             String keepDirectory = null;
             // For factory and for our projects templates:
             // Clean all info related to the vcs. In case of Git remove ".git" directory and ".gitignore" file.
-            boolean cleanVcs = false;
+            boolean keepVcs = false;
             if (parameters != null) {
                 commitId = parameters.get("commitId");
                 branch = parameters.get("branch");
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
                 keepDirectory = parameters.get("keepDirectory");
-                cleanVcs = Boolean.parseBoolean(parameters.get("cleanVcs"));
+                keepVcs = Boolean.parseBoolean(parameters.get("keepVcs"));
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             // Get path to local file. Git works with local filesystem only.
@@ -154,7 +154,7 @@ public class GitProjectImporter implements ProjectImporter {
                         checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
                     }
                 }
-                if (cleanVcs) {
+                if (!keepVcs) {
                     cleanGit(new File(localPath));
                 }
             } finally {

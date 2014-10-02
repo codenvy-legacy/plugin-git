@@ -167,7 +167,7 @@ public class GitProjectImporterTest {
         Assert.assertNotNull(folder.getChild("src"));
         Assert.assertNotNull(folder.getChild("src/hello.c"));
         Assert.assertNotNull(folder.getChild("README"));
-        Assert.assertNotNull(folder.getChild(".git"));
+        Assert.assertNull(folder.getChild(".git"));
         FileEntry readme = (FileEntry)folder.getChild("README");
         Assert.assertEquals("test git importer", new String(readme.contentAsBytes()));
     }
@@ -186,6 +186,7 @@ public class GitProjectImporterTest {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("branch", "new_branch");
+        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         List<Branch> branches = targetGit.branchList(dtoFactory.createDto(BranchListRequest.class));
@@ -217,6 +218,7 @@ public class GitProjectImporterTest {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("commitId", commit.getId());
+        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));
@@ -254,6 +256,7 @@ public class GitProjectImporterTest {
         folder.createFolder(".codenvy");
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("commitId", commit.getId());
+        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));
@@ -282,14 +285,14 @@ public class GitProjectImporterTest {
     }
 
     @Test
-    public void testImportCleanVcs() throws Exception {
+    public void testImportKeepVcs() throws Exception {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
-        parameters.put("cleanVcs", "true");
+        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
         Assert.assertNotNull(folder.getChild("src"));
         Assert.assertNotNull(folder.getChild("src/hello.c"));
         Assert.assertNotNull(folder.getChild("README"));
-        Assert.assertNull(folder.getChild(".git")); // git must be removed
+        Assert.assertNotNull(folder.getChild(".git")); // git must not be removed
     }
 }

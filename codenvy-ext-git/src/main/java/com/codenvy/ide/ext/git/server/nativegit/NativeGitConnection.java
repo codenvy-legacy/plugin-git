@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.server.nativegit;
 
 
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.Config;
 import com.codenvy.ide.ext.git.server.DiffPage;
@@ -580,7 +580,7 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void setOutputLineConsumer(LineConsumer gitOutputPublisher) {
-        nativeGit.setOutputLineConsumer(gitOutputPublisher);
+    public void setOutputLineConsumerFactory(LineConsumerFactory gitOutputPublisherFactory) {
+        nativeGit.setOutputLineConsumerFactory(gitOutputPublisherFactory);
     }
 }

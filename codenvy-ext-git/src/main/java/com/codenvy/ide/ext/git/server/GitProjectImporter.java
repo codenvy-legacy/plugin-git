@@ -14,7 +14,7 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.commons.lang.IoUtil;
@@ -67,7 +67,7 @@ public class GitProjectImporter implements ProjectImporter {
     public String getDescription() {
         return "Import project from hosted GIT repository URL.";
     }
-    
+
     /** {@inheritDoc} */
     @Override
     public ImporterCategory getCategory() {
@@ -77,11 +77,11 @@ public class GitProjectImporter implements ProjectImporter {
     @Override
     public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
-        importSources(baseFolder, location, parameters, LineConsumer.DEV_NULL);
+        importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumer consumer)
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumerFactory consumerFactory)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         try {
             // For factory: checkout particular commit after clone
@@ -108,12 +108,12 @@ public class GitProjectImporter implements ProjectImporter {
             final String localPath = localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             final GitConnection git;
             if (keepDirectory == null) {
-                git = gitConnectionFactory.getConnection(localPath, consumer);
+                git = gitConnectionFactory.getConnection(localPath, consumerFactory);
             } else {
                 // Clone a git repository's sub-directory only. Vcs info (.git, gitignore) always lost.
                 final File temp = Files.createTempDirectory(null).toFile();
                 try {
-                    git = gitConnectionFactory.getConnection(temp, consumer);
+                    git = gitConnectionFactory.getConnection(temp, consumerFactory);
                     sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
                     // Copy content of directory to the project folder.
                     final File projectDir = new File(localPath);

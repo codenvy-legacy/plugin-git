@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.ide.ext.git.server.Config;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.AddCommand;
@@ -63,7 +63,7 @@ public class NativeGit {
     private static final String SSH_SCRIPT          = "ssh_script";
     private static String sshScriptTemplate;
     private        File   repository;
-    protected LineConsumer gitOutputPublisher;
+    protected LineConsumerFactory gitOutputPublisherFactory;
 
     /**
      * Loading template, that will be used to store ssh
@@ -99,7 +99,7 @@ public class NativeGit {
      */
     public CloneCommand createCloneCommand() {
         CloneCommand cloneCommand = new CloneCommand(repository);
-        cloneCommand.withProcessLineConsumer(gitOutputPublisher);
+        cloneCommand.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return cloneCommand;
     }
 
@@ -115,7 +115,7 @@ public class NativeGit {
     public CloneCommand createCloneCommand(String sshKeyPath) throws GitException {
         storeSshScript(sshKeyPath);
         CloneCommand command = new CloneCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
         return command;
     }
@@ -123,105 +123,105 @@ public class NativeGit {
     /** @return commit command */
     public CommitCommand createCommitCommand() {
         CommitCommand command = new CommitCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return branch create command */
     public BranchRenameCommand createBranchRenameCommand() {
         BranchRenameCommand command = new BranchRenameCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return remote add command */
     public RemoteAddCommand createRemoteAddCommand() {
         RemoteAddCommand command = new RemoteAddCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return remote list command */
     public RemoteListCommand createRemoteListCommand() {
         RemoteListCommand command = new RemoteListCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return remote delete command */
     public RemoteDeleteCommand createRemoteDeleteCommand() {
         RemoteDeleteCommand command = new RemoteDeleteCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return log command */
     public LogCommand createLogCommand() {
         LogCommand command = new LogCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return ls command */
     public LsRemoteCommand createLsRemoteCommand() {
         LsRemoteCommand command = new LsRemoteCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return add command */
     public AddCommand createAddCommand() {
         AddCommand command = new AddCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return init command */
     public InitCommand createInitCommand() {
         InitCommand command = new InitCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return diff command */
     public DiffCommand createDiffCommand() {
         DiffCommand command = new DiffCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return reset command */
     public ResetCommand createResetCommand() {
         ResetCommand command = new ResetCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return tag create command */
     public TagCreateCommand createTagCreateCommand() {
         TagCreateCommand command = new TagCreateCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return tag delete command */
     public TagDeleteCommand createTagDeleteCommand() {
         TagDeleteCommand command = new TagDeleteCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return tah list command */
     public TagListCommand createTagListCommand() {
         TagListCommand command = new TagListCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return branch create command */
     public BranchCreateCommand createBranchCreateCommand() {
         BranchCreateCommand command = new BranchCreateCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
@@ -233,56 +233,56 @@ public class NativeGit {
     /** @return branch checkout command */
     public BranchCheckoutCommand createBranchCheckoutCommand() {
         BranchCheckoutCommand command = new BranchCheckoutCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return list files command */
     public ListFilesCommand createListFilesCommand() {
         ListFilesCommand command = new ListFilesCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return branch list command */
     public BranchListCommand createBranchListCommand() {
         BranchListCommand command = new BranchListCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return branch delete command */
     public BranchDeleteCommand createBranchDeleteCommand() {
         BranchDeleteCommand command = new BranchDeleteCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return remote command */
     public RemoveCommand createRemoveCommand() {
         RemoveCommand command = new RemoveCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return move command */
     public MoveCommand createMoveCommand() {
         MoveCommand command = new MoveCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return status command */
     public StatusCommand createStatusCommand() {
         StatusCommand command = new StatusCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
     /** @return merge command */
     public MergeCommand createMergeCommand() {
         MergeCommand command = new MergeCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
@@ -293,7 +293,7 @@ public class NativeGit {
      */
     public FetchCommand createFetchCommand() {
         FetchCommand command = new FetchCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
@@ -309,7 +309,7 @@ public class NativeGit {
     public FetchCommand createFetchCommand(String sshKeyPath) throws GitException {
         storeSshScript(sshKeyPath);
         FetchCommand command = new FetchCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
         return command;
     }
@@ -321,7 +321,7 @@ public class NativeGit {
      */
     public PullCommand createPullCommand() {
         PullCommand command = new PullCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
@@ -337,7 +337,7 @@ public class NativeGit {
     public PullCommand createPullCommand(String sshKeyPath) throws GitException {
         storeSshScript(sshKeyPath);
         PullCommand command = new PullCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
         return command;
     }
@@ -345,7 +345,7 @@ public class NativeGit {
     /** @return remote update command */
     public RemoteUpdateCommand createRemoteUpdateCommand() {
         RemoteUpdateCommand command = new RemoteUpdateCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
@@ -356,7 +356,7 @@ public class NativeGit {
      */
     public PushCommand createPushCommand() {
         PushCommand command = new PushCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         return command;
     }
 
@@ -372,7 +372,7 @@ public class NativeGit {
     public PushCommand createPushCommand(String sshKeyPath) throws GitException {
         storeSshScript(sshKeyPath);
         PushCommand command = new PushCommand(repository);
-        command.withProcessLineConsumer(gitOutputPublisher);
+        command.withProcessLineConsumerFactory(gitOutputPublisherFactory);
         command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
         return command;
     }
@@ -414,7 +414,7 @@ public class NativeGit {
         }
     }
 
-    public void setOutputLineConsumer(LineConsumer gitOutputPublisher) {
-        this.gitOutputPublisher = gitOutputPublisher;
+    public void setOutputLineConsumerFactory(LineConsumerFactory gitOutputPublisherFactory) {
+        this.gitOutputPublisherFactory = gitOutputPublisherFactory;
     }
 }

@@ -49,16 +49,6 @@ public class CommandProcess {
     public static void executeGitCommand(GitCommand command, List<String> output, LineConsumerFactory lineConsumerFactory)
             throws GitException {
         CommandLine commandLine = command.getCommandLine();
-        LineConsumer lineConsumer = LineConsumer.DEV_NULL;
-        if (lineConsumerFactory != null) {
-            lineConsumer = lineConsumerFactory.newLineConsumer();
-            try {
-                lineConsumer.writeLine("Executing Git command: " + commandLine.toString());
-            } catch (IOException ioe) {
-                LOG.error("An error occurred while trying to write line on the lineConsumer", ioe);
-            }
-        }
-
         ProcessBuilder pb = new ProcessBuilder(commandLine.toShellCommand());
 
         Map<String, String> environment = pb.environment();
@@ -75,43 +65,51 @@ public class CommandProcess {
 
         pb.directory(command.getRepository());
 
+
+        LineConsumer lineConsumer = LineConsumer.DEV_NULL;
+        if (lineConsumerFactory != null) {
+            lineConsumer = lineConsumerFactory.newLineConsumer();
+        }
         ProcessLineConsumer processLineConsumer = new ProcessLineConsumer(output);
+
         // Add an external line consumer that comes with factory. It is typically a consumer that sends message events to the client.
-        LineConsumer consumer = new CompositeLineConsumer(lineConsumer, processLineConsumer);
+        try (LineConsumer consumer = new CompositeLineConsumer(lineConsumer, processLineConsumer)) {
 
-        Process process;
-        try {
-            process = ProcessUtil.execute(pb, consumer);
+            Process process;
+            try {
+                process = ProcessUtil.execute(pb, consumer);
+            } catch (IOException e) {
+                LOG.error("Process creating failed", e);
+                throw new GitException("It is not possible to execute command");
+            }
+            // process will be stopped after timeout
+            Watchdog watcher = null;
+            if (command.getTimeout() > 0) {
+                watcher = new Watchdog(command.getTimeout(), DEFAULT_UNIT);
+                watcher.start(new CancellableProcessWrapper(process));
+            }
+
+            try {
+                process.waitFor();
+                /*
+                 * Check process exit value and search for correct error message without hint and warning messages ant throw it to user.
+                 */
+                if (process.exitValue() != 0) {
+                    String message = searchErrorMessage(processLineConsumer.getOutput());
+                    LOG.debug(String.format("Command failed!\ncommand: %s\nerror: %s", commandLine.toString(), message));
+                    throw new GitException(message);
+                } else {
+                    LOG.debug(String.format("Command successful!\ncommand: %s", commandLine.toString()));
+                }
+            } catch (InterruptedException e) {
+                Thread.interrupted();
+            } finally {
+                if (watcher != null) {
+                    watcher.stop();
+                }
+            }
         } catch (IOException e) {
-            LOG.error("Process creating failed", e);
-            throw new GitException("It is not possible to execute command");
-        }
-        //process will be stopped after timeout
-        Watchdog watcher = null;
-        if (command.getTimeout() > 0) {
-            watcher = new Watchdog(command.getTimeout(), DEFAULT_UNIT);
-            watcher.start(new CancellableProcessWrapper(process));
-        }
-
-        try {
-            process.waitFor();
-            /*
-            * Check process exit value and search for correct error message
-            * without hint and warning messages ant throw it to user.
-            * */
-            if (process.exitValue() != 0) {
-                String message = searchErrorMessage(processLineConsumer.getOutput());
-                LOG.debug(String.format("Command failed!\ncommand: %s\nerror: %s", commandLine.toString(), message));
-                throw new GitException(message);
-            } else {
-                LOG.debug(String.format("Command successful!\ncommand: %s", commandLine.toString()));
-            }
-        } catch (InterruptedException e) {
-            Thread.interrupted();
-        } finally {
-            if (watcher != null) {
-                watcher.stop();
-            }
+            LOG.error("An error occurred while trying to close the lineConsumer", e);
         }
     }
 

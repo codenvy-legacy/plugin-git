@@ -94,7 +94,8 @@ public class GitProjectImporter implements ProjectImporter {
             // specified in parameter "keepDirectory".
             String keepDirectory = null;
             // For factory and for our projects templates:
-            // Clean all info related to the vcs. In case of Git remove ".git" directory and ".gitignore" file.
+            // Keep all info related to the vcs. In case of Git: ".git" directory and ".gitignore" file.
+            // Delete vcs info if false.
             boolean keepVcs = false;
             if (parameters != null) {
                 commitId = parameters.get("commitId");

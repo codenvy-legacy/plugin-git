@@ -43,20 +43,19 @@ public class BranchListCommand extends GitCommand<List<Branch>> {
         //parse branch list
         List<Branch> branches = new LinkedList<>();
         if (showRemotes) {
-            for (String outLine : output) {
+            for (String outLine : lines) {
                 if (outLine.contains("->")) {
                     continue;
                 }
                 String remoteName = outLine.trim().split(" ")[0];
-                Branch branch =
-                        DtoFactory.getInstance().createDto(Branch.class).withName("refs/remotes/".concat(remoteName)).withActive(false)
-                                  .withDisplayName(remoteName).withRemote(true);
+                Branch branch = DtoFactory.getInstance().createDto(Branch.class).withName("refs/remotes/" + remoteName).withActive(false)
+                                          .withDisplayName(remoteName).withRemote(true);
                 branches.add(branch);
             }
         } else {
-            for (String outLine : output) {
+            for (String outLine : lines) {
                 String localName = outLine.substring(2);
-                Branch branch = DtoFactory.getInstance().createDto(Branch.class).withName("refs/heads/".concat(localName))
+                Branch branch = DtoFactory.getInstance().createDto(Branch.class).withName("refs/heads/" + localName)
                                           .withActive(outLine.indexOf('*') != -1).withDisplayName(localName).withRemote(false);
                 branches.add(branch);
             }

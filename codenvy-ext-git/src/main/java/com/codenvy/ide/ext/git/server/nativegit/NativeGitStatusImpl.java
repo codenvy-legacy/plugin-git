@@ -75,7 +75,7 @@ public class NativeGitStatusImpl implements Status, InfoPage {
         StatusCommand status = nativeGit.createStatusCommand().setShort(shortFormat);
         try {
             status.execute();
-            out.write(status.getOutputMessage().getBytes());
+            out.write(status.getText().getBytes());
         } catch (GitException e) {
             throw new IOException(e.getMessage(), e);
         }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.dto.server.DtoFactory;
@@ -361,7 +360,7 @@ public class NativeGitConnection implements GitConnection {
         pullCommand.setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());
         executeWithCredentials(pullCommand, remoteUri);
-        if (pullCommand.getOutputMessage().toLowerCase().contains("already up-to-date")) {
+        if (pullCommand.getText().toLowerCase().contains("already up-to-date")) {
             throw new AlreadyUpToDateException("Already up-to-date");
         }
     }
@@ -388,7 +387,7 @@ public class NativeGitConnection implements GitConnection {
                    .setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());
         executeWithCredentials(pushCommand, remoteUri);
-        if (pushCommand.getOutputMessage().toLowerCase().contains("everything up-to-date")) {
+        if (pushCommand.getText().toLowerCase().contains("everything up-to-date")) {
             throw new AlreadyUpToDateException("Everything up-to-date");
         }
     }
@@ -504,7 +503,7 @@ public class NativeGitConnection implements GitConnection {
         BranchListCommand command = nativeGit.createBranchListCommand();
         command.execute();
         String branchName = null;
-        for (String outLine : command.getOutput()) {
+        for (String outLine : command.getLines()) {
             if (outLine.indexOf('*') != -1) {
                 branchName = outLine.substring(2);
             }
@@ -572,8 +571,9 @@ public class NativeGitConnection implements GitConnection {
     private String getBranchRef(String branchName) throws GitException {
         EmptyGitCommand command = new EmptyGitCommand(nativeGit.getRepository());
         command.setNextParameter("show-ref").setNextParameter(branchName).execute();
-        if (command.getOutputMessage().length() > 0) {
-            return command.getOutputMessage().split(" ")[1];
+        final String output = command.getText();
+        if (output.length() > 0) {
+            return output.split(" ")[1];
         } else {
             return null;
         }

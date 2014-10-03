@@ -61,7 +61,7 @@ public class ListFilesCommand extends GitCommand<List<String>> {
             commandLine.add("--exclude-standard");
         }
         start();
-        return getOutput();
+        return getLines();
     }
 
     /**

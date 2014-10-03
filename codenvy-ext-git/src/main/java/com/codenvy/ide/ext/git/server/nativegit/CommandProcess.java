@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.server.nativegit;
 
 import com.codenvy.api.core.util.CancellableProcessWrapper;
 import com.codenvy.api.core.util.CommandLine;
+import com.codenvy.api.core.util.CompositeLineConsumer;
 import com.codenvy.api.core.util.LineConsumer;
 import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.core.util.ProcessUtil;
@@ -34,20 +35,17 @@ import java.util.concurrent.TimeUnit;
  * @author Eugene Voevodin
  */
 public class CommandProcess {
-
-    private static final Logger   LOG          = LoggerFactory.getLogger(CommandProcess.class);
-    private static final TimeUnit DEFAULT_UNIT = TimeUnit.SECONDS;
+    private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.class);
 
     /**
      * @param command
      *         GitCommand that will be executed
-     * @param output
-     *         list that will be used as output container
+     * @param lineConsumerFactory
+     *         factory that provides LineConsumer for propagate output of this command
      * @throws GitException
      *         when command execution error occurs
      */
-    public static void executeGitCommand(GitCommand command, List<String> output, LineConsumerFactory lineConsumerFactory)
-            throws GitException {
+    public static void executeGitCommand(GitCommand command, LineConsumerFactory lineConsumerFactory) throws GitException {
         CommandLine commandLine = command.getCommandLine();
         ProcessBuilder pb = new ProcessBuilder(commandLine.toShellCommand());
 
@@ -70,11 +68,9 @@ public class CommandProcess {
         if (lineConsumerFactory != null) {
             lineConsumer = lineConsumerFactory.newLineConsumer();
         }
-        ProcessLineConsumer processLineConsumer = new ProcessLineConsumer(output);
 
         // Add an external line consumer that comes with factory. It is typically a consumer that sends message events to the client.
-        try (LineConsumer consumer = new CompositeLineConsumer(lineConsumer, processLineConsumer)) {
-
+        try (LineConsumer consumer = new CompositeLineConsumer(lineConsumer, command)) {
             Process process;
             try {
                 process = ProcessUtil.execute(pb, consumer);
@@ -85,7 +81,7 @@ public class CommandProcess {
             // process will be stopped after timeout
             Watchdog watcher = null;
             if (command.getTimeout() > 0) {
-                watcher = new Watchdog(command.getTimeout(), DEFAULT_UNIT);
+                watcher = new Watchdog(command.getTimeout(), TimeUnit.SECONDS);
                 watcher.start(new CancellableProcessWrapper(process));
             }
 
@@ -95,7 +91,7 @@ public class CommandProcess {
                  * Check process exit value and search for correct error message without hint and warning messages ant throw it to user.
                  */
                 if (process.exitValue() != 0) {
-                    String message = searchErrorMessage(processLineConsumer.getOutput());
+                    String message = searchErrorMessage(command.getLines());
                     LOG.debug(String.format("Command failed!\ncommand: %s\nerror: %s", commandLine.toString(), message));
                     throw new GitException(message);
                 } else {
@@ -141,69 +137,5 @@ public class CommandProcess {
             builder.append("SSH key doesn't exist or it is not valid");
         }
         return builder.toString();
-    }
-
-
-    public static class CompositeLineConsumer implements LineConsumer {
-
-        private static final Logger LOG = LoggerFactory.getLogger(CommandProcess.CompositeLineConsumer.class);
-        protected LineConsumer[] lineConsumers;
-
-        public CompositeLineConsumer(LineConsumer... lineConsumers) {
-            this.lineConsumers = lineConsumers;
-        }
-
-        @Override
-        public void close() throws IOException {
-            for (LineConsumer lineConsumer : lineConsumers) {
-                try {
-                    lineConsumer.close();
-                } catch (IOException e) {
-                    LOG.error("An error occurred while closing the git process line consumer", e);
-                }
-            }
-        }
-
-        @Override
-        public void writeLine(String line) throws IOException {
-            for (LineConsumer lineConsumer : lineConsumers) {
-                try {
-                    lineConsumer.writeLine(line);
-                } catch (IOException e) {
-                    LOG.error("An error occurred while writing line to the git process line consumer", e);
-                }
-            }
-        }
-
-    }
-
-    public static class ProcessLineConsumer implements LineConsumer {
-
-        private List<String> output;
-
-        /**
-         * @param output
-         *         list where will be written output
-         */
-        public ProcessLineConsumer(List<String> output) {
-            this.output = output;
-        }
-
-        /** @see com.codenvy.api.core.util.LineConsumer#writeLine(String) */
-        @Override
-        public void writeLine(String line) throws IOException {
-            output.add(line);
-        }
-
-        /** @see com.codenvy.api.core.util.LineConsumer#writeLine(String) */
-        @Override
-        public void close() throws IOException {
-            //nothing to close
-        }
-
-        /** @return output */
-        public List<String> getOutput() {
-            return output;
-        }
     }
 }

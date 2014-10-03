@@ -48,16 +48,21 @@ public class LogCommand extends GitCommand<List<Revision>> {
         }
         start();
         List<Revision> list = new LinkedList<>();
-        for (String oneRev : getOutput()) {
+        final DtoFactory dtoFactory = DtoFactory.getInstance();
+        for (String oneRev : lines) {
             String[] elements = oneRev.split("#");
-            GitUser committer = DtoFactory.getInstance().createDto(GitUser.class).withName(elements[2]).withEmail(elements[3]);
+            GitUser committer = dtoFactory.createDto(GitUser.class).withName(elements[2]).withEmail(elements[3]);
             long commitTime = Long.parseLong(elements[4].substring(0, elements[4].indexOf(" "))) * 1000L;
             String commitId = elements[5];
             StringBuilder commitMessage = new StringBuilder();
             for (int i = 6; i < elements.length; i++) {
                 commitMessage.append(elements[i]);
             }
-            Revision revision = DtoFactory.getInstance().createDto(Revision.class).withId(commitId).withMessage(commitMessage.toString()).withCommitTime(commitTime).withCommitter(committer);
+            Revision revision = dtoFactory.createDto(Revision.class)
+                                          .withId(commitId)
+                                          .withMessage(commitMessage.toString())
+                                          .withCommitTime(commitTime)
+                                          .withCommitter(committer);
             list.add(revision);
         }
         return list;

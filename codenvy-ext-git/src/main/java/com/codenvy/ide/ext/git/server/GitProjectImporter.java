@@ -96,7 +96,7 @@ public class GitProjectImporter implements ProjectImporter {
             // For factory and for our projects templates:
             // Keep all info related to the vcs. In case of Git: ".git" directory and ".gitignore" file.
             // Delete vcs info if false.
-            boolean keepVcs = false;
+            boolean keepVcs = true;
             if (parameters != null) {
                 commitId = parameters.get("commitId");
                 branch = parameters.get("branch");

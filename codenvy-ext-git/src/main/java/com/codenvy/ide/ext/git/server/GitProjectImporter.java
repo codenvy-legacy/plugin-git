@@ -196,7 +196,13 @@ public class GitProjectImporter implements ProjectImporter {
             throws UnauthorizedException, GitException {
 
         final List<String> refSpecs = Collections.singletonList(String.format("refs/heads/%1$s:refs/remotes/origin/%1$s", branch));
-        fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
+        try {
+            fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to fetch remote branch %s. Make sure it exists and can be accessed.", branch),
+                    e);
+        }
     }
 
     private void fetchRefSpecs(GitConnection git, String remote, List<String> refSpecs, DtoFactory dtoFactory)
@@ -208,12 +214,23 @@ public class GitProjectImporter implements ProjectImporter {
     private void checkoutCommit(GitConnection git, String commit, DtoFactory dtoFactory) throws GitException {
         final BranchCheckoutRequest request = dtoFactory.createDto(BranchCheckoutRequest.class).withName("temp").withCreateNew(true)
                                                         .withStartPoint(commit);
-        git.branchCheckout(request);
+        try {
+            git.branchCheckout(request);
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to checkout commit %s. Make sure it exists and can be accessed.", commit), e);
+        }
     }
 
     private void checkoutBranch(GitConnection git, String branch, DtoFactory dtoFactory) throws GitException {
         final BranchCheckoutRequest request = dtoFactory.createDto(BranchCheckoutRequest.class).withName(branch);
-        git.branchCheckout(request);
+        try {
+            git.branchCheckout(request);
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to checkout remote branch %s. Make sure it exists and can be accessed.",
+                                  branch), e);
+        }
     }
 
     private void sparsecheckout(GitConnection git, String url, String branch, String directory, DtoFactory dtoFactory)

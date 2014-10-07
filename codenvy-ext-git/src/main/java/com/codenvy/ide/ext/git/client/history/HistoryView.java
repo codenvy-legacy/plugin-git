@@ -15,7 +15,7 @@ import com.codenvy.ide.api.parts.base.BaseActionDelegate;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.shared.Revision;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link HistoryPresenter}.
@@ -49,7 +49,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
          * @param revision
          *         selected revision
          */
-        void onRevisionSelected(@NotNull Revision revision);
+        void onRevisionSelected(@Nonnull Revision revision);
     }
 
     /**
@@ -58,7 +58,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param revisions
      *         git revisions
      */
-    void setRevisions(@NotNull Array<Revision> revisions);
+    void setRevisions(@Nonnull Array<Revision> revisions);
 
     /**
      * Change the selected state of the changes in project button.
@@ -106,7 +106,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param date
      *         commit A date
      */
-    void setCommitADate(@NotNull String date);
+    void setCommitADate(@Nonnull String date);
 
     /**
      * Set commit B date into view.
@@ -114,7 +114,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param date
      *         commit B date
      */
-    void setCommitBDate(@NotNull String date);
+    void setCommitBDate(@Nonnull String date);
 
     /**
      * Set commit A revision into view.
@@ -122,7 +122,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param revision
      *         commit A revision
      */
-    void setCommitARevision(@NotNull String revision);
+    void setCommitARevision(@Nonnull String revision);
 
     /**
      * Set commit B revision into view.
@@ -130,7 +130,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param revision
      *         commit B revision
      */
-    void setCommitBRevision(@NotNull String revision);
+    void setCommitBRevision(@Nonnull String revision);
 
     /**
      * Set compare type into view.
@@ -138,7 +138,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param type
      *         compare type
      */
-    void setCompareType(@NotNull String type);
+    void setCompareType(@Nonnull String type);
 
     /**
      * Set diff context into view.
@@ -146,7 +146,7 @@ public interface HistoryView extends View<HistoryView.ActionDelegate> {
      * @param diffContext
      *         diff between different commits
      */
-    void setDiffContext(@NotNull String diffContext);
+    void setDiffContext(@Nonnull String diffContext);
 
     /**
      * Change the visible state of the commit B panel.

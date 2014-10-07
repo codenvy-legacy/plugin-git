@@ -16,7 +16,7 @@ import com.codenvy.ide.job.JobChangeEvent;
 import com.codenvy.ide.job.RequestStatusHandlerBase;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
@@ -32,7 +32,7 @@ public class AddRequestHandler extends RequestStatusHandlerBase {
      * @param eventBus
      * @param constant
      */
-    public AddRequestHandler(@NotNull String projectName, @NotNull EventBus eventBus, @NotNull GitLocalizationConstant constant) {
+    public AddRequestHandler(@Nonnull String projectName, @Nonnull EventBus eventBus, @Nonnull GitLocalizationConstant constant) {
         super(projectName, eventBus);
         this.constant = constant;
     }

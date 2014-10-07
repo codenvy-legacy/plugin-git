@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link RemoveFromIndexView}.
@@ -61,6 +61,7 @@ public class RemoveFromIndexViewImpl extends Window implements RemoveFromIndexVi
     protected RemoveFromIndexViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-removeFromIndex-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
@@ -88,7 +89,7 @@ public class RemoveFromIndexViewImpl extends Window implements RemoveFromIndexVi
 
     /** {@inheritDoc} */
     @Override
-    public void setMessage(@NotNull String message) {
+    public void setMessage(@Nonnull String message) {
         this.message.setText(message);
     }
 

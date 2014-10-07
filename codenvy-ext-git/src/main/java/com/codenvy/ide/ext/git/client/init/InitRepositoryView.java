@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.client.init;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link InitRepositoryPresenter}.
@@ -33,7 +33,7 @@ public interface InitRepositoryView extends View<InitRepositoryView.ActionDelega
     }
 
    /** @return work directory */
-    @NotNull
+    @Nonnull
     String getWorkDir();
 
     /**
@@ -42,7 +42,7 @@ public interface InitRepositoryView extends View<InitRepositoryView.ActionDelega
      * @param workDir
      *         work directory
      */
-    void setWorkDir(@NotNull String workDir);
+    void setWorkDir(@Nonnull String workDir);
 
     /**
      * Change the enable state of the ok button.

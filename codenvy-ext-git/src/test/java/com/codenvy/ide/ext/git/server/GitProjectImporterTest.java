@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.core.notification.EventService;
 import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.project.server.FileEntry;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
@@ -153,6 +154,13 @@ public class GitProjectImporterTest {
         }
     }
 
+    static class SystemOutLineConsumerFactory implements LineConsumerFactory {
+        @Override
+        public LineConsumer newLineConsumer() {
+            return new SystemOutLineConsumer();
+        }
+    }
+
     @After
     public void tearDown() throws Exception {
         Assert.assertTrue(IoUtil.deleteRecursive(fsRoot));
@@ -163,11 +171,11 @@ public class GitProjectImporterTest {
     public void testImport() throws Exception {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         gitProjectImporter
-                .importSources(folder, gitRepo.getAbsolutePath(), Collections.<String, String>emptyMap(), new SystemOutLineConsumer());
+                .importSources(folder, gitRepo.getAbsolutePath(), Collections.<String, String>emptyMap(), new SystemOutLineConsumerFactory());
         Assert.assertNotNull(folder.getChild("src"));
         Assert.assertNotNull(folder.getChild("src/hello.c"));
         Assert.assertNotNull(folder.getChild("README"));
-        Assert.assertNotNull(folder.getChild(".git"));
+        Assert.assertNull(folder.getChild(".git"));
         FileEntry readme = (FileEntry)folder.getChild("README");
         Assert.assertEquals("test git importer", new String(readme.contentAsBytes()));
     }
@@ -186,7 +194,8 @@ public class GitProjectImporterTest {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("branch", "new_branch");
-        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
+        parameters.put("keepVcs", "true");
+        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         List<Branch> branches = targetGit.branchList(dtoFactory.createDto(BranchListRequest.class));
         targetGit.close();
@@ -216,8 +225,9 @@ public class GitProjectImporterTest {
 
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
-        parameters.put("vcsCommitId", commit.getId());
-        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
+        parameters.put("commitId", commit.getId());
+        parameters.put("keepVcs", "true");
+        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));
         List<Revision> targetCommits = targetLog.getCommits();
@@ -233,26 +243,64 @@ public class GitProjectImporterTest {
         Assert.assertEquals("test git importer", new String(readme.contentAsBytes()));
     }
 
+
+    @Test
+    public void testImportCheckoutCommitOtherBranch() throws Exception {
+        GitConnection git = gitFactory.getConnection(gitRepo);
+        git.branchCreate(dtoFactory.createDto(BranchCreateRequest.class).withName("otherBranchName")
+                                   .withStartPoint(git.log(dtoFactory.createDto(LogRequest.class)).commits.get(0).getId()));
+        git.branchCheckout(dtoFactory.createDto(BranchCheckoutRequest.class).withName("otherBranchName"));
+        try (BufferedWriter w = Files.newBufferedWriter(new File(gitRepo, "README").toPath(), Charset.forName("UTF-8"))) {
+            w.write("test import other branch");
+        }
+        git.commit(dtoFactory.createDto(CommitRequest.class).withAll(true).withMessage("commit"));
+        LogPage log = git.log(dtoFactory.createDto(LogRequest.class));
+        List<Revision> commits = log.getCommits();
+        git.close();
+        Assert.assertEquals(2, commits.size()); // have two commits now
+        Revision commit = commits.get(0); // get first commit
+
+        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        folder.createFolder(".codenvy");
+        Map<String, String> parameters = new HashMap<>(2);
+        parameters.put("commitId", commit.getId());
+        parameters.put("keepVcs", "true");
+        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
+        GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
+        final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));
+        List<Revision> targetCommits = targetLog.getCommits();
+        targetGit.close();
+        Assert.assertEquals(2, targetCommits.size()); // skip last commit from the source repository
+
+        Assert.assertNotNull(folder.getChild("src"));
+        Assert.assertNotNull(folder.getChild("src/hello.c"));
+        Assert.assertNotNull(folder.getChild("README"));
+        Assert.assertNotNull(folder.getChild(".git"));
+        FileEntry readme = (FileEntry)folder.getChild("README");
+        // Should have content from previous commit
+        Assert.assertEquals("test import other branch", new String(readme.contentAsBytes()));
+    }
+
     @Test
     public void testImportKeepDirectory() throws Exception {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("keepDirectory", "src");
-        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
+        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         // content of src folder copied
         Assert.assertEquals(1, folder.getChildren().size());
         Assert.assertNotNull(folder.getChild("hello.c"));
     }
 
     @Test
-    public void testImportCleanVcs() throws Exception {
+    public void testImportKeepVcs() throws Exception {
         FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
-        parameters.put("cleanVcs", "true");
-        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumer());
+        parameters.put("keepVcs", "true");
+        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         Assert.assertNotNull(folder.getChild("src"));
         Assert.assertNotNull(folder.getChild("src/hello.c"));
         Assert.assertNotNull(folder.getChild("README"));
-        Assert.assertNull(folder.getChild(".git")); // git must be removed
+        Assert.assertNotNull(folder.getChild(".git")); // git must not be removed
     }
 }

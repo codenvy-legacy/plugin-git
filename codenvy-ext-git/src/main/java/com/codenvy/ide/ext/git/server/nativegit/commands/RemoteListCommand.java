@@ -41,7 +41,7 @@ public class RemoteListCommand extends GitCommand<List<Remote>> {
         start();
         //get all remotes with urls
         Map<String, String> remotes = new HashMap<>();
-        for (String outLine : getOutput()) {
+        for (String outLine : lines) {
             String[] outArr = outLine.split("\t");
             remotes.put(outArr[0], outArr[1].split(" ")[0]);
         }

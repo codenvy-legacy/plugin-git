@@ -26,7 +26,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 
@@ -153,7 +153,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
 
     /** {@inheritDoc} */
     @Override
-    public void onRemoteSelected(@NotNull Remote remote) {
+    public void onRemoteSelected(@Nonnull Remote remote) {
         selectedRemote = remote;
         view.setEnableDeleteButton(true);
     }

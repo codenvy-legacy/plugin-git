@@ -41,7 +41,7 @@ public class FetchAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git fetch");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

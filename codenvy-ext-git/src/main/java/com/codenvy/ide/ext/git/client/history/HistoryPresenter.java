@@ -43,7 +43,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import org.vectomatic.dom.svg.ui.SVGResource;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -155,7 +155,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     }
 
     /** Get the log of the commits. If successfully received, then display in revision grid, otherwise - show error in output panel. */
-    private void getCommitsLog(@NotNull ProjectDescriptor project) {
+    private void getCommitsLog(@Nonnull ProjectDescriptor project) {
         service.log(project, false,
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
@@ -294,7 +294,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
 
     /** {@inheritDoc} */
     @Override
-    public void onRevisionSelected(@NotNull Revision revision) {
+    public void onRevisionSelected(@Nonnull Revision revision) {
         selectedRevision = revision;
         update();
     }
@@ -345,7 +345,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
      * @param isCached
      *         if <code>true</code> compare with index, else - with working tree
      */
-    private void doDiffWithNotCommitted(@NotNull List<String> filePatterns, @Nullable final Revision revision, final boolean isCached) {
+    private void doDiffWithNotCommitted(@Nonnull List<String> filePatterns, @Nullable final Revision revision, final boolean isCached) {
         if (revision == null) {
             return;
         }
@@ -379,7 +379,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
      * @param revisionB
      *         selected commit
      */
-    private void doDiffWithPrevVersion(@NotNull List<String> filePatterns, @Nullable final Revision revisionB) {
+    private void doDiffWithPrevVersion(@Nonnull List<String> filePatterns, @Nullable final Revision revisionB) {
         if (revisionB == null) {
             return;
         }

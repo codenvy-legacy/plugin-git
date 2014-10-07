@@ -25,7 +25,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link AddToIndexView}.
@@ -61,13 +61,14 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
     protected AddToIndexViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-addToIndex-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
         this.setTitle(locale.addToIndexTitle());
         this.setWidget(widget);
         
-        btnCancel = createButton(locale.buttonCancel(), "", new ClickHandler() {
+        btnCancel = createButton(locale.buttonCancel(), "git-addToIndex-btnCancel", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -76,7 +77,7 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
         });
         getFooter().add(btnCancel);
 
-        btnAdd = createButton(locale.buttonAdd(), "", new ClickHandler() {
+        btnAdd = createButton(locale.buttonAdd(), "git-addToIndex-btnAdd", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -88,7 +89,7 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
 
     /** {@inheritDoc} */
     @Override
-    public void setMessage(@NotNull String message) {
+    public void setMessage(@Nonnull String message) {
         this.message.setText(message);
     }
 

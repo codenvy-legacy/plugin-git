@@ -29,7 +29,7 @@
             margin-top: 10px;
         }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="550px" height="220px" addStyleNames="{style.emptyBorder}">
+    <g:DockLayoutPanel unit="PX" width="550px" height="220px" addStyleNames="{style.emptyBorder}" debugId="git-remotes-remotes-mainForm">
         <g:center>
             <p1:CellTable width="100%" ui:field="repositories" focus="false" debugId="git-remotes-remotes-repositoriesTable"/>
         </g:center>

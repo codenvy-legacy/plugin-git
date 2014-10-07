@@ -32,7 +32,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.ext.git.client.merge.MergePresenter.LOCAL_BRANCHES_TITLE;
 import static com.codenvy.ide.ext.git.client.merge.MergePresenter.REMOTE_BRANCHES_TITLE;
@@ -75,6 +75,7 @@ public class MergeViewImpl extends Window implements MergeView {
     protected MergeViewImpl(GitResources resources, GitLocalizationConstant locale, ReferenceTreeNodeRenderer.Resources rendererResources) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-merge-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
@@ -169,14 +170,14 @@ public class MergeViewImpl extends Window implements MergeView {
 
     /** {@inheritDoc} */
     @Override
-    public void setLocalBranches(@NotNull Array<Reference> references) {
+    public void setLocalBranches(@Nonnull Array<Reference> references) {
         localBranch.setBranches(references);
         this.references.renderTree(0);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setRemoteBranches(@NotNull Array<Reference> references) {
+    public void setRemoteBranches(@Nonnull Array<Reference> references) {
         remoteBranch.setBranches(references);
         this.references.renderTree(0);
     }

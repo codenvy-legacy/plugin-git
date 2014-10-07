@@ -41,7 +41,7 @@ public class HistoryAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git show history");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

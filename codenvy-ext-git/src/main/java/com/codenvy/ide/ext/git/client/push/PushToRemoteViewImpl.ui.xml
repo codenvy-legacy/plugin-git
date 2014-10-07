@@ -34,7 +34,7 @@
             float: left;
         }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="450px" height="90px" addStyleNames="{style.emptyBorder}">
+    <g:DockLayoutPanel unit="PX" width="450px" height="90px" addStyleNames="{style.emptyBorder}" debugId="git-remotes-push-mainForm">
         <g:north size="26.0">
             <g:FlowPanel>
                 <g:Label text="{locale.pushViewRemoteFieldTitle}" addStyleNames="{res.gitCSS.textFont} {style.alignLeft}"/>

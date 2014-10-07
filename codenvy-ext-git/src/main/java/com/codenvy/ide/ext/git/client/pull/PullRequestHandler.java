@@ -16,7 +16,7 @@ import com.codenvy.ide.job.JobChangeEvent;
 import com.codenvy.ide.job.RequestStatusHandlerBase;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
@@ -35,8 +35,8 @@ public class PullRequestHandler extends RequestStatusHandlerBase {
      * @param eventBus
      * @param constant
      */
-    public PullRequestHandler(@NotNull String projectName, @NotNull String refSpec, @NotNull EventBus eventBus,
-                              @NotNull GitLocalizationConstant constant) {
+    public PullRequestHandler(@Nonnull String projectName, @Nonnull String refSpec, @Nonnull EventBus eventBus,
+                              @Nonnull GitLocalizationConstant constant) {
         super(projectName, eventBus);
         String[] split = refSpec.split(":");
         this.localBranch = split[0];

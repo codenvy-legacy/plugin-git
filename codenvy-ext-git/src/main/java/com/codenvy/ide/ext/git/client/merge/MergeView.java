@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.git.client.merge;
 import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link MergePresenter}.
@@ -35,7 +35,7 @@ public interface MergeView extends View<MergeView.ActionDelegate> {
          * @param reference
          *         selected reference
          */
-        void onReferenceSelected(@NotNull Reference reference);
+        void onReferenceSelected(@Nonnull Reference reference);
     }
 
     /**
@@ -44,7 +44,7 @@ public interface MergeView extends View<MergeView.ActionDelegate> {
      * @param references
      *         local branches
      */
-    void setLocalBranches(@NotNull Array<Reference> references);
+    void setLocalBranches(@Nonnull Array<Reference> references);
 
     /**
      * Set remote branches.
@@ -52,7 +52,7 @@ public interface MergeView extends View<MergeView.ActionDelegate> {
      * @param references
      *         remote branches
      */
-    void setRemoteBranches(@NotNull Array<Reference> references);
+    void setRemoteBranches(@Nonnull Array<Reference> references);
 
     /**
      * Change the enable state of the merge button.

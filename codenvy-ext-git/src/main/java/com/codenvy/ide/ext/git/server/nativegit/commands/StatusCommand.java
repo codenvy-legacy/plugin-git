@@ -22,7 +22,7 @@ import java.util.List;
  */
 public class StatusCommand extends GitCommand<List<String>> {
 
-    boolean isShort;
+    private boolean isShort;
 
     public StatusCommand(File repository) {
         super(repository);
@@ -37,7 +37,7 @@ public class StatusCommand extends GitCommand<List<String>> {
             commandLine.add("--short");
         }
         start();
-        return getOutput();
+        return getLines();
     }
 
     /**

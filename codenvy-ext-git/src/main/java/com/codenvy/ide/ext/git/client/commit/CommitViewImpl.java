@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link CommitView}.
@@ -65,6 +65,7 @@ public class CommitViewImpl extends Window implements CommitView {
     protected CommitViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-commit-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
@@ -91,7 +92,7 @@ public class CommitViewImpl extends Window implements CommitView {
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getMessage() {
         return message.getText();
@@ -99,7 +100,7 @@ public class CommitViewImpl extends Window implements CommitView {
 
     /** {@inheritDoc} */
     @Override
-    public void setMessage(@NotNull String message) {
+    public void setMessage(@Nonnull String message) {
         this.message.setText(message);
     }
 

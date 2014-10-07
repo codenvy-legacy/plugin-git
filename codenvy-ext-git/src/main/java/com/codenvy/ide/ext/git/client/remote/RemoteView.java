@@ -14,7 +14,7 @@ import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.shared.Remote;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link RemotePresenter}.
@@ -39,7 +39,7 @@ public interface RemoteView extends View<RemoteView.ActionDelegate> {
          * @param remote
          *         selected Remote
          */
-        void onRemoteSelected(@NotNull Remote remote);
+        void onRemoteSelected(@Nonnull Remote remote);
     }
 
     /**
@@ -48,7 +48,7 @@ public interface RemoteView extends View<RemoteView.ActionDelegate> {
      * @param remotes
      *         list of available remote repositories.
      */
-    void setRemotes(@NotNull Array<Remote> remotes);
+    void setRemotes(@Nonnull Array<Remote> remotes);
 
     /**
      * Change the enable state of the delete button.

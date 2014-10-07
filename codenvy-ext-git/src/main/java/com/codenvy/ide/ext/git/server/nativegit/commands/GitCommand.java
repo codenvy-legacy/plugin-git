@@ -10,29 +10,29 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
+import com.codenvy.api.core.util.ListLineConsumer;
 import com.codenvy.api.core.util.CommandLine;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.CommandProcess;
 
 import java.io.File;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Base class for all git commands
  *
  * @author Eugene Voevodin
  */
-public abstract class GitCommand<T> {
+public abstract class GitCommand<T> extends ListLineConsumer {
 
     private final File repository;
-    private int timeout = -1;
-    private   String       SSHScriptPath;
-    private   String       askPassScriptPath;
-    protected List<String> output;
-    protected CommandLine  commandLine;
-    private   LineConsumer processLineConsumer;
+
+    private int                 timeout;
+    private String              SSHScriptPath;
+    private String              askPassScriptPath;
+    private LineConsumerFactory lineConsumerFactory;
+
+    protected CommandLine commandLine;
 
     /**
      * @param repository
@@ -41,7 +41,7 @@ public abstract class GitCommand<T> {
     public GitCommand(File repository) {
         this.repository = repository;
         commandLine = new CommandLine("git");
-        output = new LinkedList<>();
+        timeout = -1;
     }
 
     /**
@@ -66,26 +66,9 @@ public abstract class GitCommand<T> {
         this.SSHScriptPath = SSHScriptPath;
     }
 
-    /** @return command output as {@link List} */
-    public List<String> getOutput() {
-        return output;
-    }
-
     /** @return current command line */
     public CommandLine getCommandLine() {
         return new CommandLine(commandLine);
-    }
-
-    public String getOutputMessage() {
-        StringBuilder builder = new StringBuilder();
-        int size = output.size();
-        for (int i = 0; i < size - 1; i++) {
-            builder.append(output.get(i)).append("\n");
-        }
-        if (size != 0) {
-            builder.append(output.get(size - 1));
-        }
-        return builder.toString();
     }
 
     /** @return path to ssh script */
@@ -117,9 +100,10 @@ public abstract class GitCommand<T> {
     }
 
     /** Command line initialization. */
-    protected void reset() {
+    protected GitCommand reset() {
         commandLine.clear().add("git");
-        output.clear();
+        clear();
+        return this;
     }
 
     /**
@@ -129,7 +113,7 @@ public abstract class GitCommand<T> {
      *         when command execution failed or command execution exit value is not 0
      */
     protected void start() throws GitException {
-        CommandProcess.executeGitCommand(this, output, processLineConsumer);
+        CommandProcess.executeGitCommand(this, lineConsumerFactory);
     }
 
     @Override
@@ -144,11 +128,11 @@ public abstract class GitCommand<T> {
     /**
      * Set a process line consumer to be used to capture process output
      *
-     * @param processLineConsumer
-     *         consumer for command output
+     * @param lineConsumerFactory
+     *         factory that provides consumer for command output
      */
-    public GitCommand withProcessLineConsumer(LineConsumer processLineConsumer) {
-        this.processLineConsumer = processLineConsumer;
+    public GitCommand setLineConsumerFactory(LineConsumerFactory lineConsumerFactory) {
+        this.lineConsumerFactory = lineConsumerFactory;
         return this;
     }
 }

@@ -41,7 +41,7 @@ public class ShowRemoteAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git show remotes");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

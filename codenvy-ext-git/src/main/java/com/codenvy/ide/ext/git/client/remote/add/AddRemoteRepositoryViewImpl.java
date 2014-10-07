@@ -26,7 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link AddRemoteRepositoryView}.
@@ -62,13 +62,14 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
     protected AddRemoteRepositoryViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-addRemoteRepository-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
         this.setTitle("Add remote repository");
         this.setWidget(widget);
         
-        btnCancel = createButton(locale.buttonCancel(), "", new ClickHandler() {
+        btnCancel = createButton(locale.buttonCancel(), "git-addRemoteRepository-btnCancel", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -77,7 +78,7 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
         });
         getFooter().add(btnCancel);
 
-        btnOk = createButton(locale.buttonOk(), "", new ClickHandler() {
+        btnOk = createButton(locale.buttonOk(), "git-addRemoteRepository-btnOk", new ClickHandler() {
 
             @Override
             public void onClick(ClickEvent event) {
@@ -88,7 +89,7 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getName() {
         return name.getText();
@@ -96,12 +97,12 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
 
     /** {@inheritDoc} */
     @Override
-    public void setName(@NotNull String name) {
+    public void setName(@Nonnull String name) {
         this.name.setText(name);
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getUrl() {
         return url.getText();
@@ -109,7 +110,7 @@ public class AddRemoteRepositoryViewImpl extends Window implements AddRemoteRepo
 
     /** {@inheritDoc} */
     @Override
-    public void setUrl(@NotNull String url) {
+    public void setUrl(@Nonnull String url) {
         this.url.setText(url);
     }
 

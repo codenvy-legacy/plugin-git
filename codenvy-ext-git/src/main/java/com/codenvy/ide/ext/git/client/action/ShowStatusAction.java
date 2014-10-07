@@ -41,7 +41,7 @@ public class ShowStatusAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git status");
+        eventLogger.log(this);
         presenter.showStatus();
     }
 

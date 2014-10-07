@@ -14,12 +14,14 @@ import com.codenvy.api.core.rest.shared.dto.ServiceError;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.api.user.shared.dto.User;
+import com.codenvy.api.project.shared.dto.RunnerEnvironmentConfigurationDescriptor;
+import com.codenvy.api.runner.dto.ResourcesDescriptor;
+import com.codenvy.api.runner.gwt.client.RunnerServiceClient;
+import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.ResourceNameValidator;
 import com.codenvy.ide.api.event.OpenProjectEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.projecttype.ProjectTypeDescriptorRegistry;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.WizardContext;
 import com.codenvy.ide.collections.Array;
@@ -29,13 +31,14 @@ import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
 import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.github.client.GitHubClientService;
 import com.codenvy.ide.ext.github.client.GitHubSshKeyProvider;
 import com.codenvy.ide.ext.github.client.marshaller.AllRepositoriesUnmarshaller;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.ui.dialogs.info.Info;
+import com.codenvy.ide.ui.dialogs.info.InfoHandler;
 import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.wizard.project.NewProjectWizardPresenter;
 import com.google.gwt.user.client.Window;
@@ -44,7 +47,9 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
+
+import java.util.Map;
 
 import static com.codenvy.ide.api.notification.Notification.Status.PROGRESS;
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -57,19 +62,20 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  */
 @Singleton
 public class ImportPresenter implements ImportView.ActionDelegate {
-    private final DtoFactory             dtoFactory;
-    private       DtoUnmarshallerFactory dtoUnmarshallerFactory;
-    private final ProjectServiceClient projectServiceClient;
-    private NewProjectWizardPresenter          wizardPresenter;
-    private ImportView                         view;
-    private GitHubClientService                service;
-    private EventBus                           eventBus;
-    private StringMap<Array<GitHubRepository>> repositories;
-    private ProjectData                        selectedRepository;
-    private GitLocalizationConstant            gitConstant;
-    private NotificationManager                notificationManager;
-    private Notification                       notification;
-    private GitHubSshKeyProvider               gitHubSshKeyProvider;
+    private final DtoFactory                         dtoFactory;
+    private       DtoUnmarshallerFactory             dtoUnmarshallerFactory;
+    private final ProjectServiceClient               projectServiceClient;
+    private final RunnerServiceClient                runnerServiceClient;
+    private       NewProjectWizardPresenter          wizardPresenter;
+    private       ImportView                         view;
+    private       GitHubClientService                service;
+    private       EventBus                           eventBus;
+    private       StringMap<Array<GitHubRepository>> repositories;
+    private       ProjectData                        selectedRepository;
+    private       GitLocalizationConstant            gitConstant;
+    private       NotificationManager                notificationManager;
+    private       Notification                       notification;
+    private       GitHubSshKeyProvider               gitHubSshKeyProvider;
 
     /** Create presenter. */
     @Inject
@@ -82,11 +88,13 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                            DtoFactory dtoFactory,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                            ProjectServiceClient projectServiceClient,
+                           RunnerServiceClient runnerServiceClient,
                            NewProjectWizardPresenter wizardPresenter) {
         this.view = view;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.projectServiceClient = projectServiceClient;
+        this.runnerServiceClient = runnerServiceClient;
         this.wizardPresenter = wizardPresenter;
         this.view.setDelegate(this);
         this.service = service;
@@ -97,7 +105,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
     }
 
     /** Show dialog. */
-    public void showDialog(User user) {
+    public void showDialog(UserDescriptor user) {
         AsyncCallback<Void> callback = new AsyncCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
@@ -133,7 +141,8 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                             notificationManager.showNotification(notification);
                         }
                     }
-                });
+                }
+                                  );
     }
 
     /**
@@ -142,7 +151,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
      * @param repositories
      *         loaded list of repositories
      */
-    private void onListLoaded(@NotNull StringMap<Array<GitHubRepository>> repositories) {
+    private void onListLoaded(@Nonnull StringMap<Array<GitHubRepository>> repositories) {
         this.repositories = repositories;
 
         view.setAccountNames(repositories.getKeys());
@@ -208,12 +217,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         projectServiceClient.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
-                eventBus.fireEvent(new OpenProjectEvent(result.getName()));
-                Notification notification = new Notification(gitConstant.cloneSuccess(url), INFO);
-                notificationManager.showNotification(notification);
-                WizardContext context = new WizardContext();
-                context.putData(ProjectWizard.PROJECT, result);
-                wizardPresenter.show(context);
+                checkRam(result, url);
             }
 
             @Override
@@ -231,6 +235,59 @@ public class ImportPresenter implements ImportView.ActionDelegate {
                 deleteFolder(projectName);
             }
         });
+    }
+
+    private void checkRam(final ProjectDescriptor projectDescriptor, final String url) {
+        int requiredMemorySize = 0;
+        Map<String, RunnerEnvironmentConfigurationDescriptor> runEnvConfigurations = projectDescriptor.getRunnerEnvironmentConfigurations();
+        String defaultRunnerEnvironment = projectDescriptor.getDefaultRunnerEnvironment();
+
+        if (runEnvConfigurations != null && defaultRunnerEnvironment != null && runEnvConfigurations.containsKey(defaultRunnerEnvironment)) {
+            RunnerEnvironmentConfigurationDescriptor runEnvConfDescriptor = runEnvConfigurations.get(defaultRunnerEnvironment);
+            requiredMemorySize = runEnvConfDescriptor.getRequiredMemorySize();
+        }
+
+        if (requiredMemorySize > 0) {
+            final int finalRequiredMemorySize = requiredMemorySize;
+            runnerServiceClient.getResources(
+                    new AsyncRequestCallback<ResourcesDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(ResourcesDescriptor.class)) {
+                        @Override
+                        protected void onSuccess(ResourcesDescriptor result) {
+                            int workspaceMemory = Integer.valueOf(result.getTotalMemory());
+                            if (workspaceMemory < finalRequiredMemorySize) {
+                                final Info warningWindow = new Info(gitConstant.warningTitle(),
+                                                                    gitConstant.messagesWorkspaceRamLessRequiredRam(finalRequiredMemorySize,
+                                                                                                               workspaceMemory),
+                                                                    new InfoHandler() {
+                                                                        @Override
+                                                                        public void onOk() {
+                                                                            importProjectSuccessful(projectDescriptor, url);
+                                                                        }
+                                                                    }
+                                );
+                                warningWindow.show();
+                            }
+                        }
+
+                        @Override
+                        protected void onFailure(Throwable exception) {
+                            importProjectSuccessful(projectDescriptor, url);
+                            Log.error(getClass(), exception.getMessage());
+                        }
+                    }
+                                      );
+            return;
+        }
+        importProjectSuccessful(projectDescriptor, url);
+    }
+
+    private void importProjectSuccessful(ProjectDescriptor projectDescriptor, String url) {
+        eventBus.fireEvent(new OpenProjectEvent(projectDescriptor.getName()));
+        Notification notification = new Notification(gitConstant.cloneSuccess(url), INFO);
+        notificationManager.showNotification(notification);
+        WizardContext context = new WizardContext();
+        context.putData(ProjectWizard.PROJECT_FOR_UPDATE, projectDescriptor);
+        wizardPresenter.show(context);
     }
 
     private void deleteFolder(String name) {
@@ -253,7 +310,7 @@ public class ImportPresenter implements ImportView.ActionDelegate {
 
     /** {@inheritDoc} */
     @Override
-    public void onRepositorySelected(@NotNull ProjectData repository) {
+    public void onRepositorySelected(@Nonnull ProjectData repository) {
         selectedRepository = repository;
         view.setProjectName(selectedRepository.getName());
         view.setEnableFinishButton(true);

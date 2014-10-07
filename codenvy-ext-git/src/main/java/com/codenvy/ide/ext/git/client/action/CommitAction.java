@@ -41,7 +41,7 @@ public class CommitAction extends GitAction {
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
-        eventLogger.log("IDE: Git commit");
+        eventLogger.log(this);
         presenter.showDialog();
     }
 

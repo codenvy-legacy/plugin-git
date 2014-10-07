@@ -14,7 +14,15 @@ import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.ide.ext.git.server.commons.GitRepositoryPrivacyChecker;
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
+import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
 import com.codenvy.ide.ext.git.server.nativegit.WSO2OAuthCredentialsProvider;
+import com.codenvy.ide.ext.git.server.rest.BranchListWriter;
+import com.codenvy.ide.ext.git.server.rest.CommitMessageWriter;
+import com.codenvy.ide.ext.git.server.rest.GitService;
+import com.codenvy.ide.ext.git.server.rest.MergeResultWriter;
+import com.codenvy.ide.ext.git.server.rest.RemoteListWriter;
+import com.codenvy.ide.ext.git.server.rest.StatusPageWriter;
+import com.codenvy.ide.ext.git.server.rest.TagListWriter;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -38,5 +46,15 @@ public class GitModule extends AbstractModule {
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
         multiBinder.addBinding().to(IsGitRepositoryValueProviderFactory.class);
+
+        bind(GitService.class);
+        bind(BranchListWriter.class);
+        bind(CommitMessageWriter.class);
+        bind(MergeResultWriter.class);
+        bind(RemoteListWriter.class);
+        bind(StatusPageWriter.class);
+        bind(TagListWriter.class);
+
+        bind(GitConnectionFactory.class).to(NativeGitConnectionFactory.class);
     }
 }

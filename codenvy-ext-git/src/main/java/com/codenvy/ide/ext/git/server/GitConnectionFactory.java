@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server;
 
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
 import java.io.File;
@@ -29,7 +29,7 @@ public abstract class GitConnectionFactory {
      *         if can't initialize connection
      */
     public final GitConnection getConnection(String workDir, GitUser user) throws GitException {
-        return getConnection(new File(workDir), user, LineConsumer.DEV_NULL);
+        return getConnection(new File(workDir), user, LineConsumerFactory.NULL);
     }
 
     /**
@@ -52,14 +52,14 @@ public abstract class GitConnectionFactory {
      *         repository directory
      * @param user
      *         user
-     * @param outputPublisher
-     *         consumer for git output
+     * @param outputPublisherFactory
+     *         a consumer factory for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection
      */
-    public final GitConnection getConnection(String workDir, GitUser user, LineConsumer outputPublisher) throws GitException {
-        return getConnection(new File(workDir), user, outputPublisher);
+    public final GitConnection getConnection(String workDir, GitUser user, LineConsumerFactory outputPublisherFactory) throws GitException {
+        return getConnection(new File(workDir), user, outputPublisherFactory);
     }
 
     /**
@@ -67,14 +67,14 @@ public abstract class GitConnectionFactory {
      *
      * @param workDir
      *         repository directory
-     * @param outputPublisher
-     *         consumer for git output
+     * @param outputPublisherFactory
+     *         a factory consumer for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection
      */
-    public final GitConnection getConnection(String workDir, LineConsumer outputPublisher) throws GitException {
-        return getConnection(new File(workDir), outputPublisher);
+    public final GitConnection getConnection(String workDir, LineConsumerFactory outputPublisherFactory) throws GitException {
+        return getConnection(new File(workDir), outputPublisherFactory);
     }
 
     /**
@@ -87,7 +87,7 @@ public abstract class GitConnectionFactory {
      *         if can't initialize connection
      */
     public final GitConnection getConnection(File workDir) throws GitException {
-        return getConnection(workDir, LineConsumer.DEV_NULL);
+        return getConnection(workDir, LineConsumerFactory.NULL);
     }
 
     /**
@@ -97,24 +97,24 @@ public abstract class GitConnectionFactory {
      *         repository directory
      * @param user
      *         user
-     * @param outputPublisher
-     *         consumer for git output
+     * @param outputPublisherFactory
+     *         to create a consumer for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection
      */
-    public abstract GitConnection getConnection(File workDir, GitUser user, LineConsumer outputPublisher) throws GitException;
+    public abstract GitConnection getConnection(File workDir, GitUser user, LineConsumerFactory outputPublisherFactory) throws GitException;
 
     /**
      * Get connection to Git repository locate in <code>workDir</code>
      *
      * @param workDir
      *         repository directory
-     * @param outputPublisher
-     *         consumer for git output
+     * @param outputPublisherFactory
+     *         to create a consumer for git output
      * @return connection to Git repository
      * @throws GitException
      *         if can't initialize connection
      */
-    public abstract GitConnection getConnection(File workDir, LineConsumer outputPublisher) throws GitException;
+    public abstract GitConnection getConnection(File workDir, LineConsumerFactory outputPublisherFactory) throws GitException;
 }

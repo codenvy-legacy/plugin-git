@@ -28,7 +28,7 @@
             margin-top: 10px;
         }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="430px" height="230px" addStyleNames="{style.emptyBorder}">
+    <g:DockLayoutPanel unit="PX" width="430px" height="230px" addStyleNames="{style.emptyBorder}" debugId="git-resetFiles-mainForm">
         <g:center>
             <g:SimplePanel>
                 <p1:CellTable width="100%" ui:field="indexFiles" focus="false"/>

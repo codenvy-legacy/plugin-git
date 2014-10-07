@@ -28,7 +28,7 @@ import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -114,7 +114,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@NotNull final String remoteMode) {
+    private void getBranches(@Nonnull final String remoteMode) {
         service.branchList(project.getRootProject(), remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
@@ -152,8 +152,8 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      * @param remoteBranches
      *         remote branches
      */
-    @NotNull
-    private Array<String> getRemoteBranchesToDisplay(@NotNull String remoteName, @NotNull Array<Branch> remoteBranches) {
+    @Nonnull
+    private Array<String> getRemoteBranchesToDisplay(@Nonnull String remoteName, @Nonnull Array<Branch> remoteBranches) {
         Array<String> branches = Collections.createArray();
 
         if (remoteBranches.isEmpty()) {
@@ -182,8 +182,8 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      * @param localBranches
      *         local branches
      */
-    @NotNull
-    private Array<String> getLocalBranchesToDisplay(@NotNull Array<Branch> localBranches) {
+    @Nonnull
+    private Array<String> getLocalBranchesToDisplay(@Nonnull Array<Branch> localBranches) {
         Array<String> branches = Collections.createArray();
 
         if (localBranches.isEmpty()) {
@@ -227,7 +227,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     }
 
     /** @return list of refs to fetch */
-    @NotNull
+    @Nonnull
     private List<String> getRefs() {
         if (view.isFetchAllBranches()) {
             return new ArrayList<>();
@@ -247,7 +247,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
      * @param t
      *         exception what happened
      */
-    private void handleError(@NotNull Throwable t, @NotNull String remoteUrl) {
+    private void handleError(@Nonnull Throwable t, @Nonnull String remoteUrl) {
         String errorMessage = (t.getMessage() != null) ? t.getMessage() : constant.fetchFail(remoteUrl);
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);

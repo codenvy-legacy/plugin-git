@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.client.commit;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link CommitPresenter}.
@@ -33,7 +33,7 @@ public interface CommitView extends View<CommitView.ActionDelegate> {
     }
 
     /** @return entered message */
-    @NotNull
+    @Nonnull
     String getMessage();
 
     /**
@@ -42,7 +42,7 @@ public interface CommitView extends View<CommitView.ActionDelegate> {
      * @param message
      *         text what need to insert
      */
-    void setMessage(@NotNull String message);
+    void setMessage(@Nonnull String message);
 
     /** @return <code>true</code> if need to include all changes except from new files, and <code>false</code> otherwise */
     boolean isAllFilesInclued();

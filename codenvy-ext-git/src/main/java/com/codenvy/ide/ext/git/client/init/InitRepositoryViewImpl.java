@@ -27,7 +27,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link InitRepositoryView}.
@@ -61,6 +61,7 @@ public class InitRepositoryViewImpl extends Window implements InitRepositoryView
     protected InitRepositoryViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-initializeRepository-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
@@ -94,7 +95,7 @@ public class InitRepositoryViewImpl extends Window implements InitRepositoryView
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getWorkDir() {
         return workdir.getText();
@@ -102,7 +103,7 @@ public class InitRepositoryViewImpl extends Window implements InitRepositoryView
 
     /** {@inheritDoc} */
     @Override
-    public void setWorkDir(@NotNull String workDir) {
+    public void setWorkDir(@Nonnull String workDir) {
         this.workdir.setText(workDir);
     }
 

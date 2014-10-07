@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.git.client.reset.commit;
 import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.ext.git.shared.Revision;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.List;
 
 /**
@@ -36,7 +36,7 @@ public interface ResetToCommitView extends View<ResetToCommitView.ActionDelegate
          * @param revision
          *         selected revision
          */
-        void onRevisionSelected(@NotNull Revision revision);
+        void onRevisionSelected(@Nonnull Revision revision);
     }
 
     /**
@@ -45,7 +45,7 @@ public interface ResetToCommitView extends View<ResetToCommitView.ActionDelegate
      * @param revisions
      *         git revisions
      */
-    void setRevisions(@NotNull List<Revision> revisions);
+    void setRevisions(@Nonnull List<Revision> revisions);
 
     /** @return <code>true</code> if soft mode is chosen, and <code>false</code> otherwise */
     boolean isSoftMode();

@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.client.url;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link ShowProjectGitReadOnlyUrlPresenter}.
@@ -32,7 +32,7 @@ public interface ShowProjectGitReadOnlyUrlView extends View<ShowProjectGitReadOn
      * @param url
      *         text what will be shown on view
      */
-    void setUrl(@NotNull String url);
+    void setUrl(@Nonnull String url);
 
     /** Close dialog. */
     void close();

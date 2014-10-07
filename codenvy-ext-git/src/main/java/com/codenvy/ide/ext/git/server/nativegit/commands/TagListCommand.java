@@ -43,8 +43,9 @@ public class TagListCommand extends GitCommand<List<Tag>> {
         }
         start();
         List<Tag> listOfTags = new LinkedList<>();
-        for (String outLine : getOutput()) {
-            listOfTags.add(DtoFactory.getInstance().createDto(Tag.class).withName(outLine));
+        DtoFactory dtoFactory = DtoFactory.getInstance();
+        for (String outLine : lines) {
+            listOfTags.add(dtoFactory.createDto(Tag.class).withName(outLine));
         }
         return listOfTags;
     }

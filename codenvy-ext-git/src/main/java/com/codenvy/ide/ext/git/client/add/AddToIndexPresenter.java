@@ -25,7 +25,7 @@ import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -88,8 +88,8 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      *
      * @return {@link String} message to display
      */
-    @NotNull
-    private String formMessage(@NotNull String workDir) {
+    @Nonnull
+    private String formMessage(@Nonnull String workDir) {
         Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
 
         String path;
@@ -143,7 +143,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      *
      * @return pattern of the files to be added
      */
-    @NotNull
+    @Nonnull
     private List<String> getFilePatterns() {
         String projectPath = project.getRootProject().getPath();
 
@@ -168,7 +168,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      * @param e
      *         exception what happened
      */
-    private void handleError(@NotNull Throwable e) {
+    private void handleError(@Nonnull Throwable e) {
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.addFailed();
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);

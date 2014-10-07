@@ -27,7 +27,7 @@ import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -125,7 +125,7 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
      * @param e
      *         exception what happened
      */
-    private void handleError(@NotNull Throwable e) {
+    private void handleError(@Nonnull Throwable e) {
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.initFailed();
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);

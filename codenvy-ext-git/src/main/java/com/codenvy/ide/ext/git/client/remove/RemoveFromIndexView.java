@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.client.remove;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link RemoveFromIndexPresenter}.
@@ -35,7 +35,7 @@ public interface RemoveFromIndexView extends View<RemoveFromIndexView.ActionDele
      * @param message
      *         content of message
      */
-    void setMessage(@NotNull String message);
+    void setMessage(@Nonnull String message);
 
     /** @return <code>true</code> if files need to remove only from index, and <code>false</code> otherwise */
     boolean isRemoved();

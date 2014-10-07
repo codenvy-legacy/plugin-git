@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
+import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.RemoteReference;
 
@@ -54,13 +55,12 @@ public class LsRemoteCommand extends GitCommand<Void> {
      */
     public List<RemoteReference> getRemoteReferences() {
         List<RemoteReference> references = new LinkedList<>();
-        for (String outLine : output) {
+        final DtoFactory dtoFactory = DtoFactory.getInstance();
+        for (String outLine : lines) {
             String[] parts = outLine.trim().split("\\s");
             String commitId = parts[0];
             String referenceName = parts[1];
-            references.add(com.codenvy.dto.server.DtoFactory.getInstance().createDto(RemoteReference.class)
-                                                            .withCommitId(commitId)
-                                                            .withReferenceName(referenceName));
+            references.add(dtoFactory.createDto(RemoteReference.class).withCommitId(commitId).withReferenceName(referenceName));
         }
         return references;
     }

@@ -44,35 +44,35 @@ public class MergeCommand extends GitCommand<MergeResult> {
         //result of merging
         NativeGitMergeResult mergeResult = new NativeGitMergeResult();
         //get merge commits
-        ArrayList<String> mergedCommits = new ArrayList<String>();
+        ArrayList<String> mergedCommits = new ArrayList<>(2);
         mergedCommits.add(new LogCommand(getRepository()).setCount(1).execute().get(0).getId());
         mergedCommits.add(new LogCommand(getRepository()).setBranch(commit).setCount(1).execute().get(0).getId());
         mergeResult.setMergedCommits(mergedCommits);
         try {
             start();
             // if not failed and not conflict
-            if (getOutput().get(0).startsWith("Already")) {
+            if (lines.getFirst().startsWith("Already")) {
                 mergeResult.setStatus(MergeResult.MergeStatus.ALREADY_UP_TO_DATE);
-            } else if (getOutput().get(0).startsWith("Updating") && getOutput().get(1).startsWith("Fast")) {
+            } else if (lines.getFirst().startsWith("Updating") && lines.get(1).startsWith("Fast")) {
                 mergeResult.setStatus(MergeResult.MergeStatus.FAST_FORWARD);
             } else {
                 mergeResult.setStatus(MergeResult.MergeStatus.MERGED);
             }
         } catch (GitException e) {
-            output = new LinkedList<>();
-            output.addAll(Arrays.asList(e.getMessage().split("\n")));
+            clear();
+            lines.addAll(Arrays.asList(e.getMessage().split("\n")));
             //if Auto-merging is first line then it is CONFLICT situation cause of exception.
-            if (output.get(0).startsWith("Auto-merging")) {
+            if (lines.getFirst().startsWith("Auto-merging")) {
                 mergeResult.setStatus(MergeResult.MergeStatus.CONFLICTING);
                 List<String> conflictFiles = new LinkedList<>();
-                for (String outLine : output) {
+                for (String outLine : lines) {
                     if (outLine.startsWith("CONFLICT")) {
                         conflictFiles.add(outLine.substring(outLine.indexOf("in") + 3));
                     }
                 }
                 mergeResult.setConflicts(conflictFiles);
                 //if Updating is first then it is Failed situation cause of exception
-            } else if (output.get(0).startsWith("Updating")) {
+            } else if (lines.getFirst().startsWith("Updating")) {
                 mergeResult.setStatus(MergeResult.MergeStatus.FAILED);
                 List<String> failedFiles = new LinkedList<>();
                 /*
@@ -85,10 +85,9 @@ public class MergeCommand extends GitCommand<MergeResult> {
                 * fileN
                 * Please move or remove them before you can merge.
                 * Aborting
-                * */
-                int i = 2;
-                while (!output.get(i).startsWith("Please")) {
-                    failedFiles.add(output.get(i++).trim());
+                */
+                for (String line : lines.subList(2, lines.size())) {
+                    failedFiles.add(line.trim());
                 }
                 mergeResult.setFailed(failedFiles);
             } else {

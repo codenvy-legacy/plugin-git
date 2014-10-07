@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.server.nativegit;
 
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.user.server.dao.UserProfileDao;
 import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.commons.lang.Strings;
@@ -53,15 +53,15 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
     }
 
     @Override
-    public GitConnection getConnection(File workDir, GitUser user, LineConsumer outputPublisher) throws GitException {
+    public GitConnection getConnection(File workDir, GitUser user, LineConsumerFactory outputPublisherFactory) throws GitException {
         final GitConnection gitConnection = new NativeGitConnection(workDir, user, keysManager, credentialsLoader);
-        gitConnection.setOutputLineConsumer(outputPublisher);
+        gitConnection.setOutputLineConsumerFactory(outputPublisherFactory);
         return gitConnection;
     }
 
     @Override
-    public GitConnection getConnection(File workDir, LineConsumer outputPublisher) throws GitException {
-        return getConnection(workDir, getGitUser(), outputPublisher);
+    public GitConnection getConnection(File workDir, LineConsumerFactory outputPublisherFactory) throws GitException {
+        return getConnection(workDir, getGitUser(), outputPublisherFactory);
     }
 
     private GitUser getGitUser() {

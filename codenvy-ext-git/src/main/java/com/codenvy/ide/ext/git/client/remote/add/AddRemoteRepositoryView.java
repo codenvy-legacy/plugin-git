@@ -12,7 +12,7 @@ package com.codenvy.ide.ext.git.client.remote.add;
 
 import com.codenvy.ide.api.mvp.View;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The view of {@link AddRemoteRepositoryPresenter}.
@@ -33,7 +33,7 @@ public interface AddRemoteRepositoryView extends View<AddRemoteRepositoryView.Ac
     }
 
     /** @return repository name */
-    @NotNull
+    @Nonnull
     String getName();
 
     /**
@@ -42,10 +42,10 @@ public interface AddRemoteRepositoryView extends View<AddRemoteRepositoryView.Ac
      * @param name
      *         repository name
      */
-    void setName(@NotNull String name);
+    void setName(@Nonnull String name);
 
     /** @return repository url */
-    @NotNull
+    @Nonnull
     String getUrl();
 
     /**
@@ -54,7 +54,7 @@ public interface AddRemoteRepositoryView extends View<AddRemoteRepositoryView.Ac
      * @param url
      *         repository url
      */
-    void setUrl(@NotNull String url);
+    void setUrl(@Nonnull String url);
 
     /**
      * Change the enable state of the ok button.

@@ -14,7 +14,7 @@ import com.codenvy.api.core.ConflictException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.api.core.util.LineConsumer;
+import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.commons.lang.IoUtil;
@@ -68,14 +68,20 @@ public class GitProjectImporter implements ProjectImporter {
         return "Import project from hosted GIT repository URL.";
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
-            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
-        importSources(baseFolder, location, parameters, LineConsumer.DEV_NULL);
+    public ImporterCategory getCategory() {
+        return ImporterCategory.SOURCE_CONTROL;
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumer consumer)
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters)
+            throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+        importSources(baseFolder, location, parameters, LineConsumerFactory.NULL);
+    }
+
+    @Override
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumerFactory consumerFactory)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         try {
             // For factory: checkout particular commit after clone
@@ -88,26 +94,27 @@ public class GitProjectImporter implements ProjectImporter {
             // specified in parameter "keepDirectory".
             String keepDirectory = null;
             // For factory and for our projects templates:
-            // Clean all info related to the vcs. In case of Git remove ".git" directory and ".gitignore" file.
-            boolean cleanVcs = false;
+            // Keep all info related to the vcs. In case of Git: ".git" directory and ".gitignore" file.
+            // Delete vcs info if false.
+            boolean keepVcs = false;
             if (parameters != null) {
-                commitId = parameters.get("vcsCommitId");
+                commitId = parameters.get("commitId");
                 branch = parameters.get("branch");
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
                 keepDirectory = parameters.get("keepDirectory");
-                cleanVcs = Boolean.parseBoolean(parameters.get("cleanVcs"));
+                keepVcs = Boolean.parseBoolean(parameters.get("keepVcs"));
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             // Get path to local file. Git works with local filesystem only.
             final String localPath = localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             final GitConnection git;
             if (keepDirectory == null) {
-                git = gitConnectionFactory.getConnection(localPath, consumer);
+                git = gitConnectionFactory.getConnection(localPath, consumerFactory);
             } else {
                 // Clone a git repository's sub-directory only. Vcs info (.git, gitignore) always lost.
                 final File temp = Files.createTempDirectory(null).toFile();
                 try {
-                    git = gitConnectionFactory.getConnection(temp, consumer);
+                    git = gitConnectionFactory.getConnection(temp, consumerFactory);
                     sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
                     // Copy content of directory to the project folder.
                     final File projectDir = new File(localPath);
@@ -135,7 +142,7 @@ public class GitProjectImporter implements ProjectImporter {
                     initRepository(git, dtoFactory);
                     addRemote(git, "origin", location, dtoFactory);
                     if (commitId != null) {
-                        fetchBranch(git, "origin", branch == null ? "master" : branch, dtoFactory);
+                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
                         checkoutCommit(git, commitId, dtoFactory);
                     } else if (remoteOriginFetch != null) {
                         git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
@@ -148,7 +155,7 @@ public class GitProjectImporter implements ProjectImporter {
                         checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
                     }
                 }
-                if (cleanVcs) {
+                if (!keepVcs) {
                     cleanGit(new File(localPath));
                 }
             } finally {
@@ -187,8 +194,15 @@ public class GitProjectImporter implements ProjectImporter {
 
     private void fetchBranch(GitConnection gitConnection, String remote, String branch, DtoFactory dtoFactory)
             throws UnauthorizedException, GitException {
+
         final List<String> refSpecs = Collections.singletonList(String.format("refs/heads/%1$s:refs/remotes/origin/%1$s", branch));
-        fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
+        try {
+            fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to fetch remote branch %s. Make sure it exists and can be accessed.", branch),
+                    e);
+        }
     }
 
     private void fetchRefSpecs(GitConnection git, String remote, List<String> refSpecs, DtoFactory dtoFactory)
@@ -200,12 +214,23 @@ public class GitProjectImporter implements ProjectImporter {
     private void checkoutCommit(GitConnection git, String commit, DtoFactory dtoFactory) throws GitException {
         final BranchCheckoutRequest request = dtoFactory.createDto(BranchCheckoutRequest.class).withName("temp").withCreateNew(true)
                                                         .withStartPoint(commit);
-        git.branchCheckout(request);
+        try {
+            git.branchCheckout(request);
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to checkout commit %s. Make sure it exists and can be accessed.", commit), e);
+        }
     }
 
     private void checkoutBranch(GitConnection git, String branch, DtoFactory dtoFactory) throws GitException {
         final BranchCheckoutRequest request = dtoFactory.createDto(BranchCheckoutRequest.class).withName(branch);
-        git.branchCheckout(request);
+        try {
+            git.branchCheckout(request);
+        } catch (GitException e) {
+            throw new GitException(
+                    String.format("Unable to checkout remote branch %s. Make sure it exists and can be accessed.",
+                                  branch), e);
+        }
     }
 
     private void sparsecheckout(GitConnection git, String url, String branch, String directory, DtoFactory dtoFactory)

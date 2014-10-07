@@ -16,6 +16,7 @@ import com.codenvy.ide.ext.github.server.GitHub;
 import com.codenvy.ide.ext.github.server.GitHubKeyUploader;
 import com.codenvy.ide.ext.github.server.oauth.GitHubOAuthCredentialProvider;
 import com.codenvy.ide.ext.github.server.rest.GitHubExceptionMapper;
+import com.codenvy.ide.ext.github.server.rest.GitHubService;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.multibindings.Multibinder;
@@ -36,6 +37,7 @@ public class GitHubModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(GitHubOAuthCredentialProvider.class);
         Multibinder.newSetBinder(binder(), SshKeyUploader.class).addBinding().to(GitHubKeyUploader.class);
 
-        bind(GitHubExceptionMapper.class).toInstance(new GitHubExceptionMapper());
+        bind(GitHubService.class);
+        bind(GitHubExceptionMapper.class);
     }
 }

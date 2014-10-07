@@ -30,14 +30,14 @@ public class ConfigImpl extends Config {
      *         git repository
      */
     ConfigImpl(File repository) throws GitException {
-        super(repository); // TODO
+        super(repository);
     }
 
     @Override
     public String get(String name) throws GitException {
         final GetConfigCommand command = new GetConfigCommand(repository).setValue(name);
         command.execute();
-        final List<String> output = command.getOutput();
+        final List<String> output = command.getLines();
         if (output.isEmpty()) {
             return null;
         }
@@ -48,7 +48,7 @@ public class ConfigImpl extends Config {
     public List<String> getAll(String name) throws GitException {
         final GetConfigCommand command = new GetConfigCommand(repository).setValue(name).setGetAll(true);
         command.execute();
-        return command.getOutput();
+        return command.getLines();
     }
 
     @Override

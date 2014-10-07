@@ -28,7 +28,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import javax.validation.constraints.NotNull;
+import javax.annotation.Nonnull;
 
 /**
  * The implementation of {@link PushToRemoteView}.
@@ -66,6 +66,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     protected PushToRemoteViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
+        this.ensureDebugId("git-remotes-push-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
@@ -92,7 +93,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getRepository() {
         int index = repository.getSelectedIndex();
@@ -101,7 +102,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
 
     /** {@inheritDoc} */
     @Override
-    public void setRepositories(@NotNull Array<Remote> repositories) {
+    public void setRepositories(@Nonnull Array<Remote> repositories) {
         this.repository.clear();
         for (int i = 0; i < repositories.size(); i++) {
             Remote repository = repositories.get(i);
@@ -110,7 +111,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getLocalBranch() {
         int index = localBranch.getSelectedIndex();
@@ -119,7 +120,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
 
     /** {@inheritDoc} */
     @Override
-    public void setLocalBranches(@NotNull Array<String> branches) {
+    public void setLocalBranches(@Nonnull Array<String> branches) {
         this.localBranch.clear();
         for (int i = 0; i < branches.size(); i++) {
             String branch = branches.get(i);
@@ -128,7 +129,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     }
 
     /** {@inheritDoc} */
-    @NotNull
+    @Nonnull
     @Override
     public String getRemoteBranch() {
         int index = remoteBranch.getSelectedIndex();
@@ -137,7 +138,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
 
     /** {@inheritDoc} */
     @Override
-    public void setRemoteBranches(@NotNull Array<String> branches) {
+    public void setRemoteBranches(@Nonnull Array<String> branches) {
         this.remoteBranch.clear();
         for (int i = 0; i < branches.size(); i++) {
             String branch = branches.get(i);

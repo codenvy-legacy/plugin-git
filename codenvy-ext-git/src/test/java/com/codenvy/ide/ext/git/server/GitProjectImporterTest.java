@@ -175,7 +175,7 @@ public class GitProjectImporterTest {
         Assert.assertNotNull(folder.getChild("src"));
         Assert.assertNotNull(folder.getChild("src/hello.c"));
         Assert.assertNotNull(folder.getChild("README"));
-        Assert.assertNull(folder.getChild(".git"));
+        Assert.assertNotNull(folder.getChild(".git"));
         FileEntry readme = (FileEntry)folder.getChild("README");
         Assert.assertEquals("test git importer", new String(readme.contentAsBytes()));
     }

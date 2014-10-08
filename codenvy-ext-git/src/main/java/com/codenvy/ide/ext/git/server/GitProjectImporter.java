@@ -102,7 +102,7 @@ public class GitProjectImporter implements ProjectImporter {
                 branch = parameters.get("branch");
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
                 keepDirectory = parameters.get("keepDirectory");
-                keepVcs = Boolean.parseBoolean(parameters.get("keepVcs"));
+                keepVcs = parameters.containsKey("keepVcs") ? Boolean.parseBoolean(parameters.get("keepVcs")) : true;
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             // Get path to local file. Git works with local filesystem only.
@@ -163,10 +163,12 @@ public class GitProjectImporter implements ProjectImporter {
             }
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(
-                    "You are not authorized to perform the remote import. Codenvy may need accurate keys to the external system. You can create a new key pair in Window->Preferences->SSH Keys.");
+                    "You are not authorized to perform the remote import. Codenvy may need accurate keys to the external system. You can " +
+                    "create a new key pair in Window->Preferences->SSH Keys.");
         } catch (URISyntaxException e) {
             throw new ServerException(
-                    "Your project cannot be imported. The issue is either from git configuration, a malformed URL, or file system corruption. Please contact support for assistance.",
+                    "Your project cannot be imported. The issue is either from git configuration, a malformed URL, " +
+                    "or file system corruption. Please contact support for assistance.",
                     e);
         }
     }

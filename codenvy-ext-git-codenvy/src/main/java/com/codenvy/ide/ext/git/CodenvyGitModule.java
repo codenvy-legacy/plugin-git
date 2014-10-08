@@ -29,3 +29,4 @@ public class CodenvyGitModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(CodenvyAccessTokenCredentialProvider.class);
     }
 }
+

@@ -19,7 +19,7 @@
         <version>1.4.0-SNAPSHOT</version>
     </parent>
     <artifactId>codenvy-git-server</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>Codenvy :: GIT Server</name>
     <dependencies>
         <dependency>
@@ -28,7 +28,7 @@
             <version>${codenvy.platform-api.version}</version>
         </dependency>
         <dependency>
-           <groupId>com.codenvy.vfs</groupId>
+            <groupId>com.codenvy.vfs</groupId>
             <artifactId>codenvy-vfs-impl</artifactId>
             <version>${codenvy.vfs.impl.version}</version>
         </dependency>

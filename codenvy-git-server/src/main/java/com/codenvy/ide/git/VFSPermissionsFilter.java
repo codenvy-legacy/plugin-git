@@ -16,17 +16,28 @@ import com.codenvy.api.user.server.dao.UserDao;
 import com.codenvy.api.user.server.dao.User;
 import com.codenvy.api.workspace.server.dao.Member;
 import com.codenvy.api.workspace.server.dao.MemberDao;
-import com.codenvy.api.workspace.server.dao.WorkspaceDao;
+import com.codenvy.commons.json.JsonHelper;
+import com.codenvy.commons.json.JsonParseException;
 import com.codenvy.commons.lang.ExpirableCache;
+import com.codenvy.commons.lang.IoUtil;
 
 import org.apache.commons.codec.binary.Base64;
+import org.everrest.core.impl.provider.json.JsonValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Singleton;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
@@ -38,6 +49,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
  */
+@Singleton
 public class VFSPermissionsFilter implements Filter {
 
     @Inject
@@ -47,10 +59,13 @@ public class VFSPermissionsFilter implements Filter {
     private MemberDao memberDao;
 
     @Inject
-    private WorkspaceDao workspaceDao;
+    @Named("api.endpoint")
+    String apiEndPoint;
 
     private VFSPermissionsChecker           vfsPermissionsChecker;
     private ExpirableCache<String, Boolean> credentialsCache;
+
+    private static final Logger LOG = LoggerFactory.getLogger(VFSPermissionsFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -93,24 +108,31 @@ public class VFSPermissionsFilter implements Filter {
             // Check if user authenticated and hasn't permissions to project, then send response code 403
             try {
                 User user = null;
+                Boolean authenticated = false;
                 if (!userName.isEmpty()) {
                     try {
-                        user = userDao.getByAlias(userName);
+                        if (password.equals("x-codenvy")) { // internal SSO login
+                            user = getUserBySSO(userName);
+                            if (user != null)
+                                authenticated = true;
+                        } else {
+                            user = userDao.getByAlias(userName);
+                        }
                         Member userMember = null;
-                        for (Member member : memberDao.getWorkspaceMembers(
-                                workspaceDao.getByName(projectDirectory.getParentFile().getName()).getId())) {
+                        for (Member member : memberDao.getWorkspaceMembers(projectDirectory.getParentFile().getName())) {
                             if (member.getUserId().equals(user.getId()))
                                 userMember = member;
                         }
 
-                        Boolean authenticated = credentialsCache.get((userName + password));
-                        if (authenticated == null) {
-                            authenticated = userDao.authenticate(userName, password);
-                            credentialsCache.put(userName + password, authenticated);
+                        if (!authenticated) {
+                            if (credentialsCache.get((userName + password)) == null) {
+                                authenticated = userDao.authenticate(userName, password);
+                                credentialsCache.put(userName + password, authenticated);
+                            }
                         }
 
                         if (!authenticated ||
-                            !vfsPermissionsChecker.isAccessAllowed(userName, userMember, projectDirectory)) {
+                            !vfsPermissionsChecker.isAccessAllowed(user.getEmail(), userMember, projectDirectory)) {
                             ((HttpServletResponse)response).sendError(HttpServletResponse.SC_FORBIDDEN);
                             return;
                         }
@@ -126,7 +148,7 @@ public class VFSPermissionsFilter implements Filter {
                     if (!vfsPermissionsChecker.isAccessAllowed("", null, projectDirectory)) {
                         ((HttpServletResponse)response).addHeader("Cache-Control", "private");
                         ((HttpServletResponse)response).addHeader("WWW-Authenticate", "Basic");
-                        ((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        ((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to perform this action.");
                         return;
                     }
                 }
@@ -139,5 +161,44 @@ public class VFSPermissionsFilter implements Filter {
 
     @Override
     public void destroy() {
+    }
+
+
+    private User getUserBySSO(String token) {
+        try {
+            HttpURLConnection conn = (HttpURLConnection)new URL(
+                    apiEndPoint + "/internal/sso/server" + "/" + token + "?" + "clienturl=" +
+                    URLEncoder.encode(apiEndPoint, "UTF-8")
+            ).openConnection();
+
+            try {
+                conn.setRequestMethod("GET");
+                conn.setDoOutput(true);
+
+                final int responseCode = conn.getResponseCode();
+                if (responseCode == 400) {
+                    return null;
+                } else if (responseCode != 200) {
+                    throw new IOException(
+                            "Error response with status " + responseCode + " for sso client  " + token + ". Message " +
+                            IoUtil.readAndCloseQuietly(conn.getErrorStream())
+                    );
+                }
+
+                try (InputStream in = conn.getInputStream()) {
+                    JsonValue value = JsonHelper.parseJson(in);
+                    User result = new User();
+                    result.setId(value.getElement("id").getStringValue());
+                    result.setEmail(value.getElement("name").getStringValue());
+                    return result;
+                }
+
+            } finally {
+                conn.disconnect();
+            }
+        } catch (IOException | JsonParseException e) {
+            LOG.warn(e.getLocalizedMessage());
+        }
+        return null;
     }
 }

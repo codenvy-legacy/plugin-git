@@ -29,7 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Credentials provider for ProjectLocker
+ * Credentials provider for Codenvy
  *
  * @author Alexander Garagatyi
  */

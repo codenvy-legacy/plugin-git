@@ -54,6 +54,7 @@ import static org.mockito.Mockito.*;
 public class VFSPermissionsFilterTest {
 
     final static String               USER      = "username";
+    final static String               EMAIL     =  "email@email.com";
     final static String               PASSWORD  = "password";
     final static String               WORKSPACE = "workspace";
     @InjectMocks
@@ -124,7 +125,8 @@ public class VFSPermissionsFilterTest {
         //when
         filter.doFilter(request, response, filterChain);
         //then
-        verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), eq("You are not authorized to perform this " +
+                                                                           "action."));
     }
 
 
@@ -134,6 +136,7 @@ public class VFSPermissionsFilterTest {
         //given
         User user = new User();
         user.setId(USER);
+        user.setEmail(EMAIL);
         Workspace workspace = new Workspace().withId(WORKSPACE);
         Member member = new Member().withUserId(USER).withWorkspaceId(WORKSPACE)
                                   .withRoles(Arrays.asList("workspace/developer"));
@@ -141,7 +144,7 @@ public class VFSPermissionsFilterTest {
         when(userDao.getByAlias(USER)).thenReturn(user);
         when(workspaceDao.getByName(anyString())).thenReturn(workspace);
         when(memberDao.getWorkspaceMembers(WORKSPACE)).thenReturn(Arrays.asList(member));
-        when(vfsPermissionsChecker.isAccessAllowed(USER, member, projectDirectory)).thenReturn(true);
+        when(vfsPermissionsChecker.isAccessAllowed(EMAIL, member, projectDirectory)).thenReturn(true);
         when(request.getHeader("authorization"))
                 .thenReturn("BASIC " + (Base64.encodeBase64String((USER + ":" + PASSWORD).getBytes())));
         when(userDao.authenticate(eq(USER), anyString())).thenReturn(true);
@@ -163,7 +166,8 @@ public class VFSPermissionsFilterTest {
         //when
         filter.doFilter(request, response, filterChain);
         //then
-        verify(response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), eq("You are not authorized to perform this " +
+                                                                           "action."));
     }
 
     @Test

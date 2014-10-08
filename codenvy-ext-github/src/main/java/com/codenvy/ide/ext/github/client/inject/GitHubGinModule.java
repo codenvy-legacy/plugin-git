@@ -11,11 +11,16 @@
 package com.codenvy.ide.ext.github.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
+import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
+import com.codenvy.ide.api.projectimporter.ProjectImporter;
 import com.codenvy.ide.ext.github.client.GitHubClientService;
 import com.codenvy.ide.ext.github.client.GitHubClientServiceImpl;
 import com.codenvy.ide.ext.github.client.load.ImportView;
 import com.codenvy.ide.ext.github.client.load.ImportViewImpl;
+import com.codenvy.ide.ext.github.client.projectimporter.importerpage.GithubImporterPagePresenter;
+import com.codenvy.ide.ext.github.client.projectimporter.GithubProjectImporter;
 import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;
 
 /** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
@@ -26,5 +31,11 @@ public class GitHubGinModule extends AbstractGinModule {
     protected void configure() {
         bind(GitHubClientService.class).to(GitHubClientServiceImpl.class).in(Singleton.class);
         bind(ImportView.class).to(ImportViewImpl.class).in(Singleton.class);
+
+        GinMultibinder<ProjectImporter> projectImporterMultibinder = GinMultibinder.newSetBinder(binder(), ProjectImporter.class);
+        projectImporterMultibinder.addBinding().to(GithubProjectImporter.class);
+
+        GinMultibinder<ImporterPagePresenter> importerPageMultibinder = GinMultibinder.newSetBinder(binder(), ImporterPagePresenter.class);
+        importerPageMultibinder.addBinding().to(GithubImporterPagePresenter.class);
     }
 }

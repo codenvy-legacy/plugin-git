@@ -10,10 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.server.inject;
 
+import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
 import com.codenvy.ide.ext.git.server.nativegit.SshKeyUploader;
 import com.codenvy.ide.ext.github.server.GitHub;
 import com.codenvy.ide.ext.github.server.GitHubKeyUploader;
+import com.codenvy.ide.ext.github.server.GitHubProjectImporter;
 import com.codenvy.ide.ext.github.server.oauth.GitHubOAuthCredentialProvider;
 import com.codenvy.ide.ext.github.server.rest.GitHubExceptionMapper;
 import com.codenvy.ide.ext.github.server.rest.GitHubService;
@@ -33,6 +35,9 @@ public class GitHubModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(GitHub.class);
+
+        Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
+        projectImporterMultibinder.addBinding().to(GitHubProjectImporter.class);
 
         Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(GitHubOAuthCredentialProvider.class);
         Multibinder.newSetBinder(binder(), SshKeyUploader.class).addBinding().to(GitHubKeyUploader.class);

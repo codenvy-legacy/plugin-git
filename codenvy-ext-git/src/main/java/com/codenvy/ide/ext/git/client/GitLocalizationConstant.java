@@ -221,6 +221,18 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.workspaceRamLessRequiredRam")
     String messagesWorkspaceRamLessRequiredRam(int requiredMemorySize, int workspaceMemorySize);
 
+    @Key("importProject.messageStartWithWhiteSpace")
+    String importProjectMessageStartWithWhiteSpace();
+
+    @Key("importProject.messageNameRepoIncorrect")
+    String importProjectMessageNameRepoIncorrect();
+
+    @Key("importProject.messageProtocolIncorrect")
+    String importProjectMessageProtocolIncorrect();
+
+    @Key("importProject.messageHostIncorrect")
+    String importProjectMessageHostIncorrect();
+
     // Unmarshaller Errors
     @Key("merge.unmarshal.failed")
     String mergeUnmarshallerFailed();

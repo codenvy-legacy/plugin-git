@@ -27,6 +27,8 @@
         <module>codenvy-ext-git</module>
         <module>codenvy-ext-github</module>
         <module>codenvy-ext-git-projectlocker</module>
+        <module>codenvy-git-server</module>
+        <module>codenvy-ext-git-codenvy</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:codenvy/plugin-git.git</connection>

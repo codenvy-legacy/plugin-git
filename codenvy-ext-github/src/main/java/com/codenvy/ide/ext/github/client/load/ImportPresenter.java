@@ -14,7 +14,8 @@ import com.codenvy.api.core.rest.shared.dto.ServiceError;
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.api.project.shared.dto.RunnerEnvironmentConfigurationDescriptor;
+import com.codenvy.api.project.shared.dto.RunnerConfiguration;
+import com.codenvy.api.project.shared.dto.RunnersDescriptor;
 import com.codenvy.api.runner.dto.ResourcesDescriptor;
 import com.codenvy.api.runner.gwt.client.RunnerServiceClient;
 import com.codenvy.api.user.shared.dto.UserDescriptor;
@@ -48,8 +49,6 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
-
-import java.util.Map;
 
 import static com.codenvy.ide.api.notification.Notification.Status.PROGRESS;
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -214,7 +213,9 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         view.close();
         ImportSourceDescriptor importSourceDescriptor =
                 dtoFactory.createDto(ImportSourceDescriptor.class).withType(importer).withLocation(url);
-        projectServiceClient.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
+        importSourceDescriptor.getParameters().put("keepVcs", "true");
+        projectServiceClient.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(
+                dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {
                 checkRam(result, url);
@@ -239,12 +240,12 @@ public class ImportPresenter implements ImportView.ActionDelegate {
 
     private void checkRam(final ProjectDescriptor projectDescriptor, final String url) {
         int requiredMemorySize = 0;
-        Map<String, RunnerEnvironmentConfigurationDescriptor> runEnvConfigurations = projectDescriptor.getRunnerEnvironmentConfigurations();
-        String defaultRunnerEnvironment = projectDescriptor.getDefaultRunnerEnvironment();
-
-        if (runEnvConfigurations != null && defaultRunnerEnvironment != null && runEnvConfigurations.containsKey(defaultRunnerEnvironment)) {
-            RunnerEnvironmentConfigurationDescriptor runEnvConfDescriptor = runEnvConfigurations.get(defaultRunnerEnvironment);
-            requiredMemorySize = runEnvConfDescriptor.getRequiredMemorySize();
+        final RunnersDescriptor runners = projectDescriptor.getRunners();
+        if (runners != null) {
+            final RunnerConfiguration runnerConfiguration = runners.getConfigs().get(runners.getDefault());
+            if (runnerConfiguration != null) {
+                requiredMemorySize = runnerConfiguration.getRam();
+            }
         }
 
         if (requiredMemorySize > 0) {

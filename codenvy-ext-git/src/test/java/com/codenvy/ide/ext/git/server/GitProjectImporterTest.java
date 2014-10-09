@@ -169,7 +169,7 @@ public class GitProjectImporterTest {
 
     @Test
     public void testImport() throws Exception {
-        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         gitProjectImporter
                 .importSources(folder, gitRepo.getAbsolutePath(), Collections.<String, String>emptyMap(), new SystemOutLineConsumerFactory());
         Assert.assertNotNull(folder.getChild("src"));
@@ -191,7 +191,7 @@ public class GitProjectImporterTest {
         git.commit(dtoFactory.createDto(CommitRequest.class).withAll(true).withMessage("branch"));
         git.close();
 
-        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("branch", "new_branch");
         parameters.put("keepVcs", "true");
@@ -223,7 +223,7 @@ public class GitProjectImporterTest {
         Assert.assertEquals(2, commits.size()); // have two commits now
         Revision commit = commits.get(1); // get first commit
 
-        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("commitId", commit.getId());
         parameters.put("keepVcs", "true");
@@ -260,7 +260,7 @@ public class GitProjectImporterTest {
         Assert.assertEquals(2, commits.size()); // have two commits now
         Revision commit = commits.get(0); // get first commit
 
-        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         folder.createFolder(".codenvy");
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("commitId", commit.getId());
@@ -283,7 +283,7 @@ public class GitProjectImporterTest {
 
     @Test
     public void testImportKeepDirectory() throws Exception {
-        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("keepDirectory", "src");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
@@ -294,7 +294,7 @@ public class GitProjectImporterTest {
 
     @Test
     public void testImportKeepVcs() throws Exception {
-        FolderEntry folder = new FolderEntry(vfs.getMountPoint().getRoot().createFolder("project"));
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());

@@ -10,14 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.git;
 
-import com.codenvy.api.core.ApiException;
-import com.codenvy.api.core.NotFoundException;
-import com.codenvy.api.user.server.dao.UserDao;
-import com.codenvy.api.user.server.dao.User;
-import com.codenvy.api.workspace.server.dao.Member;
-import com.codenvy.api.workspace.server.dao.MemberDao;
-import com.codenvy.api.workspace.server.dao.Workspace;
-import com.codenvy.api.workspace.server.dao.WorkspaceDao;
+import com.codenvy.api.auth.shared.dto.Token;
+import com.codenvy.api.core.*;
+import com.codenvy.api.core.rest.HttpJsonHelper;
+import com.codenvy.commons.json.JsonHelper;
+import com.codenvy.commons.lang.Pair;
+import com.codenvy.commons.user.UserImpl;
 import com.codenvy.dto.server.DtoFactory;
 
 import org.apache.commons.codec.binary.Base64;
@@ -32,11 +30,9 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.Arrays;
 
 import static org.mockito.Matchers.anyString;
@@ -47,70 +43,68 @@ import static org.mockito.Mockito.*;
  * Test different situations of user access to projects with different permissions.
  * Test related to @link com.codenvy.ide.git.VFSPermissionsFilter class.
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Max Shaposhnik
  */
 
 @Listeners(MockitoTestNGListener.class)
 public class VFSPermissionsFilterTest {
 
-    final static String               USER      = "username";
-    final static String               EMAIL     =  "email@email.com";
     final static String               PASSWORD  = "password";
     final static String               WORKSPACE = "workspace";
+    final static String               ENDPOINT = "http://dev.box.com/api";
     @InjectMocks
     final static VFSPermissionsFilter filter    = new VFSPermissionsFilter();
-    final File projectDirectory;
+    //    final File projectDirectory;
     @Mock
-    HttpServletResponse   response;
+    HttpServletResponse response;
     @Mock
-    HttpServletRequest    request;
+    HttpServletRequest  request;
     @Mock
-    UserDao               userDao;
-    @Mock
-    MemberDao             memberDao;
-    @Mock
-    WorkspaceDao          workspaceDao;
-    @Mock
-    FilterChain           filterChain;
-    @Mock
-    VFSPermissionsChecker vfsPermissionsChecker;
+    FilterChain         filterChain;
 
-    /**
-     * Basic setups need for tests: create workspace, create project directory, set system com.codenvy.vfs.rootdir
-     * property
-     */
-    VFSPermissionsFilterTest()
-            throws URISyntaxException, FileNotFoundException, NoSuchFieldException,
-                   IllegalAccessException {
-        File workspace =
-                new File(new File(Thread.currentThread().getContextClassLoader().getResource(".").toURI())
-                                 .getParentFile(), WORKSPACE);
-        System.setProperty("com.codenvy.vfs.rootdir", workspace.getParentFile().getAbsolutePath());
-        projectDirectory = new File(workspace, "testProject");
-        projectDirectory.mkdirs();
-    }
+    @Mock
+    private HttpJsonHelper.HttpJsonHelperImpl httpJsonHelper;
 
+    //
+//    /**
+//     * Basic setups need for tests: create workspace, create project directory, set system com.codenvy.vfs.rootdir
+//     * property
+//     */
+//    VFSPermissionsFilterTest()
+//            throws URISyntaxException, FileNotFoundException, NoSuchFieldException,
+//                   IllegalAccessException {
+//        File workspace =
+//                new File(new File(Thread.currentThread().getContextClassLoader().getResource(".").toURI())
+//                                 .getParentFile(), WORKSPACE);
+//        System.setProperty("com.codenvy.vfs.rootdir", workspace.getParentFile().getAbsolutePath());
+//        projectDirectory = new File(workspace, "testProject");
+//        projectDirectory.mkdirs();
+//    }
+//
     @BeforeMethod
     public void before() throws Exception {
         System.setProperty("organization.application.server.url", "orgPath");
+        // Json helper mocking
+        Field f = HttpJsonHelper.class.getDeclaredField("httpJsonHelperImpl");
+        f.setAccessible(true);
+        f.set(null, httpJsonHelper);
         filter.init(null);
-        //set up UserManager mock
-        Field filterUserManager = filter.getClass().getDeclaredField("userDao");
-        filterUserManager.setAccessible(true);
-        filterUserManager.set(filter, userDao);
-        //set up permission checker mock
-        Field filterUserPermissionsChecker = filter.getClass().getDeclaredField("vfsPermissionsChecker");
-        filterUserPermissionsChecker.setAccessible(true);
-        filterUserPermissionsChecker.set(filter, vfsPermissionsChecker);
+
+        Field api = VFSPermissionsFilter.class.getDeclaredField("apiEndPoint");
+        api.setAccessible(true);
+        api.set(filter, ENDPOINT);
 
         when((request).getRequestURL())
                 .thenReturn(new StringBuffer("http://host.com/git/").append(WORKSPACE).append("/testProject"));
     }
 
+    //
     @Test
-    public void shouldSkipFurtherIfProjectHasPermissionsForAllAndUserIsEmpty() throws IOException, ServletException {
+    public void shouldSkipFurtherIfProjectHasPermissionsForAllAndUserIsEmpty()
+            throws IOException, ServletException, UnauthorizedException, ForbiddenException, ConflictException,
+                   NotFoundException, ServerException {
         //given
-        when(vfsPermissionsChecker.isAccessAllowed("", null, projectDirectory)).thenReturn(true);
+        when(httpJsonHelper.requestString(anyString(), eq("GET"), any())).thenReturn("123");
         //when
         filter.doFilter(request, response, filterChain);
         //then should skip further request
@@ -119,69 +113,58 @@ public class VFSPermissionsFilterTest {
 
     @Test
     public void shouldRespondUnauthorizedIfProjectHasPermissionsToSpecificUserAndUserIsEmpty()
-            throws IOException, ServletException {
+            throws IOException, ServletException, UnauthorizedException, ForbiddenException, ConflictException,
+                   NotFoundException, ServerException {
         //given
-        when(vfsPermissionsChecker.isAccessAllowed("", null, projectDirectory)).thenReturn(false);
+        when(httpJsonHelper.requestString(anyString(), eq("GET"), any())).thenThrow(new UnauthorizedException("NO"));
         //when
         filter.doFilter(request, response, filterChain);
         //then
-        verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), eq("You are not authorized to perform this " +
-                                                                           "action."));
-    }
-
-
-    @Test
-    public void shouldSkipFurtherIfProjectHasWorkspaceDeveloperGroupAllPermissionsAndUserHasDeveloperRole()
-            throws IOException, ServletException, ApiException {
-        //given
-        User user = new User();
-        user.setId(USER);
-        user.setEmail(EMAIL);
-        Workspace workspace = new Workspace().withId(WORKSPACE);
-        Member member = new Member().withUserId(USER).withWorkspaceId(WORKSPACE)
-                                  .withRoles(Arrays.asList("workspace/developer"));
-
-        when(userDao.getByAlias(USER)).thenReturn(user);
-        when(workspaceDao.getByName(anyString())).thenReturn(workspace);
-        when(memberDao.getWorkspaceMembers(WORKSPACE)).thenReturn(Arrays.asList(member));
-        when(vfsPermissionsChecker.isAccessAllowed(EMAIL, member, projectDirectory)).thenReturn(true);
-        when(request.getHeader("authorization"))
-                .thenReturn("BASIC " + (Base64.encodeBase64String((USER + ":" + PASSWORD).getBytes())));
-        when(userDao.authenticate(eq(USER), anyString())).thenReturn(true);
-        //when
-        filter.doFilter(request, response, filterChain);
-        //then should skip further request
-        verify(filterChain).doFilter(request, response);
+        verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED));
     }
 
     @Test
-    public void shouldRespondUnauthorizedIfProjectHasHasPermissionsToSpecificUserAndUserDoesNotExist()
+    public void shouldSkipFurtherIfUsernameAndPasswordAndAccessAllowed()
             throws IOException, ServletException, ApiException {
         //given
-        //when(userDao.getUserByAlias(eq(USER))).thenThrow(new UserExistenceException());
-        doThrow(new NotFoundException(USER)).when(userDao).getByAlias(eq("OTHERUSER"));
-        when(vfsPermissionsChecker.isAccessAllowed("", null, projectDirectory)).thenReturn(false);
         when(request.getHeader("authorization")).thenReturn(
                 "BASIC " + (Base64.encodeBase64String(("OTHERUSER" + ":" + PASSWORD).getBytes())));
-        //when
-        filter.doFilter(request, response, filterChain);
-        //then
-        verify(response).sendError(eq(HttpServletResponse.SC_UNAUTHORIZED), eq("You are not authorized to perform this " +
-                                                                           "action."));
-    }
 
-    @Test
-    public void shouldSkipFurtherIfProjectHasWorkspaceDeveloperGroupAllPermissionsAndUserDoesNotExist()
-            throws IOException, ServletException, ApiException {
-        //given
-        //when(userDao.getUserByAlias(eq(USER))).thenThrow(new UserExistenceException());
-        doThrow(new NotFoundException("OTHERUSER")).when(userDao).getByAlias(eq("OTHERUSER"));
-        when(vfsPermissionsChecker.isAccessAllowed("", null, projectDirectory)).thenReturn(true);
-        when(request.getHeader("authorization")).thenReturn(
-                "BASIC " + (Base64.encodeBase64String(("OTHERUSER" + ":" + PASSWORD).getBytes())));
+        // get token
+        when(httpJsonHelper.request(eq(Token.class), anyString(), eq("POST"), any())).thenReturn(DtoFactory.getInstance().createDto(Token.class).withValue("123"));
+        // get user by token
+        when(httpJsonHelper.requestString(contains("internal/sso/server"), eq("GET"), isNull(), eq(Pair.of("clienturl",
+                                                                                                                               URLEncoder
+                                                                                                                                       .encode(ENDPOINT,
+                                                                                                                                               "UTF-8")))))
+                .thenReturn(JsonHelper.toJson(new UserImpl("name1", "id1", "123", Arrays.asList("role1"), false)));
+        // check access
+        when(httpJsonHelper.requestString(anyString(), eq("GET"), any())).thenReturn("123");
         //when
         filter.doFilter(request, response, filterChain);
         //then
         verify(filterChain).doFilter(request, response);
     }
+
+    @Test
+    public void shouldSkipFurtherIfTokenPresentAndAccessAllowed()
+            throws IOException, ServletException, ApiException {
+        //given
+        when(request.getHeader("authorization")).thenReturn(
+                "BASIC " + (Base64.encodeBase64String(("OTHERUSER" + ":" + "x-codenvy").getBytes())));
+
+        // get user by token
+        when(httpJsonHelper.requestString(contains("internal/sso/server"), eq("GET"), isNull(), eq(Pair.of("clienturl",
+                                                                                                           URLEncoder
+                                                                                                                   .encode(ENDPOINT,
+                                                                                                                           "UTF-8")))))
+                .thenReturn(JsonHelper.toJson(new UserImpl("name1", "id1", "123", Arrays.asList("role1"), false)));
+        // check access
+        when(httpJsonHelper.requestString(anyString(), eq("GET"), any())).thenReturn("123");
+        //when
+        filter.doFilter(request, response, filterChain);
+        //then
+        verify(filterChain).doFilter(request, response);
+    }
+
 }

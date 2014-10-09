@@ -10,16 +10,18 @@
  *******************************************************************************/
 package com.codenvy.ide.git;
 
-import com.codenvy.api.core.NotFoundException;
-import com.codenvy.api.core.ServerException;
-import com.codenvy.api.user.server.dao.UserDao;
-import com.codenvy.api.user.server.dao.User;
-import com.codenvy.api.workspace.server.dao.Member;
-import com.codenvy.api.workspace.server.dao.MemberDao;
+import com.codenvy.api.auth.shared.dto.Credentials;
+import com.codenvy.api.core.*;
+import com.codenvy.api.core.rest.HttpJsonHelper;
+import com.codenvy.api.core.rest.shared.dto.Link;
+import com.codenvy.commons.lang.Pair;
+import com.codenvy.commons.user.User;
+import com.codenvy.api.auth.shared.dto.Token;
+import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.commons.json.JsonHelper;
 import com.codenvy.commons.json.JsonParseException;
-import com.codenvy.commons.lang.ExpirableCache;
-import com.codenvy.commons.lang.IoUtil;
+import com.codenvy.commons.user.UserImpl;
+import com.codenvy.dto.server.DtoFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.everrest.core.impl.provider.json.JsonValue;
@@ -34,43 +36,29 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.file.Paths;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
 
 /**
  * If user doesn't have permissions to repository, filter will deny request with 403.
- * Filter searches for .../workspace/.vfs/acl/ProjectName_acl file that contains permissions
- * if it doesn't exist request will be accepted, else if permissions is not READ or ALL request will
- * be denied with 403 FORBIDDEN.
+ * Filter tries to access api/vfs for given project and if no access, request
  *
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * will be denied with 403 FORBIDDEN.
+ *
+ * @author  Max Shaposhnik
  */
 @Singleton
 public class VFSPermissionsFilter implements Filter {
 
     @Inject
-    private UserDao userDao;
-
-    @Inject
-    private MemberDao memberDao;
-
-    @Inject
     @Named("api.endpoint")
     String apiEndPoint;
-
-    private VFSPermissionsChecker           vfsPermissionsChecker;
-    private ExpirableCache<String, Boolean> credentialsCache;
 
     private static final Logger LOG = LoggerFactory.getLogger(VFSPermissionsFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        vfsPermissionsChecker = new VFSPermissionsChecker();
-        credentialsCache = new ExpirableCache<>(TimeUnit.MINUTES.toMillis(5), 20);
     }
 
     @Override
@@ -105,55 +93,40 @@ public class VFSPermissionsFilter implements Filter {
                 password = userAndPasswordDecoded.substring(betweenUserAndPassword + 1);
             }
 
-            // Check if user authenticated and hasn't permissions to project, then send response code 403
+            // Check if user authenticated and has permissions to project, or send response code 403
+            boolean needLogout = false;
+            String token = null;
+            User user;
             try {
-                User user = null;
-                Boolean authenticated = false;
                 if (!userName.isEmpty()) {
-                    try {
-                        if (password.equals("x-codenvy")) { // internal SSO login
-                            user = getUserBySSO(userName);
-                            if (user != null)
-                                authenticated = true;
-                        } else {
-                            user = userDao.getByAlias(userName);
-                        }
-                        Member userMember = null;
-                        for (Member member : memberDao.getWorkspaceMembers(projectDirectory.getParentFile().getName())) {
-                            if (member.getUserId().equals(user.getId()))
-                                userMember = member;
-                        }
-
-                        if (!authenticated) {
-                            if (credentialsCache.get((userName + password)) == null) {
-                                authenticated = userDao.authenticate(userName, password);
-                                credentialsCache.put(userName + password, authenticated);
-                            }
-                        }
-
-                        if (!authenticated ||
-                            !vfsPermissionsChecker.isAccessAllowed(user.getEmail(), userMember, projectDirectory)) {
-                            ((HttpServletResponse)response).sendError(HttpServletResponse.SC_FORBIDDEN);
-                            return;
-                        }
-                    } catch (NotFoundException ignore) {
-                        //ignore, let user be anonymous
+                    if (password.equals("x-codenvy")) { // internal SSO
+                        token = userName;
+                    } else {
+                        token = getToken(userName, password);
+                        needLogout = true;
                     }
+                    user = getUserBySSO(token);
+                    EnvironmentContext.getCurrent().setUser(user);
                 }
 
-                if (userName.isEmpty() || user == null) {
-                    // if user wasn't required check project permissions to any user,
-                    // if it is not READ or ALL send response code 401 and header with BASIC type of authentication
-
-                    if (!vfsPermissionsChecker.isAccessAllowed("", null, projectDirectory)) {
+                if (!hasAccessToItem(projectDirectory.getParentFile().getName(), projectDirectory.getName())) {
+                    if (!userName.isEmpty()) {
+                        // Authenticated but no access
+                        ((HttpServletResponse)response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                        return;
+                    } else {
+                        // Not authenticated, try again with credentials
                         ((HttpServletResponse)response).addHeader("Cache-Control", "private");
                         ((HttpServletResponse)response).addHeader("WWW-Authenticate", "Basic");
-                        ((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "You are not authorized to perform this action.");
+                        ((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
                         return;
                     }
                 }
-            } catch (ServerException e) {
-                throw new ServletException(e.getMessage(), e);
+            } finally {
+                EnvironmentContext.reset();
+                if (needLogout) {
+                    logout(token);
+                }
             }
         }
         chain.doFilter(req, response);
@@ -164,41 +137,65 @@ public class VFSPermissionsFilter implements Filter {
     }
 
 
-    private User getUserBySSO(String token) {
+    private User getUserBySSO(String token) throws ServletException {
         try {
-            HttpURLConnection conn = (HttpURLConnection)new URL(
-                    apiEndPoint + "/internal/sso/server" + "/" + token + "?" + "clienturl=" +
-                    URLEncoder.encode(apiEndPoint, "UTF-8")
-            ).openConnection();
+            String response = HttpJsonHelper.requestString(apiEndPoint + "/internal/sso/server/"  + token,
+                                         "GET", null, Pair.of("clienturl", URLEncoder.encode(apiEndPoint, "UTF-8")));
+            JsonValue value = JsonHelper.parseJson(response);
+                    return new UserImpl(value.getElement("name").getStringValue(),
+                                               value.getElement("id").getStringValue(),
+                                               value.getElement("token").getStringValue(),
+                                               Collections.<String>emptySet(),
+                                               value.getElement("temporary").getBooleanValue());
+        } catch (ForbiddenException | UnauthorizedException | ServerException un) {
+            return null;
+        } catch (ConflictException | NotFoundException | IOException | JsonParseException e) {
+            LOG.warn(e.getLocalizedMessage());
+            throw new ServletException(e.getMessage(), e);
 
-            try {
-                conn.setRequestMethod("GET");
-                conn.setDoOutput(true);
+        }
+    }
 
-                final int responseCode = conn.getResponseCode();
-                if (responseCode == 400) {
-                    return null;
-                } else if (responseCode != 200) {
-                    throw new IOException(
-                            "Error response with status " + responseCode + " for sso client  " + token + ". Message " +
-                            IoUtil.readAndCloseQuietly(conn.getErrorStream())
-                    );
-                }
+    private String getToken(String username, String password) throws ServletException {
+        try {
+            Token token = HttpJsonHelper.request(Token.class,
+                                                 DtoFactory.getInstance().createDto(Link.class).withMethod("POST")
+                                                           .withHref(apiEndPoint + "/auth/login/"),
+                                                 DtoFactory.getInstance().createDto(Credentials.class)
+                                                           .withUsername(username).withPassword(password));
+            return token.getValue();
+        } catch (ForbiddenException | UnauthorizedException un) {
+            return null;
+        } catch (ConflictException | ServerException | NotFoundException | IOException e) {
+            LOG.warn(e.getLocalizedMessage());
+            throw new ServletException(e.getMessage(), e);
+        }
+    }
 
-                try (InputStream in = conn.getInputStream()) {
-                    JsonValue value = JsonHelper.parseJson(in);
-                    User result = new User();
-                    result.setId(value.getElement("id").getStringValue());
-                    result.setEmail(value.getElement("name").getStringValue());
-                    return result;
-                }
 
-            } finally {
-                conn.disconnect();
-            }
-        } catch (IOException | JsonParseException e) {
+    private boolean hasAccessToItem(String workspaceId, String projectName) throws ServletException {
+        // Trying to access http://codenvy.com/api/vfs/workspacecs037e4z3mp867le/v2/itembypath/projectname
+        // we dont need any entity, just to know if we have access or no.
+        try {
+            HttpJsonHelper.requestString(apiEndPoint + "/vfs/" + workspaceId + "/v2/itembypath/" + projectName,
+                                         "GET", null);
+            return true;
+        } catch (ForbiddenException | UnauthorizedException un) {
+            return false;
+        } catch (ConflictException | ServerException | NotFoundException | IOException e) {
+            LOG.warn(e.getLocalizedMessage());
+            throw new ServletException(e.getMessage(), e);
+        }
+    }
+
+    private void logout(String token) {
+        try {
+            HttpJsonHelper.requestString(apiEndPoint + "/auth/logout/",
+                                         "GET", null, Pair.of("token", token));
+        } catch (ForbiddenException | UnauthorizedException un) {
+            // OK already logout
+        } catch (ConflictException | ServerException | NotFoundException | IOException e) {
             LOG.warn(e.getLocalizedMessage());
         }
-        return null;
     }
 }

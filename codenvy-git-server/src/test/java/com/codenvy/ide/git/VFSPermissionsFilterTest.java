@@ -65,22 +65,6 @@ public class VFSPermissionsFilterTest {
     @Mock
     private HttpJsonHelper.HttpJsonHelperImpl httpJsonHelper;
 
-    //
-//    /**
-//     * Basic setups need for tests: create workspace, create project directory, set system com.codenvy.vfs.rootdir
-//     * property
-//     */
-//    VFSPermissionsFilterTest()
-//            throws URISyntaxException, FileNotFoundException, NoSuchFieldException,
-//                   IllegalAccessException {
-//        File workspace =
-//                new File(new File(Thread.currentThread().getContextClassLoader().getResource(".").toURI())
-//                                 .getParentFile(), WORKSPACE);
-//        System.setProperty("com.codenvy.vfs.rootdir", workspace.getParentFile().getAbsolutePath());
-//        projectDirectory = new File(workspace, "testProject");
-//        projectDirectory.mkdirs();
-//    }
-//
     @BeforeMethod
     public void before() throws Exception {
         System.setProperty("organization.application.server.url", "orgPath");

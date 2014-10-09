@@ -15,7 +15,7 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
-import com.codenvy.api.project.shared.ValueProvider;
+import com.codenvy.api.project.server.ValueProvider;
 
 import java.util.LinkedList;
 import java.util.List;

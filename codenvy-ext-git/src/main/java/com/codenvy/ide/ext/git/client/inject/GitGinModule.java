@@ -11,7 +11,8 @@
 package com.codenvy.ide.ext.git.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
-import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
+import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
+import com.codenvy.ide.api.projectimporter.ProjectImporter;
 import com.codenvy.ide.ext.git.client.GitOutputPartView;
 import com.codenvy.ide.ext.git.client.GitOutputPartViewImpl;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -30,6 +31,8 @@ import com.codenvy.ide.ext.git.client.init.InitRepositoryView;
 import com.codenvy.ide.ext.git.client.init.InitRepositoryViewImpl;
 import com.codenvy.ide.ext.git.client.merge.MergeView;
 import com.codenvy.ide.ext.git.client.merge.MergeViewImpl;
+import com.codenvy.ide.ext.git.client.projectImporter.importerpage.GitImporterPagePresenter;
+import com.codenvy.ide.ext.git.client.projectImporter.GitProjectImporter;
 import com.codenvy.ide.ext.git.client.pull.PullView;
 import com.codenvy.ide.ext.git.client.pull.PullViewImpl;
 import com.codenvy.ide.ext.git.client.push.PushToRemoteView;
@@ -47,6 +50,7 @@ import com.codenvy.ide.ext.git.client.reset.files.ResetFilesViewImpl;
 import com.codenvy.ide.ext.git.client.url.ShowProjectGitReadOnlyUrlView;
 import com.codenvy.ide.ext.git.client.url.ShowProjectGitReadOnlyUrlViewImpl;
 import com.google.gwt.inject.client.AbstractGinModule;
+import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;
 
 /** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
@@ -56,6 +60,12 @@ public class GitGinModule extends AbstractGinModule {
     @Override
     protected void configure() {
         bind(GitServiceClient.class).to(GitServiceClientImpl.class).in(Singleton.class);
+
+        GinMultibinder<ProjectImporter> projectImporterMultibinder = GinMultibinder.newSetBinder(binder(), ProjectImporter.class);
+        projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
+
+        GinMultibinder<ImporterPagePresenter> importerPageMultibinder = GinMultibinder.newSetBinder(binder(), ImporterPagePresenter.class);
+        importerPageMultibinder.addBinding().to(GitImporterPagePresenter.class);
 
         bind(InitRepositoryView.class).to(InitRepositoryViewImpl.class).in(Singleton.class);
         bind(AddToIndexView.class).to(AddToIndexViewImpl.class).in(Singleton.class);

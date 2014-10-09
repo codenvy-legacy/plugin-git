@@ -14,7 +14,6 @@ import com.codenvy.ide.api.action.ActionManager;
 import com.codenvy.ide.api.action.DefaultActionGroup;
 import com.codenvy.ide.api.action.IdeActions;
 import com.codenvy.ide.api.extension.Extension;
-import com.codenvy.ide.ext.github.client.welcome.ImportProjectFromGitHubAction;
 import com.codenvy.ide.ext.ssh.client.SshKeyService;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -32,13 +31,10 @@ public class GitHubExtension {
 
     @Inject
     public GitHubExtension(ActionManager actionManager,
-                           ImportProjectFromGitHubAction importProjectFromGitHubAction,
                            SshKeyService sshKeyService,
                            GitHubSshKeyProvider gitHubSshKeyProvider) {
         sshKeyService.registerSshKeyProvider(GITHUB_HOST, gitHubSshKeyProvider);
 
-        actionManager.registerAction("importProjectFromGitHubAction", importProjectFromGitHubAction);
         DefaultActionGroup importProjectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_IMPORT_PROJECT);
-        importProjectGroup.add(importProjectFromGitHubAction);
     }
 }

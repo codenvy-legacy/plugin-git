@@ -11,11 +11,8 @@
 package com.codenvy.ide.ext.github.client.projectimporter;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.projectimporter.ProjectImporter;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.ext.git.client.projectImporter.GitProjectImporter;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 
@@ -27,19 +24,13 @@ import javax.inject.Singleton;
  * @author Roman Nikitenko
  */
 @Singleton
-public class GithubProjectImporter implements ProjectImporter {
-
-    private ProjectServiceClient   projectService;
-    private DtoFactory             dtoFactory;
-    private DtoUnmarshallerFactory dtoUnmarshallerFactory;
+public class GithubProjectImporter extends GitProjectImporter {
 
     @Inject
     public GithubProjectImporter(ProjectServiceClient projectService,
                                  DtoFactory dtoFactory,
                                  DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        this.projectService = projectService;
-        this.dtoFactory = dtoFactory;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        super(projectService, dtoFactory, dtoUnmarshallerFactory);
     }
 
     @Override
@@ -47,21 +38,4 @@ public class GithubProjectImporter implements ProjectImporter {
         return "github";
     }
 
-    @Override
-    public void importSources(String url, final String projectName, final ProjectImporter.ImportCallback callback) {
-        ImportSourceDescriptor importSourceDescriptor = dtoFactory.createDto(ImportSourceDescriptor.class).withType(getId()).withLocation(url);
-        projectService.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(
-                                             dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
-                                         @Override
-                                         protected void onSuccess(ProjectDescriptor result) {
-                                             callback.onSuccess(result);
-                                         }
-
-                                         @Override
-                                         protected void onFailure(Throwable exception) {
-                                             callback.onFailure(exception);
-                                         }
-                                     }
-                                    );
-    }
 }

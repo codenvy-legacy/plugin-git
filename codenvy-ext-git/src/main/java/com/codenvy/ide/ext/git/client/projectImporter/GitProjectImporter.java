@@ -49,7 +49,9 @@ public class GitProjectImporter implements ProjectImporter {
 
     @Override
     public void importSources(String url, String projectName, final ProjectImporter.ImportCallback callback) {
-        ImportSourceDescriptor importSourceDescriptor = dtoFactory.createDto(ImportSourceDescriptor.class).withType(getId()).withLocation(url);
+        ImportSourceDescriptor importSourceDescriptor = dtoFactory.createDto(ImportSourceDescriptor.class)
+                                                                  .withType(getId())
+                                                                  .withLocation(url);
         projectService.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(
                                              dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
                                          @Override

@@ -151,7 +151,7 @@ public class GitProjectImporter implements ProjectImporter {
                             checkoutBranch(git, branch, dtoFactory);
                         }
                     } else {
-                        fetchBranch(git, "origin", branch == null ? "master" : branch, dtoFactory);
+                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
                         checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
                     }
                 }

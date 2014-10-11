@@ -16,6 +16,7 @@ import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
@@ -27,11 +28,10 @@ import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
-import com.codenvy.ide.websocket.WebSocketException;
-import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -51,6 +51,7 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 public class PullPresenter implements PullView.ActionDelegate {
     private       PullView                view;
     private       GitServiceClient        service;
+    private       EventBus                eventBus;
     private       CurrentProject          project;
     private       GitLocalizationConstant constant;
     private       EditorAgent             editorAgent;
@@ -71,6 +72,7 @@ public class PullPresenter implements PullView.ActionDelegate {
     public PullPresenter(PullView view,
                          EditorAgent editorAgent,
                          GitServiceClient service,
+                         EventBus eventBus,
                          AppContext appContext,
                          GitLocalizationConstant constant,
                          NotificationManager notificationManager,
@@ -78,6 +80,7 @@ public class PullPresenter implements PullView.ActionDelegate {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
+        this.eventBus = eventBus;
         this.constant = constant;
         this.editorAgent = editorAgent;
         this.appContext = appContext;
@@ -222,26 +225,22 @@ public class PullPresenter implements PullView.ActionDelegate {
             openedEditors.add(partPresenter);
         }
 
-        try {
-            service.pull(project.getRootProject(), getRefs(), remoteName, new RequestCallback<String>() {
-                @Override
-                protected void onSuccess(String result) {
-                    Notification notification = new Notification(constant.pullSuccess(remoteUrl), INFO);
-                    notificationManager.showNotification(notification);
+        service.pull(project.getRootProject(), getRefs(), remoteName, new AsyncRequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void aVoid) {
+                Notification notification = new Notification(constant.pullSuccess(remoteUrl), INFO);
+                notificationManager.showNotification(notification);
+                refreshProject(openedEditors);
+            }
+
+            @Override
+            protected void onFailure(Throwable throwable) {
+                if (throwable.getMessage().contains("Merge conflict")) {
                     refreshProject(openedEditors);
                 }
-
-                @Override
-                protected void onFailure(Throwable exception) {
-                    if(exception.getMessage().contains("Merge conflict")) {
-                        refreshProject(openedEditors);
-                    }
-                    handleError(exception, remoteUrl);
-                }
-            });
-        } catch (WebSocketException e) {
-            handleError(e, remoteUrl);
-        }
+                handleError(throwable, remoteUrl);
+            }
+        });
     }
     /**
      * Refresh project.
@@ -250,6 +249,7 @@ public class PullPresenter implements PullView.ActionDelegate {
      *         editors that corresponds to open files
      */
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
+        eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
             updateOpenedFile(partPresenter);
         }

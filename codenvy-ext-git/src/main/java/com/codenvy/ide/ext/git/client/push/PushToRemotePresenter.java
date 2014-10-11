@@ -16,14 +16,13 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.websocket.WebSocketException;
-import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -212,31 +211,18 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     @Override
     public void onPushClicked() {
         final String repository = view.getRepository();
-
-        try {
-            service.push(project.getRootProject(), getRefs(), repository, false, new RequestCallback<String>() {
-                @Override
-                protected void onSuccess(String result) {
-                    Notification notification = new Notification(constant.pushSuccess(repository), INFO);
-                    notificationManager.showNotification(notification);
-                }
-
-                @Override
-                protected void onFailure(Throwable exception) {
-                    handleError(exception);
-                    if (repository.startsWith("https://")) {
-                        Notification notification = new Notification(constant.useSshProtocol(), ERROR);
-                        notificationManager.showNotification(notification);
-                    }
-                }
-            });
-        } catch (WebSocketException e) {
-            handleError(e);
-            if (repository.startsWith("https://")) {
-                Notification notification = new Notification(constant.useSshProtocol(), ERROR);
+        service.push(project.getRootProject(), getRefs(), repository, false, new AsyncRequestCallback<Void>() {
+            @Override
+            protected void onSuccess(Void result) {
+                Notification notification = new Notification(constant.pushSuccess(repository), INFO);
                 notificationManager.showNotification(notification);
             }
-        }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                handleError(exception);
+            }
+        });
         view.close();
     }
 
@@ -251,11 +237,18 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Handler some action whether some exception happened.
      *
-     * @param t
+     * @param throwable
      *         exception what happened
      */
-    private void handleError(@Nonnull Throwable t) {
-        String errorMessage = t.getMessage() != null ? t.getMessage() : constant.pushFail();
+    private void handleError(@Nonnull Throwable throwable) {
+        String errorMessage;
+        if (throwable instanceof UnauthorizedException) {
+            errorMessage = constant.messagesNotAuthorized();
+        } else if (throwable.getMessage() != null) {
+            errorMessage = throwable.getMessage();
+        } else {
+            errorMessage = constant.pushFail();
+        }
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);
     }

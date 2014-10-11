@@ -218,6 +218,9 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.use.ssh.protocol")
     String useSshProtocol();
 
+    @Key("messages.notAuthorized")
+    String messagesNotAuthorized();
+
     @Key("messages.workspaceRamLessRequiredRam")
     String messagesWorkspaceRamLessRequiredRam(int requiredMemorySize, int workspaceMemorySize);
 

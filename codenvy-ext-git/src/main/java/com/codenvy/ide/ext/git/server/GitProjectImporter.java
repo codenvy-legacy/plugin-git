@@ -19,7 +19,9 @@ import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
+import com.codenvy.ide.ext.git.shared.BranchListRequest;
 import com.codenvy.ide.ext.git.shared.CloneRequest;
 import com.codenvy.ide.ext.git.shared.FetchRequest;
 import com.codenvy.ide.ext.git.shared.InitRequest;
@@ -152,7 +154,11 @@ public class GitProjectImporter implements ProjectImporter {
                         }
                     } else {
                         fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
-                        checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+
+                        List<Branch> branchList = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode("r"));
+                        if (!branchList.isEmpty()) {
+                            checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                        }
                     }
                 }
                 if (!keepVcs) {

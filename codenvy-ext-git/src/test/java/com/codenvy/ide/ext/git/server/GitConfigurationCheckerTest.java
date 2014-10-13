@@ -28,7 +28,7 @@ import java.nio.file.Paths;
 public class GitConfigurationCheckerTest {
     private static final String GITIGNORE_FILE_CONTENT = "\n"
                                                          + "# Codenvy files\n"
-                                                         + ".codenvy/misc.xml\n"
+                                                         + ".codenvy/\n"
                                                          + ".vfs/\n";
     private        GitConfigurationChecker checker;
     private static String                  excludesfilePropertyContent;

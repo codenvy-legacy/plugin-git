@@ -10,15 +10,18 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.pull;
 
+import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInitException;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
@@ -28,7 +31,6 @@ import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.util.loging.Log;
-import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -50,7 +52,8 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 @Singleton
 public class PullPresenter implements PullView.ActionDelegate {
     private       PullView                view;
-    private       GitServiceClient        service;
+    private       GitServiceClient        gitServiceClient;
+    private       ProjectServiceClient    projectServiceClient;
     private       EventBus                eventBus;
     private       CurrentProject          project;
     private       GitLocalizationConstant constant;
@@ -63,7 +66,7 @@ public class PullPresenter implements PullView.ActionDelegate {
      * Create presenter.
      *
      * @param view
-     * @param service
+     * @param gitServiceClient
      * @param appContext
      * @param constant
      * @param notificationManager
@@ -71,7 +74,8 @@ public class PullPresenter implements PullView.ActionDelegate {
     @Inject
     public PullPresenter(PullView view,
                          EditorAgent editorAgent,
-                         GitServiceClient service,
+                         GitServiceClient gitServiceClient,
+                         ProjectServiceClient projectServiceClient,
                          EventBus eventBus,
                          AppContext appContext,
                          GitLocalizationConstant constant,
@@ -79,7 +83,8 @@ public class PullPresenter implements PullView.ActionDelegate {
                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
         this.view.setDelegate(this);
-        this.service = service;
+        this.gitServiceClient = gitServiceClient;
+        this.projectServiceClient = projectServiceClient;
         this.eventBus = eventBus;
         this.constant = constant;
         this.editorAgent = editorAgent;
@@ -101,25 +106,27 @@ public class PullPresenter implements PullView.ActionDelegate {
     private void getRemotes() {
         view.setEnablePullButton(true);
 
-        service.remoteList(project.getRootProject(), null, true,
-                           new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
-                               @Override
-                               protected void onSuccess(Array<Remote> result) {
-                                   getBranches(LIST_REMOTE);
-                                   view.setRepositories(result);
-                                   view.setEnablePullButton(!result.isEmpty());
-                                   view.showDialog();
-                               }
+        gitServiceClient.remoteList(project.getRootProject(), null, true,
+                                    new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
+                                        @Override
+                                        protected void onSuccess(Array<Remote> result) {
+                                            getBranches(LIST_REMOTE);
+                                            view.setRepositories(result);
+                                            view.setEnablePullButton(!result.isEmpty());
+                                            view.showDialog();
+                                        }
 
-                               @Override
-                               protected void onFailure(Throwable exception) {
-                                   String errorMessage =
-                                           exception.getMessage() != null ? exception.getMessage()
-                                                                          : constant.remoteListFailed();
-                                   Window.alert(errorMessage);
-                                   view.setEnablePullButton(false);
-                               }
-                           });
+                                        @Override
+                                        protected void onFailure(Throwable exception) {
+                                            String errorMessage =
+                                                    exception.getMessage() != null ? exception.getMessage()
+                                                                                   : constant.remoteListFailed();
+                                            Notification notification = new Notification(errorMessage, ERROR);
+                                            notificationManager.showNotification(notification);
+                                            view.setEnablePullButton(false);
+                                        }
+                                    }
+                                   );
     }
 
     /**
@@ -129,34 +136,35 @@ public class PullPresenter implements PullView.ActionDelegate {
      *         is a remote mode
      */
     private void getBranches(@Nonnull final String remoteMode) {
-        service.branchList(project.getRootProject(), remoteMode,
-                           new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
-                               @Override
-                               protected void onSuccess(Array<Branch> result) {
-                                   if (LIST_REMOTE.equals(remoteMode)) {
-                                       view.setRemoteBranches(getRemoteBranchesToDisplay(view.getRepositoryName(), result));
-                                       getBranches(LIST_LOCAL);
-                                   } else {
-                                       view.setLocalBranches(getLocalBranchesToDisplay(result));
-                                       for (Branch branch : result.asIterable()) {
-                                           if (branch.isActive()) {
-                                               view.selectRemoteBranch(branch.getDisplayName());
-                                               break;
-                                           }
-                                       }
-                                   }
-                               }
+        gitServiceClient.branchList(project.getRootProject(), remoteMode,
+                                    new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
+                                        @Override
+                                        protected void onSuccess(Array<Branch> result) {
+                                            if (LIST_REMOTE.equals(remoteMode)) {
+                                                view.setRemoteBranches(getRemoteBranchesToDisplay(view.getRepositoryName(), result));
+                                                getBranches(LIST_LOCAL);
+                                            } else {
+                                                view.setLocalBranches(getLocalBranchesToDisplay(result));
+                                                for (Branch branch : result.asIterable()) {
+                                                    if (branch.isActive()) {
+                                                        view.selectRemoteBranch(branch.getDisplayName());
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
 
-                               @Override
-                               protected void onFailure(Throwable exception) {
-                                   String errorMessage =
-                                           exception.getMessage() != null ? exception.getMessage()
-                                                                          : constant.branchesListFailed();
-                                   Notification notification = new Notification(errorMessage, ERROR);
-                                   notificationManager.showNotification(notification);
-                                   view.setEnablePullButton(false);
-                               }
-                           });
+                                        @Override
+                                        protected void onFailure(Throwable exception) {
+                                            String errorMessage =
+                                                    exception.getMessage() != null ? exception.getMessage()
+                                                                                   : constant.branchesListFailed();
+                                            Notification notification = new Notification(errorMessage, ERROR);
+                                            notificationManager.showNotification(notification);
+                                            view.setEnablePullButton(false);
+                                        }
+                                    }
+                                   );
     }
 
     /**
@@ -225,7 +233,7 @@ public class PullPresenter implements PullView.ActionDelegate {
             openedEditors.add(partPresenter);
         }
 
-        service.pull(project.getRootProject(), getRefs(), remoteName, new AsyncRequestCallback<Void>() {
+        gitServiceClient.pull(project.getRootProject(), getRefs(), remoteName, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void aVoid) {
                 Notification notification = new Notification(constant.pullSuccess(remoteUrl), INFO);
@@ -242,6 +250,7 @@ public class PullPresenter implements PullView.ActionDelegate {
             }
         });
     }
+
     /**
      * Refresh project.
      *
@@ -251,15 +260,38 @@ public class PullPresenter implements PullView.ActionDelegate {
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
         eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
-            updateOpenedFile(partPresenter);
+            final FileNode file = partPresenter.getEditorInput().getFile();
+            refreshFile(file, partPresenter);
         }
+    }
+
+    /**
+     * Refresh file.
+     *
+     * @param file
+     *         file to refresh
+     * @param partPresenter
+     *         editor that corresponds to the <code>file</code>.
+     */
+    private void refreshFile(final FileNode file, final EditorPartPresenter partPresenter) {
+        projectServiceClient.getFileContent(file.getPath(), new AsyncRequestCallback<String>() {
+            @Override
+            protected void onSuccess(String result) {
+                updateOpenedFile(partPresenter);
+            }
+
+            @Override
+            protected void onFailure(Throwable throwable) {
+                eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
+            }
+        });
     }
 
     /**
      * Update content of the file.
      *
      * @param partPresenter
-     *        editor that corresponds to the <code>file</code>.
+     *         editor that corresponds to the <code>file</code>.
      */
     private void updateOpenedFile(EditorPartPresenter partPresenter) {
         try {

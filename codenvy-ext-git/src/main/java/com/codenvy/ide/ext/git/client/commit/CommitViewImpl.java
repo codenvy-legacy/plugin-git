@@ -101,7 +101,7 @@ public class CommitViewImpl extends Window implements CommitView {
     /** {@inheritDoc} */
     @Override
     public void setMessage(@Nonnull String message) {
-        this.message.setText(message);
+        this.message.getElement().setInnerHTML(message);
     }
 
     /** {@inheritDoc} */

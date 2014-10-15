@@ -90,7 +90,7 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
     /** {@inheritDoc} */
     @Override
     public void setMessage(@Nonnull String message) {
-        this.message.setText(message);
+        this.message.getElement().setInnerHTML(message);
     }
 
     /** {@inheritDoc} */

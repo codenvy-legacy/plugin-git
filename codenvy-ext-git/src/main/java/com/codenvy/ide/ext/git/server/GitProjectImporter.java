@@ -28,6 +28,9 @@ import com.codenvy.vfs.impl.fs.LocalPathResolver;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +49,7 @@ public class GitProjectImporter implements ProjectImporter {
 
     private final GitConnectionFactory gitConnectionFactory;
     private final LocalPathResolver    localPathResolver;
+    private static final Logger LOG = LoggerFactory.getLogger(GitProjectImporter.class);
 
     @Inject
     public GitProjectImporter(GitConnectionFactory gitConnectionFactory, LocalPathResolver localPathResolver) {
@@ -81,7 +85,8 @@ public class GitProjectImporter implements ProjectImporter {
     }
 
     @Override
-    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters, LineConsumerFactory consumerFactory)
+    public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
+                              LineConsumerFactory consumerFactory)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
         try {
             // For factory: checkout particular commit after clone
@@ -90,7 +95,8 @@ public class GitProjectImporter implements ProjectImporter {
             String remoteOriginFetch = null;
             String branch = null;
             // For factory or probably for our projects templates:
-            // If git repository contains more than one project need clone all repository but after cloning keep just sub-project that is
+            // If git repository contains more than one project need clone all repository but after cloning keep just
+            // sub-project that is
             // specified in parameter "keepDirectory".
             String keepDirectory = null;
             // For factory and for our projects templates:
@@ -201,6 +207,7 @@ public class GitProjectImporter implements ProjectImporter {
         try {
             fetchRefSpecs(gitConnection, remote, refSpecs, dtoFactory);
         } catch (GitException e) {
+            LOG.warn("Git exception on branch fetch", e);
             throw new GitException(
                     String.format("Unable to fetch remote branch %s. Make sure it exists and can be accessed.", branch),
                     e);
@@ -219,6 +226,7 @@ public class GitProjectImporter implements ProjectImporter {
         try {
             git.branchCheckout(request);
         } catch (GitException e) {
+            LOG.warn("Git exception on commit checkout", e);
             throw new GitException(
                     String.format("Unable to checkout commit %s. Make sure it exists and can be accessed.", commit), e);
         }
@@ -229,6 +237,7 @@ public class GitProjectImporter implements ProjectImporter {
         try {
             git.branchCheckout(request);
         } catch (GitException e) {
+            LOG.warn("Git exception on branch checkout", e);
             throw new GitException(
                     String.format("Unable to checkout remote branch %s. Make sure it exists and can be accessed.",
                                   branch), e);

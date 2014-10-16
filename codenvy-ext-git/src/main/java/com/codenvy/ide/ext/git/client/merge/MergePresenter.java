@@ -13,11 +13,12 @@ package com.codenvy.ide.ext.git.client.merge;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.editor.EditorAgent;
-import com.codenvy.ide.api.editor.EditorInitException;
-import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.FileEvent;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
@@ -27,7 +28,6 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.MergeResult;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -47,22 +47,21 @@ import static com.codenvy.ide.ext.git.shared.MergeResult.MergeStatus.ALREADY_UP_
 /**
  * Presenter to perform merge reference with current HEAD commit.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class MergePresenter implements MergeView.ActionDelegate {
     public static final String LOCAL_BRANCHES_TITLE  = "Local Branches";
     public static final String REMOTE_BRANCHES_TITLE = "Remote Branches";
+    private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private       MergeView               view;
     private       GitServiceClient        service;
     private       EventBus                eventBus;
     private       GitLocalizationConstant constant;
-    private       String                  projectPath;
     private       EditorAgent             editorAgent;
-    private AppContext appContext;
+    private       AppContext              appContext;
     private       Reference               selectedReference;
     private       NotificationManager     notificationManager;
-    private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
 
     /**
      * Create presenter.
@@ -197,24 +196,10 @@ public class MergePresenter implements MergeView.ActionDelegate {
      *         editors that corresponds to open files
      */
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
+        eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
-            updateOpenedFile(partPresenter);
-        }
-    }
-
-    /**
-     * Update content of the file.
-     *
-     * @param partPresenter
-     *        editor that corresponds to the <code>file</code>.
-     */
-    private void updateOpenedFile(final EditorPartPresenter partPresenter) {
-        try {
-            EditorInput editorInput = partPresenter.getEditorInput();
-            partPresenter.init(editorInput);
-
-        } catch (EditorInitException event) {
-            Log.error(MergePresenter.class, "can not initializes the editor with the given input " + event);
+            final FileNode file = partPresenter.getEditorInput().getFile();
+            eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
         }
     }
 

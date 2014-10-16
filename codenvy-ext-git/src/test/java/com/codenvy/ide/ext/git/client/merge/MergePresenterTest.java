@@ -196,7 +196,6 @@ public class MergePresenterTest extends BaseTest {
         verify(service).merge(eq(rootProjectDescriptor), eq(DISPLAY_NAME), (AsyncRequestCallback<MergeResult>)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();
-        verify(partPresenter).init((EditorInput)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
     }
 

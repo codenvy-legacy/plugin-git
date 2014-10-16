@@ -14,8 +14,6 @@ import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
-import com.codenvy.ide.api.editor.EditorInitException;
-import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
@@ -31,7 +29,6 @@ import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.user.client.Window;
@@ -226,44 +223,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
             final FileNode file = partPresenter.getEditorInput().getFile();
-            refreshFile(file, partPresenter);
-        }
-    }
-
-    /**
-     * Refresh file.
-     *
-     * @param file
-     *         file to refresh
-     * @param partPresenter
-     *         editor that corresponds to the <code>file</code>.
-     */
-    private void refreshFile(final FileNode file, final EditorPartPresenter partPresenter) {
-        projectServiceClient.getFileContent(file.getPath(), new AsyncRequestCallback<String>() {
-            @Override
-            protected void onSuccess(String result) {
-                updateOpenedFile(partPresenter);
-            }
-
-            @Override
-            protected void onFailure(Throwable throwable) {
-                eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
-            }
-        });
-    }
-
-    /**
-     * Update content of the file.
-     *
-     * @param partPresenter
-     *         editor that corresponds to the <code>file</code>.
-     */
-    private void updateOpenedFile(EditorPartPresenter partPresenter) {
-        try {
-            EditorInput editorInput = partPresenter.getEditorInput();
-            partPresenter.init(editorInput);
-        } catch (EditorInitException event) {
-            Log.error(BranchPresenter.class, "can not initializes the editor with the given input " + event);
+            eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
         }
     }
 

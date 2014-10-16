@@ -11,11 +11,16 @@
 package com.codenvy.ide.ext.git.client.remove;
 
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.api.editor.EditorAgent;
+import com.codenvy.ide.api.editor.EditorInput;
+import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.api.selection.Selection;
+import com.codenvy.ide.collections.Collections;
+import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -48,12 +53,33 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     @Mock
     private RemoveFromIndexView      view;
     private RemoveFromIndexPresenter presenter;
+    @Mock
+    private EditorAgent              editorAgent;
+    @Mock
+    private EditorPartPresenter      partPresenter;
+    @Mock
+    private EditorInput              editorInput;
+    @Mock
+    private FileNode               file;
 
     @Override
     public void disarm() {
         super.disarm();
 
-        presenter = new RemoveFromIndexPresenter(view, service, constant, appContext, selectionAgent, notificationManager);
+        presenter = new RemoveFromIndexPresenter(view,
+                                                 eventBus,
+                                                 service,
+                                                 constant,
+                                                 appContext,
+                                                 selectionAgent,
+                                                 notificationManager,
+                                                 editorAgent);
+        StringMap<EditorPartPresenter> partPresenterMap = Collections.createStringMap();
+        partPresenterMap.put("partPresenter", partPresenter);
+
+        when(editorAgent.getOpenedEditors()).thenReturn(partPresenterMap);
+        when(partPresenter.getEditorInput()).thenReturn(editorInput);
+        when(editorInput.getFile()).thenReturn(file);
     }
 
     @Test

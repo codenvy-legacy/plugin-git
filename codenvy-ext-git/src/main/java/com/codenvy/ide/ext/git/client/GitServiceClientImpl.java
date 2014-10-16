@@ -18,8 +18,6 @@ import com.codenvy.ide.ext.git.client.add.AddRequestHandler;
 import com.codenvy.ide.ext.git.client.clone.CloneRequestStatusHandler;
 import com.codenvy.ide.ext.git.client.fetch.FetchRequestHandler;
 import com.codenvy.ide.ext.git.client.init.InitRequestStatusHandler;
-import com.codenvy.ide.ext.git.client.pull.PullRequestHandler;
-import com.codenvy.ide.ext.git.client.push.PushRequestHandler;
 import com.codenvy.ide.ext.git.shared.AddRequest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
@@ -221,18 +219,11 @@ public class GitServiceClientImpl implements GitServiceClient {
     /** {@inheritDoc} */
     @Override
     public void push(@Nonnull ProjectDescriptor project, @Nonnull List<String> refSpec, @Nonnull String remote,
-                     boolean force, @Nonnull RequestCallback<String> callback) throws WebSocketException {
+                     boolean force, @Nonnull AsyncRequestCallback<Void> callback) {
         PushRequest pushRequest =
                 dtoFactory.createDto(PushRequest.class).withRemote(remote).withRefSpec(refSpec).withForce(force);
-
-        callback.setStatusHandler(new PushRequestHandler(project.getName(), refSpec, eventBus, constant));
-        String url = gitServicePath + PUSH + "?projectPath=" + project.getPath();
-        MessageBuilder builder = new MessageBuilder(POST, url);
-        builder.data(dtoFactory.toJson(pushRequest))
-               .header(CONTENTTYPE, APPLICATION_JSON);
-        Message message = builder.build();
-
-        wsMessageBus.send(message, callback);
+        String url = baseHttpUrl + PUSH + "?projectPath=" + project.getPath();
+        asyncRequestFactory.createPostRequest(url, pushRequest).send(callback);
     }
 
     /** {@inheritDoc} */
@@ -380,15 +371,10 @@ public class GitServiceClientImpl implements GitServiceClient {
     /** {@inheritDoc} */
     @Override
     public void pull(@Nonnull ProjectDescriptor project, @Nonnull String refSpec, @Nonnull String remote,
-                     @Nonnull RequestCallback<String> callback) throws WebSocketException {
+                     @Nonnull AsyncRequestCallback<Void> callback) {
         PullRequest pullRequest = dtoFactory.createDto(PullRequest.class).withRemote(remote).withRefSpec(refSpec);
-        callback.setStatusHandler(new PullRequestHandler(project.getName(), refSpec, eventBus, constant));
-        String url = gitServicePath + PULL + "?projectPath=" + project.getPath();
-        MessageBuilder builder = new MessageBuilder(POST, url);
-        builder.data(dtoFactory.toJson(pullRequest))
-               .header(CONTENTTYPE, APPLICATION_JSON);
-        Message message = builder.build();
-        wsMessageBus.send(message, callback);
+        String url = baseHttpUrl + PULL + "?projectPath=" + project.getPath();
+        asyncRequestFactory.createPostRequest(url, pullRequest).send(callback);
     }
 
     /** {@inheritDoc} */

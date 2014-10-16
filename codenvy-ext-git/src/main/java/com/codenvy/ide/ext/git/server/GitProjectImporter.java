@@ -19,7 +19,9 @@ import com.codenvy.api.project.server.FolderEntry;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
+import com.codenvy.ide.ext.git.shared.BranchListRequest;
 import com.codenvy.ide.ext.git.shared.CloneRequest;
 import com.codenvy.ide.ext.git.shared.FetchRequest;
 import com.codenvy.ide.ext.git.shared.InitRequest;
@@ -157,8 +159,12 @@ public class GitProjectImporter implements ProjectImporter {
                             checkoutBranch(git, branch, dtoFactory);
                         }
                     } else {
-                        fetchBranch(git, "origin", branch == null ? "master" : branch, dtoFactory);
-                        checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
+
+                        List<Branch> branchList = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode("r"));
+                        if (!branchList.isEmpty()) {
+                            checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                        }
                     }
                 }
                 if (!keepVcs) {
@@ -169,8 +175,9 @@ public class GitProjectImporter implements ProjectImporter {
             }
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(
-                    "You are not authorized to perform the remote import. Codenvy may need accurate keys to the external system. You can " +
-                    "create a new key pair in Window->Preferences->SSH Keys.");
+                    "You are not authorized to perform the remote import. Codenvy may need accurate keys to the" +
+                            "external system. You can create a new SSH key pair in Window->Preferences->Keys And" +
+                            "Certificates->SSH Keystore.");
         } catch (URISyntaxException e) {
             throw new ServerException(
                     "Your project cannot be imported. The issue is either from git configuration, a malformed URL, " +

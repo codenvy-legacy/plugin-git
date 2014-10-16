@@ -14,6 +14,7 @@ import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.editor.EditorAgent;
 import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
+import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
@@ -23,7 +24,6 @@ import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -68,7 +68,7 @@ public class PullPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new PullPresenter(view, editorAgent, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new PullPresenter(view, editorAgent, service, projectServiceClient, eventBus, appContext, constant, notificationManager, dtoUnmarshallerFactory);
 
         StringMap<EditorPartPresenter> partPresenterMap = Collections.createStringMap();
         partPresenterMap.put("partPresenter", partPresenter);
@@ -264,12 +264,23 @@ public class PullPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, EMPTY_TEXT);
+                onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(service).pull((ProjectDescriptor)anyObject(), anyString(), anyString(), (RequestCallback<String>)anyObject());
+        }).when(service).pull((ProjectDescriptor)anyObject(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, "content");
+                return callback;
+            }
+        }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onPullClicked();
@@ -278,12 +289,15 @@ public class PullPresenterTest extends BaseTest {
         verify(view).getRepositoryUrl();
         verify(view).close();
         verify(editorAgent).getOpenedEditors();
-        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (AsyncRequestCallback)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).pullSuccess(eq(REMOTE_URI));
         verify(appContext).getCurrentProject();
-        verify(partPresenter).getEditorInput();
+        verify(eventBus).fireEvent((RefreshProjectTreeEvent)anyObject());
+        verify(partPresenter, times(2)).getEditorInput();
         verify(partPresenter).init((EditorInput)anyObject());
+        verify(file).getPath();
+        verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
     }
 
     @Test
@@ -293,18 +307,18 @@ public class PullPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, exception);
                 return callback;
             }
-        }).when(service).pull((ProjectDescriptor)anyObject(), anyString(), anyString(), (RequestCallback<String>)anyObject());
+        }).when(service).pull((ProjectDescriptor)anyObject(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
         when(exception.getMessage()).thenReturn("error Message");
 
         presenter.showDialog();
         presenter.onPullClicked();
 
-        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (AsyncRequestCallback<Void>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -318,22 +332,36 @@ public class PullPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[3];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, exception);
                 return callback;
             }
-        }).when(service).pull((ProjectDescriptor)anyObject(), anyString(), anyString(), (RequestCallback<String>)anyObject());
+        }).when(service).pull((ProjectDescriptor)anyObject(), anyString(), anyString(), (AsyncRequestCallback<Void>)anyObject());
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, "content");
+                return callback;
+            }
+        }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onPullClicked();
 
         verify(view).close();
-        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (RequestCallback<String>)anyObject());
+        verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (AsyncRequestCallback)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(appContext).getCurrentProject();
-        verify(partPresenter).getEditorInput();
+        verify(eventBus).fireEvent((RefreshProjectTreeEvent)anyObject());
+        verify(partPresenter, times(2)).getEditorInput();
         verify(partPresenter).init((EditorInput)anyObject());
+        verify(file).getPath();
+        verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
     }
 
     @Test

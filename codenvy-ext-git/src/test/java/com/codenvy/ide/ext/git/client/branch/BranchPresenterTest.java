@@ -292,10 +292,7 @@ public class BranchPresenterTest extends BaseTest {
                                        (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2)).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(appContext).getCurrentProject();
-        verify(partPresenter, times(2)).getEditorInput();
-        verify(file).getPath();
-        verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
-        verify(partPresenter).init((EditorInput)anyObject());
+        verify(partPresenter).getEditorInput();
         verify(notificationManager, never()).showNotification((Notification)anyObject());
         verify(constant, never()).branchCheckoutFailed();
     }
@@ -337,8 +334,6 @@ public class BranchPresenterTest extends BaseTest {
         verify(service, times(2)).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();
-        verify(file).getPath();
-        verify(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
         verify(eventBus, times(2)).fireEvent(Matchers.<Event<GwtEvent>>anyObject());
     }
 

@@ -16,6 +16,7 @@ import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.project.shared.dto.RunnerConfiguration;
 import com.codenvy.api.project.shared.dto.RunnersDescriptor;
+import com.codenvy.api.project.shared.dto.Source;
 import com.codenvy.api.runner.dto.ResourcesDescriptor;
 import com.codenvy.api.runner.gwt.client.RunnerServiceClient;
 import com.codenvy.api.user.shared.dto.UserDescriptor;
@@ -211,10 +212,10 @@ public class ImportPresenter implements ImportView.ActionDelegate {
         String importer = "git";
         final String projectName = view.getProjectName();
         view.close();
-        ImportSourceDescriptor importSourceDescriptor =
-                dtoFactory.createDto(ImportSourceDescriptor.class).withType(importer).withLocation(url);
-        importSourceDescriptor.getParameters().put("keepVcs", "true");
-        projectServiceClient.importProject(projectName, false, importSourceDescriptor, new AsyncRequestCallback<ProjectDescriptor>(
+        final Source source = dtoFactory.createDto(Source.class).withProject(
+                dtoFactory.createDto(ImportSourceDescriptor.class).withType(importer).withLocation(url));
+        source.getProject().getParameters().put("keepVcs", "true");
+        projectServiceClient.importProject(projectName, false, source, new AsyncRequestCallback<ProjectDescriptor>(
                 dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
             @Override
             protected void onSuccess(ProjectDescriptor result) {

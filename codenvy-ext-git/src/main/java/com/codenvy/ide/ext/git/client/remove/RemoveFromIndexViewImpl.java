@@ -90,7 +90,7 @@ public class RemoveFromIndexViewImpl extends Window implements RemoveFromIndexVi
     /** {@inheritDoc} */
     @Override
     public void setMessage(@Nonnull String message) {
-        this.message.setText(message);
+        this.message.getElement().setInnerHTML(message);
     }
 
     /** {@inheritDoc} */

@@ -255,7 +255,7 @@ public interface GitServiceClient {
      * @throws WebSocketException
      */
     void pull(@Nonnull ProjectDescriptor project, @Nonnull String refSpec, @Nonnull String remote,
-              @Nonnull RequestCallback<String> callback) throws WebSocketException;
+              @Nonnull AsyncRequestCallback<Void> callback);
 
     /**
      * Push changes from local repository to remote one (sends request over WebSocket).
@@ -274,7 +274,7 @@ public interface GitServiceClient {
      * @throws WebSocketException
      */
     void push(@Nonnull ProjectDescriptor project, @Nonnull List<String> refSpec, @Nonnull String remote, boolean force,
-              @Nonnull RequestCallback<String> callback) throws WebSocketException;
+              @Nonnull AsyncRequestCallback<Void> callback);
 
     /**
      * Clones one remote repository to local one (over WebSocket).

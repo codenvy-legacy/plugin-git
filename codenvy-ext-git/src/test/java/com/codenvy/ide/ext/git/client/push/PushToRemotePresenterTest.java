@@ -245,19 +245,19 @@ public class PushToRemotePresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[4];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[4];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, EMPTY_TEXT);
+                onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
         }).when(service).push((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyString(), anyBoolean(),
-                              (RequestCallback<String>)anyObject());
+                              (AsyncRequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onPushClicked();
 
         verify(service).push(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
-                             (RequestCallback<String>)anyObject());
+                             (AsyncRequestCallback<Void>)anyObject());
         verify(view).close();
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).pushSuccess(eq(REPOSITORY_NAME));
@@ -269,19 +269,19 @@ public class PushToRemotePresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                RequestCallback<String> callback = (RequestCallback<String>)arguments[4];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[4];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
         }).when(service).push((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyString(), anyBoolean(),
-                              (RequestCallback<String>)anyObject());
+                              (AsyncRequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onPushClicked();
 
         verify(service).push(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
-                             (RequestCallback<String>)anyObject());
+                             (AsyncRequestCallback<Void>)anyObject());
         verify(view).close();
         verify(constant).pushFail();
         verify(notificationManager).showNotification((Notification)anyObject());

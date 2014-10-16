@@ -47,7 +47,7 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 /**
  * Presenter pulling changes from remote repository.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class PullPresenter implements PullView.ActionDelegate {
@@ -261,44 +261,7 @@ public class PullPresenter implements PullView.ActionDelegate {
         eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
             final FileNode file = partPresenter.getEditorInput().getFile();
-            refreshFile(file, partPresenter);
-        }
-    }
-
-    /**
-     * Refresh file.
-     *
-     * @param file
-     *         file to refresh
-     * @param partPresenter
-     *         editor that corresponds to the <code>file</code>.
-     */
-    private void refreshFile(final FileNode file, final EditorPartPresenter partPresenter) {
-        projectServiceClient.getFileContent(file.getPath(), new AsyncRequestCallback<String>() {
-            @Override
-            protected void onSuccess(String result) {
-                updateOpenedFile(partPresenter);
-            }
-
-            @Override
-            protected void onFailure(Throwable throwable) {
-                eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
-            }
-        });
-    }
-
-    /**
-     * Update content of the file.
-     *
-     * @param partPresenter
-     *         editor that corresponds to the <code>file</code>.
-     */
-    private void updateOpenedFile(EditorPartPresenter partPresenter) {
-        try {
-            EditorInput editorInput = partPresenter.getEditorInput();
-            partPresenter.init(editorInput);
-        } catch (EditorInitException event) {
-            Log.error(PullPresenter.class, "can not initializes the editor with the given input " + event);
+            eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
         }
     }
 

@@ -21,8 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * NativeGit implementation for org.exoplatform.ide.git.shared.Status and
- * org.exoplatform.ide.git.server.InfoPage.
+ * NativeGit implementation {@link Status}
  *
  * @author Eugene Voevodin
  */
@@ -259,26 +258,27 @@ public class NativeGitStatusImpl implements Status, InfoPage {
             conflicting = new ArrayList<>();
             for (String statusLine : statusOutput) {
                 //add conflict files AA, UU, any of U
-                addFileIfAccepted(conflicting, statusLine, 'A', 'A');
-                addFileIfAccepted(conflicting, statusLine, 'U', '*');
-                addFileIfAccepted(conflicting, statusLine, '*', 'U');
+                addIfMatches(conflicting, statusLine, 'A', 'A');
+                addIfMatches(conflicting, statusLine, 'U', '*');
+                addIfMatches(conflicting, statusLine, '*', 'U');
                 //add Added files
-                addFileIfAccepted(added, statusLine, 'A', 'M');
-                addFileIfAccepted(added, statusLine, 'A', ' ');
+                addIfMatches(added, statusLine, 'A', 'M');
+                addIfMatches(added, statusLine, 'A', ' ');
                 //add Changed
-                addFileIfAccepted(changed, statusLine, 'M', '*');
+                addIfMatches(changed, statusLine, 'M', '*');
                 //add removed
-                addFileIfAccepted(removed, statusLine, 'D', '*');
+                addIfMatches(removed, statusLine, 'D', '*');
+                addIfMatches(removed, statusLine, ' ', 'D');
                 //add missing
-                addFileIfAccepted(missing, statusLine, 'A', 'D');
+                addIfMatches(missing, statusLine, 'A', 'D');
                 //add modified
-                addFileIfAccepted(modified, statusLine, '*', 'M');
+                addIfMatches(modified, statusLine, '*', 'M');
                 if (statusLine.endsWith("/")) {
                     //add untracked folders
-                    addFileIfAccepted(untrackedFolders, statusLine.substring(0, statusLine.length() - 1), '?', '?');
+                    addIfMatches(untrackedFolders, statusLine.substring(0, statusLine.length() - 1), '?', '?');
                 } else {
                     //add untracked Files
-                    addFileIfAccepted(untracked, statusLine, '?', '?');
+                    addIfMatches(untracked, statusLine, '?', '?');
                 }
             }
         }
@@ -287,20 +287,27 @@ public class NativeGitStatusImpl implements Status, InfoPage {
     /**
      * Adds files to container if they matched to template.
      *
-     * @param statusFiles
-     *         container for accepted files
+     * @param container
+     *         container for matched files
      * @param statusLine
      *         short status command line
-     * @param X
+     * @param x
      *         first template parameter
-     * @param Y
+     * @param y
      *         second template parameter
      */
-    private void addFileIfAccepted(List<String> statusFiles, String statusLine, char X, char Y) {
-        if (X == '*' && statusLine.charAt(1) == Y
-            || Y == '*' && statusLine.charAt(0) == X
-            || statusLine.charAt(0) == X && statusLine.charAt(1) == Y) {
-            statusFiles.add(statusLine.substring(3));
+    private void addIfMatches(List<String> container, String statusLine, char x, char y) {
+        if (matches(statusLine, x, y)) {
+            final String filename = statusLine.substring(3);
+            if (!container.contains(filename)) {
+                container.add(filename);
+            }
         }
+    }
+
+    private boolean matches(String statusLine, char x, char y) {
+        return x == '*' && statusLine.charAt(1) == y ||
+               y == '*' && statusLine.charAt(0) == x ||
+               x == statusLine.charAt(0) && y == statusLine.charAt(1);
     }
 }

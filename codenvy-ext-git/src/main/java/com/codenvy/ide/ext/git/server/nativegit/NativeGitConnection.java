@@ -92,6 +92,7 @@ public class NativeGitConnection implements GitConnection {
     private static final Pattern authErrorPattern =
             Pattern.compile(
                     ".*fatal: could not read (Username|Password) for '.*': No such device or address.*|" +
+                    ".*fatal: could not read (Username|Password) for '.*': Input/output error.*|" +
                     ".*fatal: Authentication failed for '.*'.*|.*fatal: Could not read from remote repository\\.\\n\\nPlease make sure " +
                     "you have the correct access rights\\nand the repository exists\\.\\n.*",
                     Pattern.MULTILINE);

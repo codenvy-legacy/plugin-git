@@ -30,6 +30,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -59,13 +60,27 @@ public class CommitPresenterTest extends BaseTest {
 
     @Test
     public void testShowDialog() throws Exception {
+        when(view.getMessage()).thenReturn(EMPTY_TEXT);
         presenter.showDialog();
 
         verify(view).setAmend(eq(!IS_OVERWRITTEN));
         verify(view).setAllFilesInclude(eq(!ALL_FILE_INCLUDES));
-        verify(view).setMessage(EMPTY_TEXT);
         verify(view).focusInMessageField();
         verify(view).setEnableCommitButton(eq(DISABLE_BUTTON));
+        verify(view).getMessage();
+        verify(view).showDialog();
+    }
+
+    @Test
+    public void testShowDialogWithExistingMessage() throws Exception {
+        when(view.getMessage()).thenReturn("foo");
+        presenter.showDialog();
+
+        verify(view).setAmend(eq(!IS_OVERWRITTEN));
+        verify(view).setAllFilesInclude(eq(!ALL_FILE_INCLUDES));
+        verify(view).focusInMessageField();
+        verify(view).setEnableCommitButton(eq(ENABLE_BUTTON));
+        verify(view).getMessage();
         verify(view).showDialog();
     }
 
@@ -89,10 +104,11 @@ public class CommitPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onCommitClicked();
 
-        verify(view).getMessage();
+        verify(view, times(2)).getMessage();
         verify(view).isAllFilesInclued();
         verify(view).isAmend();
         verify(view).close();
+        verify(view).setMessage(eq(EMPTY_TEXT));
 
         verify(service).commit(eq(rootProjectDescriptor), eq(COMMIT_TEXT), eq(ALL_FILE_INCLUDES), eq(IS_OVERWRITTEN),
                                (AsyncRequestCallback<Revision>)anyObject());
@@ -119,10 +135,11 @@ public class CommitPresenterTest extends BaseTest {
         presenter.showDialog();
         presenter.onCommitClicked();
 
-        verify(view).getMessage();
+        verify(view, times(2)).getMessage();
         verify(view).isAllFilesInclued();
         verify(view).isAmend();
         verify(view).close();
+        verify(view, times(0)).setMessage(anyString());
 
         verify(service).commit(eq(rootProjectDescriptor), eq(COMMIT_TEXT), eq(ALL_FILE_INCLUDES), eq(IS_OVERWRITTEN),
                                (AsyncRequestCallback<Revision>)anyObject());

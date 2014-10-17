@@ -58,12 +58,12 @@ public class CommitViewImpl extends Window implements CommitView {
     /**
      * Create view.
      *
-     * @param resources
+     * @param res
      * @param locale
      */
     @Inject
-    protected CommitViewImpl(GitResources resources, GitLocalizationConstant locale) {
-        this.res = resources;
+    protected CommitViewImpl(GitResources res, GitLocalizationConstant locale) {
+        this.res = res;
         this.locale = locale;
         this.ensureDebugId("git-commit-window");
 
@@ -79,8 +79,6 @@ public class CommitViewImpl extends Window implements CommitView {
                 delegate.onCancelClicked();
             }
         });
-        getFooter().add(btnCancel);
-
         btnCommit = createButton(locale.buttonCommit(), "git-commit-commit", new ClickHandler() {
 
             @Override
@@ -88,7 +86,10 @@ public class CommitViewImpl extends Window implements CommitView {
                 delegate.onCommitClicked();
             }
         });
+        btnCommit.addStyleName(resources.centerPanelCss().blueButton());
+
         getFooter().add(btnCommit);
+        getFooter().add(btnCancel);
     }
 
     /** {@inheritDoc} */
@@ -101,7 +102,7 @@ public class CommitViewImpl extends Window implements CommitView {
     /** {@inheritDoc} */
     @Override
     public void setMessage(@Nonnull String message) {
-        this.message.getElement().setInnerHTML(message);
+        this.message.setText(message);
     }
 
     /** {@inheritDoc} */

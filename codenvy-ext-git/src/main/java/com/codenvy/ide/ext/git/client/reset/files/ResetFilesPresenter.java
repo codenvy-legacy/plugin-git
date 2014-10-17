@@ -24,6 +24,7 @@ import com.codenvy.ide.ext.git.shared.ResetRequest.ResetType;
 import com.codenvy.ide.ext.git.shared.Status;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.ui.dialogs.info.Info;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -87,7 +88,7 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
                            @Override
                            protected void onSuccess(Status result) {
                                if (result.isClean()) {
-                                   Window.alert(constant.indexIsEmpty());
+                                   new Info(constant.indexIsEmpty()).show();
                                    return;
                                }
 

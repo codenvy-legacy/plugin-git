@@ -72,9 +72,8 @@ public class CommitPresenter implements CommitView.ActionDelegate {
     public void showDialog() {
         view.setAmend(false);
         view.setAllFilesInclude(false);
-        view.setMessage("");
         view.focusInMessageField();
-        view.setEnableCommitButton(false);
+        view.setEnableCommitButton(!view.getMessage().isEmpty());
         view.showDialog();
     }
 
@@ -123,6 +122,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
 
         Notification notification = new Notification(message, INFO);
         notificationManager.showNotification(notification);
+        view.setMessage("");
     }
 
     /**

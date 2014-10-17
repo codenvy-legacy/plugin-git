@@ -15,8 +15,6 @@ import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
 import com.codenvy.ide.api.projectimporter.ProjectImporter;
 import com.codenvy.ide.ext.github.client.GitHubClientService;
 import com.codenvy.ide.ext.github.client.GitHubClientServiceImpl;
-import com.codenvy.ide.ext.github.client.load.ImportView;
-import com.codenvy.ide.ext.github.client.load.ImportViewImpl;
 import com.codenvy.ide.ext.github.client.projectimporter.importerpage.GithubImporterPagePresenter;
 import com.codenvy.ide.ext.github.client.projectimporter.GithubProjectImporter;
 import com.google.gwt.inject.client.AbstractGinModule;
@@ -30,7 +28,6 @@ public class GitHubGinModule extends AbstractGinModule {
     @Override
     protected void configure() {
         bind(GitHubClientService.class).to(GitHubClientServiceImpl.class).in(Singleton.class);
-        bind(ImportView.class).to(ImportViewImpl.class).in(Singleton.class);
 
         GinMultibinder<ProjectImporter> projectImporterMultibinder = GinMultibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GithubProjectImporter.class);

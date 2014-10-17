@@ -29,6 +29,8 @@ import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
+import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.gwt.user.client.Window;
@@ -250,26 +252,31 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onCreateClicked() {
-        String name = Window.prompt(constant.branchTypeNew(), "");
-        if (!name.isEmpty()) {
+        new AskValueDialog(constant.branchCreateNew(), constant.branchTypeNew(), "", new AskValueCallback() {
+            @Override
+            public void onOk(String name) {
+                if (!name.isEmpty()) {
+                    service.branchCreate(project.getRootProject(), name, null,
+                                         new AsyncRequestCallback<Branch>(dtoUnmarshallerFactory.newUnmarshaller(Branch.class)) {
+                                             @Override
+                                             protected void onSuccess(Branch result) {
+                                                 getBranches();
+                                             }
 
-            service.branchCreate(project.getRootProject(), name, null,
-                                 new AsyncRequestCallback<Branch>(dtoUnmarshallerFactory.newUnmarshaller(Branch.class)) {
-                                     @Override
-                                     protected void onSuccess(Branch result) {
-                                         getBranches();
-                                     }
+                                             @Override
+                                             protected void onFailure(Throwable exception) {
+                                                 final String errorMessage = (exception.getMessage() != null) ? exception.getMessage()
+                                                                                                              : constant
+                                                                                     .branchCreateFailed();
+                                                 Notification notification = new Notification(errorMessage, ERROR);
+                                                 notificationManager.showNotification(notification);
+                                             }
+                                         }
+                                        );
+                }
+            }
+        }).show();
 
-                                     @Override
-                                     protected void onFailure(Throwable exception) {
-                                         final String errorMessage = (exception.getMessage() != null) ? exception.getMessage()
-                                                                                                      : constant.branchCreateFailed();
-                                         Notification notification = new Notification(errorMessage, ERROR);
-                                         notificationManager.showNotification(notification);
-                                     }
-                                 }
-                                );
-        }
     }
 
     /** {@inheritDoc} */

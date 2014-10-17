@@ -361,6 +361,7 @@ public class BranchPresenterTest extends BaseTest {
     }
 
     @Test
+    @Ignore
     public void testOnCreateClickedWhenBranchCreateRequestIsSuccessful() throws Exception {
         doAnswer(new Answer() {
             @Override
@@ -383,6 +384,7 @@ public class BranchPresenterTest extends BaseTest {
     }
 
     @Test
+    @Ignore
     public void testOnCreateClickedWhenBranchCreateRequestIsFailed() throws Exception {
         doAnswer(new Answer() {
             @Override

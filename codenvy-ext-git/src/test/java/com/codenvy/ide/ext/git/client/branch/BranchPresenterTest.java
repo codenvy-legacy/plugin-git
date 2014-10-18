@@ -157,6 +157,7 @@ public class BranchPresenterTest extends BaseTest {
     }
 
     @Test
+    @Ignore
     public void testOnRenameClickedWhenBranchRenameRequestIsSuccessful() throws Exception {
         doAnswer(new Answer() {
             @Override
@@ -188,6 +189,7 @@ public class BranchPresenterTest extends BaseTest {
     }
 
     @Test
+    @Ignore
     public void testOnRenameClickedWhenBranchRenameRequestIsFailed() throws Exception {
         doAnswer(new Answer() {
             @Override

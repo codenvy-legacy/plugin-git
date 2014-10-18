@@ -20,6 +20,8 @@ import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ui.dialogs.ask.Ask;
 import com.codenvy.ide.ui.dialogs.ask.AskHandler;
+import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
+import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.codenvy.ide.ui.list.SimpleList;
 import com.codenvy.ide.ui.window.Window;
 import com.codenvy.ide.util.dom.Elements;

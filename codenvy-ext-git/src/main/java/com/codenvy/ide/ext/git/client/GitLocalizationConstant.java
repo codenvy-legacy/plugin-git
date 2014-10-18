@@ -328,8 +328,17 @@ public interface GitLocalizationConstant extends Messages {
     @Key("view.branch.ceate_new")
     String branchCreateNew();
 
+    @Key("view.branch.title_new")
+    String branchTitleNew();
+
     @Key("view.branch.type_new")
     String branchTypeNew();
+
+    @Key("view.branch.title_rename")
+    String branchTitleRename();
+
+    @Key("view.branch.type_rename")
+    String branchTypeRename();
 
     @Key("view.branch.delete")
     String branchDelete();

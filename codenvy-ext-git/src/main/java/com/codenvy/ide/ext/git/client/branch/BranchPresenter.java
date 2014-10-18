@@ -121,24 +121,27 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     @Override
     public void onRenameClicked() {
         final String currentBranchName = selectedBranch.getDisplayName();
-        String name = Window.prompt(constant.branchTypeNew(), currentBranchName);
-        if (!name.isEmpty()) {
-            service.branchRename(project.getRootProject(), currentBranchName, name, new AsyncRequestCallback<String>() {
-                @Override
-                protected void onSuccess(String result) {
-                    getBranches();
-                }
+        new AskValueDialog(constant.branchTitleRename(), constant.branchTypeRename(), currentBranchName, new AskValueCallback() {
+            @Override
+            public void onOk(String name) {
+                service.branchRename(project.getRootProject(), currentBranchName, name, new AsyncRequestCallback<String>() {
+                    @Override
+                    protected void onSuccess(String result) {
+                        getBranches();
+                    }
 
-                @Override
-                protected void onFailure(Throwable exception) {
-                    String errorMessage =
-                            (exception.getMessage() != null) ? exception.getMessage()
-                                                             : constant.branchRenameFailed();
-                    Notification notification = new Notification(errorMessage, ERROR);
-                    notificationManager.showNotification(notification);
-                }
-            });
+                    @Override
+                    protected void onFailure(Throwable exception) {
+                        String errorMessage =
+                                (exception.getMessage() != null) ? exception.getMessage()
+                                                                 : constant.branchRenameFailed();
+                        Notification notification = new Notification(errorMessage, ERROR);
+                        notificationManager.showNotification(notification);
+                    }
+                });
+            }
         }
+        ).show();
     }
 
     /** {@inheritDoc} */

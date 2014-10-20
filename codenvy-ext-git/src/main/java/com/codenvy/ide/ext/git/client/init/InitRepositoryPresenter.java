@@ -21,7 +21,6 @@ import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.Unmarshallable;
-import com.codenvy.ide.util.loging.Log;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
@@ -35,11 +34,11 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 /**
  * Presenter for Git command Init Repository.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
+ * @author Roman Nikitenko
  */
 @Singleton
-public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegate {
-    private InitRepositoryView      view;
+public class InitRepositoryPresenter {
     private ProjectServiceClient    projectServiceClient;
     private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private GitServiceClient        service;
@@ -50,42 +49,28 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
     /**
      * Create presenter.
      *
-     * @param view
      * @param service
      * @param appContext
      * @param constant
      * @param notificationManager
      */
     @Inject
-    public InitRepositoryPresenter(InitRepositoryView view,
-                                   GitServiceClient service,
+    public InitRepositoryPresenter(GitServiceClient service,
                                    AppContext appContext,
                                    GitLocalizationConstant constant,
                                    NotificationManager notificationManager,
                                    ProjectServiceClient projectServiceClient,
                                    DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        this.view = view;
         this.projectServiceClient = projectServiceClient;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
     }
 
-    /** Show dialog. */
-    public void showDialog() {
-        view.setWorkDir(appContext.getCurrentProject().getRootProject().getPath());
-        view.setEnableOkButton(true);
-        view.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onOkClicked() {
+    public void initRepository() {
         final CurrentProject currentProject = appContext.getCurrentProject();
-        view.close();
         try {
             service.init(currentProject.getRootProject(), false, new RequestCallback<Void>() {
                 @Override
@@ -93,20 +78,7 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
                     Notification notification = new Notification(constant.initSuccess(), INFO);
                     notificationManager.showNotification(notification);
 
-                    // update 'vcs.provider.name' attribute value
-                    Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-                    projectServiceClient.getProject(currentProject.getRootProject().getPath(),
-                                                    new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
-                                                        @Override
-                                                        protected void onSuccess(ProjectDescriptor projectDescriptor) {
-                                                            currentProject.setRootProject(projectDescriptor);
-                                                        }
-
-                                                        @Override
-                                                        protected void onFailure(Throwable throwable) {
-                                                            Log.error(InitRepositoryPresenter.class, throwable);
-                                                        }
-                                                    });
+                    getProject();
                 }
 
                 @Override
@@ -119,6 +91,27 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
         }
     }
 
+    private void getProject() {
+        // update 'vcs.provider.name' attribute value
+        final CurrentProject currentProject = appContext.getCurrentProject();
+        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
+        projectServiceClient.getProject(currentProject.getRootProject().getPath(),
+                                        new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
+                                            @Override
+                                            protected void onSuccess(ProjectDescriptor projectDescriptor) {
+                                                currentProject.setRootProject(projectDescriptor);
+                                            }
+
+                                            @Override
+                                            protected void onFailure(Throwable throwable) {
+                                                Notification notification = new Notification(throwable.getMessage(), ERROR);
+                                                notificationManager.showNotification(notification);
+                                            }
+                                        }
+                                       );
+
+    }
+
     /**
      * Handler some action whether some exception happened.
      *
@@ -129,18 +122,5 @@ public class InitRepositoryPresenter implements InitRepositoryView.ActionDelegat
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.initFailed();
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onCancelClicked() {
-        view.close();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void onValueChanged() {
-        String workDir = view.getWorkDir();
-        view.setEnableOkButton(!workDir.isEmpty());
     }
 }

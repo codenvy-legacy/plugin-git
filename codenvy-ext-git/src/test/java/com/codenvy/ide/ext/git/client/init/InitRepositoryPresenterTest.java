@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.client.init;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
@@ -24,43 +25,40 @@ import org.mockito.stubbing.Answer;
 import java.lang.reflect.Method;
 
 import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Testing {@link InitRepositoryPresenter} functionality.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Roman Nikitenko
  */
 public class InitRepositoryPresenterTest extends BaseTest {
     public static final boolean BARE = false;
     @Mock
-    private InitRepositoryView      view;
     private InitRepositoryPresenter presenter;
 
     @Override
     public void disarm() {
         super.disarm();
 
-        presenter = new InitRepositoryPresenter(view, service, appContext, constant, notificationManager, projectServiceClient,
+        presenter = new InitRepositoryPresenter(service,
+                                                appContext,
+                                                constant,
+                                                notificationManager,
+                                                projectServiceClient,
                                                 dtoUnmarshallerFactory);
     }
 
     @Test
-    public void testShowDialog() throws Exception {
-        presenter.showDialog();
-
-        verify(view).setWorkDir(eq(PROJECT_PATH));
-        verify(view).setEnableOkButton(eq(ENABLE_BUTTON));
-        verify(view).showDialog();
-    }
-
-    @Test
-    public void testOnOkClickedInitWSRequestIsSuccessful() throws Exception {
+    public void testOnOkClickedInitWSRequestAndGetProjectIsSuccessful() throws Exception {
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -72,13 +70,24 @@ public class InitRepositoryPresenterTest extends BaseTest {
             }
         }).when(service).init((ProjectDescriptor)anyObject(), anyBoolean(), (RequestCallback<Void>)anyObject());
 
-        presenter.showDialog();
-        presenter.onOkClicked();
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<ProjectDescriptor> callback = (AsyncRequestCallback<ProjectDescriptor>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, projectDescriptor);
+                return callback;
+            }
+        }).when(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
 
-        verify(view).close();
+        presenter.initRepository();
+
         verify(service).init(eq(rootProjectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
+        verify(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
         verify(constant).initSuccess();
         verify(notificationManager).showNotification((Notification)anyObject());
+        verify(currentProject).setRootProject(eq(projectDescriptor));
     }
 
     @Test
@@ -94,40 +103,43 @@ public class InitRepositoryPresenterTest extends BaseTest {
             }
         }).when(service).init((ProjectDescriptor)anyObject(), anyBoolean(), (RequestCallback<Void>)anyObject());
 
-        presenter.showDialog();
-        presenter.onOkClicked();
+        presenter.initRepository();
 
-        verify(view).close();
         verify(service).init(eq(rootProjectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).initFailed();
     }
 
     @Test
-    public void testOnCancelClicked() throws Exception {
-        presenter.onCancelClicked();
+    public void testOnOkClickedInitWSRequestIsSuccessfulButGetProjectIsFailed() throws Exception {
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[2];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, (Void)null);
+                return callback;
+            }
+        }).when(service).init((ProjectDescriptor)anyObject(), anyBoolean(), (RequestCallback<Void>)anyObject());
 
-        verify(view).close();
-    }
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<ProjectDescriptor> callback = (AsyncRequestCallback<ProjectDescriptor>)arguments[1];
+                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
+                onFailure.invoke(callback, mock(Throwable.class));
+                return callback;
+            }
+        }).when(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
 
-    @Test
-    public void testOnValueChangedEnableButton() throws Exception {
-        String workDir = "workDir";
-        when(view.getWorkDir()).thenReturn(workDir);
+        presenter.initRepository();
 
-        presenter.onValueChanged();
-
-        verify(view).getWorkDir();
-        verify(view).setEnableOkButton(eq(ENABLE_BUTTON));
-    }
-
-    @Test
-    public void testOnValueChangedDisableButton() throws Exception {
-        when(view.getWorkDir()).thenReturn(EMPTY_TEXT);
-
-        presenter.onValueChanged();
-
-        verify(view).getWorkDir();
-        verify(view).setEnableOkButton(eq(DISABLE_BUTTON));
+        verify(service).init(eq(rootProjectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
+        verify(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
+        verify(constant).initSuccess();
+        verify(notificationManager, times(2)).showNotification((Notification)anyObject());
+        verify(currentProject, never()).setRootProject(eq(projectDescriptor));
     }
 }

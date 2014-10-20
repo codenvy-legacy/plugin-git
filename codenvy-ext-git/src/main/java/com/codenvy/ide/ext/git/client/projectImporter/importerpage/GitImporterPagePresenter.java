@@ -17,6 +17,7 @@ import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.Wizard;
 import com.codenvy.ide.api.wizard.WizardContext;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;

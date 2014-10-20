@@ -91,7 +91,7 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
         this.setWidget(widget);
 
         prepareRadioButtons();
-        
+
         btnCancel = createButton(locale.buttonCancel(), "git-reset-cancel", new ClickHandler() {
 
             @Override
@@ -271,6 +271,15 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
     @Override
     public void setEnableResetButton(boolean enabled) {
         btnReset.setEnabled(enabled);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void clearSelection() {
+        final SingleSelectionModel<Revision> selectionModel = (SingleSelectionModel<Revision>)commits.getSelectionModel();
+        if (selectionModel != null) {
+            selectionModel.clear();
+        }
     }
 
     /** {@inheritDoc} */

@@ -33,7 +33,6 @@ import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
 import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
-import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;

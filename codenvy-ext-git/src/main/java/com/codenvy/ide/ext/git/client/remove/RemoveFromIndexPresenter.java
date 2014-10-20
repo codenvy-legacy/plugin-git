@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.remove;
 
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;

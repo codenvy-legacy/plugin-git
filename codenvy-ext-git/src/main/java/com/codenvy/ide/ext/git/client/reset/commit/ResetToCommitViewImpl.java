@@ -17,6 +17,7 @@ import com.codenvy.ide.ui.window.Window;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.i18n.client.DateTimeFormat;
@@ -26,7 +27,6 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.cellview.client.CellTable;
 import com.google.gwt.user.cellview.client.Column;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.ui.*;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
@@ -131,7 +131,7 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
     private void addDescription(RadioButton radioItem, String description) {
         Element descElement = DOM.createSpan();
         descElement.setInnerText(description);
-        DOM.setStyleAttribute(descElement, "color", "#555");
+        descElement.getStyle().setColor("#888");
         radioItem.getElement().appendChild(descElement);
     }
 

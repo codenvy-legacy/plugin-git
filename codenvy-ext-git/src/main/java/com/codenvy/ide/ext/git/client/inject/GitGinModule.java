@@ -27,8 +27,6 @@ import com.codenvy.ide.ext.git.client.fetch.FetchView;
 import com.codenvy.ide.ext.git.client.fetch.FetchViewImpl;
 import com.codenvy.ide.ext.git.client.history.HistoryView;
 import com.codenvy.ide.ext.git.client.history.HistoryViewImpl;
-import com.codenvy.ide.ext.git.client.init.InitRepositoryView;
-import com.codenvy.ide.ext.git.client.init.InitRepositoryViewImpl;
 import com.codenvy.ide.ext.git.client.merge.MergeView;
 import com.codenvy.ide.ext.git.client.merge.MergeViewImpl;
 import com.codenvy.ide.ext.git.client.projectImporter.importerpage.GitImporterPagePresenter;
@@ -67,7 +65,6 @@ public class GitGinModule extends AbstractGinModule {
         GinMultibinder<ImporterPagePresenter> importerPageMultibinder = GinMultibinder.newSetBinder(binder(), ImporterPagePresenter.class);
         importerPageMultibinder.addBinding().to(GitImporterPagePresenter.class);
 
-        bind(InitRepositoryView.class).to(InitRepositoryViewImpl.class).in(Singleton.class);
         bind(AddToIndexView.class).to(AddToIndexViewImpl.class).in(Singleton.class);
         bind(ResetToCommitView.class).to(ResetToCommitViewImpl.class).in(Singleton.class);
         bind(RemoveFromIndexView.class).to(RemoveFromIndexViewImpl.class).in(Singleton.class);

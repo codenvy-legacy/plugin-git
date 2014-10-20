@@ -140,6 +140,9 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.init_success")
     String initSuccess();
 
+    @Key("messages.initRepoQuestion")
+    String messagesInitRepoQuestion(String name);
+
     @Key("messages.init_failed")
     String initFailed();
 

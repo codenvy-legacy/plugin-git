@@ -82,6 +82,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
                         @Override
                         protected void onSuccess(LogResponse result) {
                             selectedRevision = null;
+                            view.clearSelection();
                             view.setRevisions(result.getCommits());
                             view.setMixMode(true);
                             view.setEnableResetButton(false);

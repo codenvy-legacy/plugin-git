@@ -17,6 +17,8 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.init.InitRepositoryPresenter;
+import com.codenvy.ide.ui.dialogs.ask.Ask;
+import com.codenvy.ide.ui.dialogs.ask.AskHandler;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -25,6 +27,7 @@ import com.google.inject.Singleton;
 public class InitRepositoryAction extends GitAction {
     private final InitRepositoryPresenter presenter;
     private final AnalyticsEventLogger    eventLogger;
+    private       GitLocalizationConstant constant;
 
     @Inject
     public InitRepositoryAction(InitRepositoryPresenter presenter,
@@ -36,13 +39,21 @@ public class InitRepositoryAction extends GitAction {
         super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
+        this.constant = constant;
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        presenter.showDialog();
+
+        String name = appContext.getCurrentProject().getRootProject().getName();
+        new Ask(constant.createTitle(), constant.messagesInitRepoQuestion(name), new AskHandler() {
+            @Override
+            public void onOk() {
+                presenter.initRepository();
+            }
+        }).show();
     }
 
     /** {@inheritDoc} */

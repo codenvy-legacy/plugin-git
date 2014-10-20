@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.git.client.projectImporter;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
+import com.codenvy.api.project.shared.dto.ImportProject;
 import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.api.project.shared.dto.Source;
@@ -50,9 +51,11 @@ public class GitProjectImporter implements ProjectImporter {
 
     @Override
     public void importSources(String url, String projectName, final ProjectImporter.ImportCallback callback) {
-        final Source source = dtoFactory.createDto(Source.class)
-                                  .withProject(dtoFactory.createDto(ImportSourceDescriptor.class).withType(getId()).withLocation(url));
-        projectService.importProject(projectName, false, source, new AsyncRequestCallback<ProjectDescriptor>(
+        final ImportProject importProject = dtoFactory.createDto(ImportProject.class)
+                                                      .withSource(dtoFactory.createDto(Source.class)
+                                                                             .withProject(dtoFactory.createDto(ImportSourceDescriptor.class)
+                                                                             .withType(getId()).withLocation(url)));
+        projectService.importProject(projectName, false, importProject, new AsyncRequestCallback<ProjectDescriptor>(
                                              dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class)) {
                                          @Override
                                          protected void onSuccess(ProjectDescriptor result) {

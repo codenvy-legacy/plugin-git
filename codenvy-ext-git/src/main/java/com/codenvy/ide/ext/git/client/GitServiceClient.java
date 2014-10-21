@@ -196,13 +196,15 @@ public interface GitServiceClient {
      *
      * @param project
      *         project (root of GIT repository)
-     * @param files
-     *         files to remove
+     * @param item
+     *         item to remove
      * @param cached
      *         is for removal only from index
+     * @param recursively
+     *         is for removal recursively
      * @param callback
      */
-    void remove(@Nonnull ProjectDescriptor project, List<String> files, boolean cached,
+    void remove(@Nonnull ProjectDescriptor project, String item, boolean cached, boolean recursively,
                 @Nonnull AsyncRequestCallback<String> callback);
 
     /**

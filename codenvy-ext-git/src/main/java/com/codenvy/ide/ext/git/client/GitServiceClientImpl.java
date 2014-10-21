@@ -303,9 +303,9 @@ public class GitServiceClientImpl implements GitServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void remove(@Nonnull ProjectDescriptor project, List<String> files, boolean cached,
+    public void remove(@Nonnull ProjectDescriptor project, String item, boolean cached, boolean recursively,
                        @Nonnull AsyncRequestCallback<String> callback) {
-        RmRequest rmRequest = dtoFactory.createDto(RmRequest.class).withFiles(files).withCached(cached);
+        RmRequest rmRequest = dtoFactory.createDto(RmRequest.class).withItem(item).withCached(cached).withRecursively(recursively);
         String url = baseHttpUrl + REMOVE + "?projectPath=" + project.getPath();
         asyncRequestFactory.createPostRequest(url, rmRequest).loader(loader).send(callback);
     }

@@ -31,7 +31,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Method;
-import java.util.List;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -136,25 +135,65 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
     }
 
     @Test
-    public void testOnRemoveClickedWhenRemoveRequestIsSuccessful() throws Exception {
+    public void testOnRemoveClickedWhenFileSelectedAndRemoveRequestIsSuccessful() throws Exception {
+        String filePath = PROJECT_PATH + PROJECT_NAME;
+        Selection selection = mock(Selection.class);
+        FileNode file = mock(FileNode.class);
+        when(file.getPath()).thenReturn(filePath);
+        when(selection.getFirstElement()).thenReturn(file);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+        when(constant.removeFromIndexFile(anyString())).thenReturn(MESSAGE);
         when(view.isRemoved()).thenReturn(REMOVED);
         when(selectionAgent.getSelection()).thenReturn(null);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[3];
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[4];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
                 onSuccess.invoke(callback, EMPTY_TEXT);
                 return callback;
             }
-        }).when(service).remove((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyBoolean(),
+        }).when(service).remove((ProjectDescriptor)anyObject(), (String)anyObject(), anyBoolean(), anyBoolean(),
                                 (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onRemoveClicked();
 
-        verify(service).remove(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REMOVED),
+        verify(service).remove(eq(rootProjectDescriptor), (String)anyObject(), eq(REMOVED), eq(false),
+                               (AsyncRequestCallback<String>)anyObject());
+        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(constant).removeFilesSuccessfull();
+        verify(view).close();
+    }
+
+    @Test
+    public void testOnRemoveClickedWhenFolderSelectedAndRemoveRequestIsSuccessful() throws Exception {
+        String folderPath = PROJECT_PATH + PROJECT_NAME;
+        Selection selection = mock(Selection.class);
+        FolderNode folder = mock(FolderNode.class);
+        when(folder.getPath()).thenReturn(folderPath);
+        when(selection.getFirstElement()).thenReturn(folder);
+        when(selectionAgent.getSelection()).thenReturn(selection);
+        when(constant.removeFromIndexFolder(anyString())).thenReturn(MESSAGE);
+        when(view.isRemoved()).thenReturn(REMOVED);
+        when(selectionAgent.getSelection()).thenReturn(null);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[4];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, EMPTY_TEXT);
+                return callback;
+            }
+        }).when(service).remove((ProjectDescriptor)anyObject(), (String)anyObject(), anyBoolean(), anyBoolean(),
+                                (AsyncRequestCallback<String>)anyObject());
+
+        presenter.showDialog();
+        presenter.onRemoveClicked();
+
+        verify(service).remove(eq(rootProjectDescriptor), (String)anyObject(), eq(REMOVED), eq(false),
                                (AsyncRequestCallback<String>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).removeFilesSuccessfull();
@@ -169,18 +208,18 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[3];
+                AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[4];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).remove((ProjectDescriptor)anyObject(), (List<String>)anyObject(), anyBoolean(),
+        }).when(service).remove((ProjectDescriptor)anyObject(), (String)anyObject(), anyBoolean(), anyBoolean(),
                                 (AsyncRequestCallback<String>)anyObject());
 
         presenter.showDialog();
         presenter.onRemoveClicked();
 
-        verify(service).remove(eq(rootProjectDescriptor), (List<String>)anyObject(), eq(REMOVED),
+        verify(service).remove(eq(rootProjectDescriptor), (String)anyObject(), eq(REMOVED), eq(false),
                                (AsyncRequestCallback<String>)anyObject());
         verify(constant).removeFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

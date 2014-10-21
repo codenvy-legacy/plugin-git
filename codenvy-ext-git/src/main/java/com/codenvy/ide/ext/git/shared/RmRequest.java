@@ -12,8 +12,6 @@ package com.codenvy.ide.ext.git.shared;
 
 import com.codenvy.dto.shared.DTO;
 
-import java.util.List;
-
 /**
  * Request to remove files.
  *
@@ -23,11 +21,11 @@ import java.util.List;
 @DTO
 public interface RmRequest extends GitRequest {
     /** @return files to remove */
-    List<String> getFiles();
+    String getItem();
     
-    void setFiles(List<String> files);
+    void setItem(String item);
     
-    RmRequest withFiles(List<String> files);
+    RmRequest withItem(String item);
 
     /** @return is RmRequest represents remove from index only */
     boolean isCached();
@@ -35,4 +33,10 @@ public interface RmRequest extends GitRequest {
     void setCached(boolean isCached);
     
     RmRequest withCached(boolean cached);
+
+    boolean isRecursively();
+
+    void setRecursively(boolean isRecursively);
+
+    RmRequest withRecursively(boolean isRecursively);
 }

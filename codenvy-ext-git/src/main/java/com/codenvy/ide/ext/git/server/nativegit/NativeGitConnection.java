@@ -436,7 +436,7 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void rm(RmRequest request) throws GitException {
-        nativeGit.createRemoveCommand().setCached(request.isCached()).setListOfFiles(request.getFiles()).execute();
+        nativeGit.createRemoveCommand().setCached(request.isCached()).setRecursively(request.isRecursively()).setItem(request.getItem()).execute();
     }
 
     @Override

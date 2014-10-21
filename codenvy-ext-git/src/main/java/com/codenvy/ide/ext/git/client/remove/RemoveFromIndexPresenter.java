@@ -31,7 +31,6 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -116,12 +115,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
         if (pattern.length() == 0 || "/".equals(pattern)) {
             return constant.removeFromIndexAll();
         }
-
-        if (selection != null && selection.getFirstElement() instanceof FolderNode) {
-            return constant.removeFromIndexFolder(pattern);
-        } else {
-            return constant.removeFromIndexFile(pattern);
-        }
+        return isFolder(selection) ? constant.removeFromIndexFolder(pattern) : constant.removeFromIndexFile(pattern);
     }
 
     /** {@inheritDoc} */
@@ -133,7 +127,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
             openedEditors.add(partPresenter);
         }
 
-        service.remove(project.getRootProject(), getFilePatterns(), view.isRemoved(),
+        service.remove(project.getRootProject(), getFilePattern(), view.isRemoved(), isFolder(selection),
                        new AsyncRequestCallback<String>() {
                            @Override
                            protected void onSuccess(String result) {
@@ -169,12 +163,12 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     }
 
     /**
-     * Returns pattern of the files to be removed.
+     * Returns pattern of the item to be removed.
      *
-     * @return pattern of the files to be removed
+     * @return pattern of the item to be removed
      */
     @Nonnull
-    private List<String> getFilePatterns() {
+    private String getFilePattern() {
         Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
         String path;
         if (selection == null || selection.getFirstElement() == null) {
@@ -186,7 +180,11 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
         String pattern = path.replaceFirst(project.getRootProject().getPath(), "");
         pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
 
-        return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<>(Arrays.asList(".")) : new ArrayList<>(Arrays.asList(pattern));
+        return (pattern.length() == 0 || "/".equals(pattern)) ? "." : pattern;
+    }
+
+    private boolean isFolder(Selection<StorableNode> selection) {
+        return selection != null && selection.getFirstElement() instanceof FolderNode;
     }
 
     /**

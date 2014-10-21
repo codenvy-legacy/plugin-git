@@ -223,7 +223,7 @@ public class StatusTest extends BaseTest {
         //commit "a" and "b"
         getConnection().commit(newDTO(CommitRequest.class).withMessage("add 2 test files"));
         //remove "a" from index
-        getConnection().rm(newDTO(RmRequest.class).withFiles(asList("a")));
+        getConnection().rm(newDTO(RmRequest.class).withItem("a"));
 
         final Status status = getConnection().status(true);
 

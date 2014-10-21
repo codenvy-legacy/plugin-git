@@ -39,7 +39,7 @@ import static org.testng.Assert.assertTrue;
 /**
  * @author Eugene Voevodin
  */
-public class BaseTest {
+public abstract class BaseTest {
 
     private GitConnection connection;
     private Path          target;

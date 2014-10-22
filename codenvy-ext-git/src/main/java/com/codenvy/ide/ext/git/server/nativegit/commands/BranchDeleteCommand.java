@@ -23,6 +23,7 @@ public class BranchDeleteCommand extends GitCommand<Void> {
 
     private boolean deleteFullyMerged;
     private String  branchName;
+    private String  remote;
 
     public BranchDeleteCommand(File repository) {
         super(repository);
@@ -37,9 +38,17 @@ public class BranchDeleteCommand extends GitCommand<Void> {
             throw new GitException("Branch name was not set.");
         }
         reset();
-        commandLine.add("branch");
-        commandLine.add(deleteFullyMerged ? "-D" : "-d");
+
+        if (remote != null) {
+            commandLine.add("push");
+            commandLine.add(remote);
+            commandLine.add("--delete");
+        } else {
+            commandLine.add("branch");
+            commandLine.add(deleteFullyMerged ? "-D" : "-d");
+        }
         commandLine.add(branchName);
+
         start();
         return null;
     }
@@ -61,6 +70,16 @@ public class BranchDeleteCommand extends GitCommand<Void> {
      */
     public BranchDeleteCommand setBranchName(String branchName) {
         this.branchName = branchName;
+        return this;
+    }
+
+    /**
+     * @param remoteName
+     *         remote name
+     * @return BranchDeleteCommand with established remote name
+     */
+    public BranchDeleteCommand setRemote(String remoteName) {
+        this.remote = remoteName;
         return this;
     }
 }

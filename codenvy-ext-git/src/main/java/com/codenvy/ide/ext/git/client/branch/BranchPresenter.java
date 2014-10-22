@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.branch;
 
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
@@ -29,8 +28,8 @@ import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
-import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
+import com.codenvy.ide.ui.dialogs.InputCallback;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONParser;
 import com.google.inject.Inject;
@@ -47,33 +46,25 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_ALL;
 /**
  * Presenter for displaying and work with branches.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class BranchPresenter implements BranchView.ActionDelegate {
-    private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private       BranchView              view;
-    private       ProjectServiceClient    projectServiceClient;
-    private       GitOutputPartPresenter  gitConsole;
-    private       WorkspaceAgent          workspaceAgent;
-    private       EventBus                eventBus;
-    private       CurrentProject          project;
-    private       GitServiceClient        service;
-    private       GitLocalizationConstant constant;
-    private       EditorAgent             editorAgent;
-    private       Branch                  selectedBranch;
-    private       AppContext              appContext;
-    private       NotificationManager     notificationManager;
+    private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private BranchView              view;
+    private GitOutputPartPresenter  gitConsole;
+    private WorkspaceAgent          workspaceAgent;
+    private DialogFactory           dialogFactory;
+    private EventBus                eventBus;
+    private CurrentProject          project;
+    private GitServiceClient        service;
+    private GitLocalizationConstant constant;
+    private EditorAgent             editorAgent;
+    private Branch                  selectedBranch;
+    private AppContext              appContext;
+    private NotificationManager     notificationManager;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param notificationManager
-     */
+    /** Create presenter. */
     @Inject
     public BranchPresenter(BranchView view,
                            EventBus eventBus,
@@ -83,13 +74,13 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                            AppContext appContext,
                            NotificationManager notificationManager,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                           ProjectServiceClient projectServiceClient,
                            GitOutputPartPresenter gitConsole,
-                           WorkspaceAgent workspaceAgent) {
+                           WorkspaceAgent workspaceAgent,
+                           DialogFactory dialogFactory) {
         this.view = view;
-        this.projectServiceClient = projectServiceClient;
         this.gitConsole = gitConsole;
         this.workspaceAgent = workspaceAgent;
+        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.eventBus = eventBus;
         this.editorAgent = editorAgent;
@@ -120,10 +111,10 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     @Override
     public void onRenameClicked() {
         final String currentBranchName = selectedBranch.getDisplayName();
-        new AskValueDialog(constant.branchTitleRename(), constant.branchTypeRename(), currentBranchName, new AskValueCallback() {
+        dialogFactory.createInputDialog(constant.branchTitleRename(), constant.branchTypeRename(), currentBranchName, new InputCallback() {
             @Override
-            public void onOk(String name) {
-                service.branchRename(project.getRootProject(), currentBranchName, name, new AsyncRequestCallback<String>() {
+            public void accepted(String value) {
+                service.branchRename(project.getRootProject(), currentBranchName, value, new AsyncRequestCallback<String>() {
                     @Override
                     protected void onSuccess(String result) {
                         getBranches();
@@ -131,16 +122,13 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
                     @Override
                     protected void onFailure(Throwable exception) {
-                        String errorMessage =
-                                (exception.getMessage() != null) ? exception.getMessage()
-                                                                 : constant.branchRenameFailed();
+                        String errorMessage = (exception.getMessage() != null) ? exception.getMessage() : constant.branchRenameFailed();
                         Notification notification = new Notification(errorMessage, ERROR);
                         notificationManager.showNotification(notification);
                     }
                 });
             }
-        }
-        ).show();
+        }, null).show();
     }
 
     /** {@inheritDoc} */
@@ -254,11 +242,11 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onCreateClicked() {
-        new AskValueDialog(constant.branchCreateNew(), constant.branchTypeNew(), "", new AskValueCallback() {
+        dialogFactory.createInputDialog(constant.branchCreateNew(), constant.branchTypeNew(), "", new InputCallback() {
             @Override
-            public void onOk(String name) {
-                if (!name.isEmpty()) {
-                    service.branchCreate(project.getRootProject(), name, null,
+            public void accepted(String value) {
+                if (!value.isEmpty()) {
+                    service.branchCreate(project.getRootProject(), value, null,
                                          new AsyncRequestCallback<Branch>(dtoUnmarshallerFactory.newUnmarshaller(Branch.class)) {
                                              @Override
                                              protected void onSuccess(Branch result) {
@@ -267,18 +255,18 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
                                              @Override
                                              protected void onFailure(Throwable exception) {
-                                                 final String errorMessage = (exception.getMessage() != null) ? exception.getMessage()
-                                                                                                              : constant
-                                                                                     .branchCreateFailed();
+                                                 final String errorMessage = (exception.getMessage() != null)
+                                                                             ? exception.getMessage()
+                                                                             : constant.branchCreateFailed();
                                                  Notification notification = new Notification(errorMessage, ERROR);
                                                  notificationManager.showNotification(notification);
                                              }
                                          }
                                         );
                 }
-            }
-        }).show();
 
+            }
+        }, null).show();
     }
 
     /** {@inheritDoc} */

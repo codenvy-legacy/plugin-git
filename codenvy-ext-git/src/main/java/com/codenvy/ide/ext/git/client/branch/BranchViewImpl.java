@@ -18,10 +18,8 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.shared.Branch;
-import com.codenvy.ide.ui.dialogs.ask.Ask;
-import com.codenvy.ide.ui.dialogs.ask.AskHandler;
-import com.codenvy.ide.ui.dialogs.askValue.AskValueCallback;
-import com.codenvy.ide.ui.dialogs.askValue.AskValueDialog;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.ui.list.SimpleList;
 import com.codenvy.ide.ui.window.Window;
 import com.codenvy.ide.util.dom.Elements;
@@ -44,7 +42,7 @@ import javax.annotation.Nonnull;
 /**
  * The implementation of {@link BranchView}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 public class BranchViewImpl extends Window implements BranchView {
@@ -61,24 +59,22 @@ public class BranchViewImpl extends Window implements BranchView {
     @UiField
     ScrollPanel branchesPanel;
     @UiField(provided = true)
-    final   GitResources            res;
+    final         GitResources            res;
     @UiField(provided = true)
-    final   GitLocalizationConstant locale;
-    private SimpleList<Branch>      branches;
-    private ActionDelegate          delegate;
+    final         GitLocalizationConstant locale;
+    private final DialogFactory           dialogFactory;
+    private       SimpleList<Branch>      branches;
+    private       ActionDelegate          delegate;
 
-    /**
-     * Create presenter.
-     *
-     * @param resources
-     * @param locale
-     */
+    /** Create presenter. */
     @Inject
     protected BranchViewImpl(GitResources resources,
                              GitLocalizationConstant locale,
-                             com.codenvy.ide.Resources coreRes) {
+                             com.codenvy.ide.Resources coreRes,
+                             DialogFactory dialogFactory) {
         this.res = resources;
         this.locale = locale;
+        this.dialogFactory = dialogFactory;
         this.ensureDebugId("git-branches-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
@@ -156,15 +152,14 @@ public class BranchViewImpl extends Window implements BranchView {
 
             @Override
             public void onClick(ClickEvent event) {
-                Ask ask = new Ask(locale.branchDelete(), locale.branchDeleteAsk(branches.getSelectionModel().getSelectedItem().getName()),
-                                  new AskHandler() {
-
-                                      @Override
-                                      public void onOk() {
-                                          delegate.onDeleteClicked();
-                                      }
-                                  });
-                ask.show();
+                dialogFactory.createConfirmDialog(locale.branchDelete(),
+                                                  locale.branchDeleteAsk(branches.getSelectionModel().getSelectedItem().getName()),
+                                                  new ConfirmCallback() {
+                                                      @Override
+                                                      public void accepted() {
+                                                          delegate.onDeleteClicked();
+                                                      }
+                                                  }, null).show();
             }
         });
         getFooter().add(btnDelete);

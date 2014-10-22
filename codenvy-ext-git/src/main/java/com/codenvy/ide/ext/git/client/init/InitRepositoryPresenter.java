@@ -10,26 +10,20 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.init;
 
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
-import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.rest.Unmarshallable;
-import com.codenvy.ide.websocket.WebSocketException;
-import com.codenvy.ide.websocket.rest.RequestCallback;
+import com.codenvy.ide.ext.git.client.GitUtil;
+import com.codenvy.ide.util.loging.Log;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
-import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 
 /**
  * Presenter for Git command Init Repository.
@@ -39,77 +33,42 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
  */
 @Singleton
 public class InitRepositoryPresenter {
-    private ProjectServiceClient    projectServiceClient;
-    private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private GitServiceClient        service;
-    private AppContext              appContext;
-    private GitLocalizationConstant constant;
-    private NotificationManager     notificationManager;
+    private final GitUtil                 gitUtil;
+    private final AppContext              appContext;
+    private final GitLocalizationConstant constant;
+    private final NotificationManager     notificationManager;
 
-    /**
-     * Create presenter.
-     *
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param notificationManager
-     */
     @Inject
-    public InitRepositoryPresenter(GitServiceClient service,
-                                   AppContext appContext,
+    public InitRepositoryPresenter(AppContext appContext,
                                    GitLocalizationConstant constant,
                                    NotificationManager notificationManager,
-                                   ProjectServiceClient projectServiceClient,
-                                   DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        this.projectServiceClient = projectServiceClient;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.service = service;
+                                   GitUtil gitUtil) {
         this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
+        this.gitUtil = gitUtil;
     }
 
     public void initRepository() {
         final CurrentProject currentProject = appContext.getCurrentProject();
-        try {
-            service.init(currentProject.getRootProject(), false, new RequestCallback<Void>() {
-                @Override
-                protected void onSuccess(Void result) {
-                    Notification notification = new Notification(constant.initSuccess(), INFO);
-                    notificationManager.showNotification(notification);
 
-                    getProject();
-                }
-
-                @Override
-                protected void onFailure(Throwable exception) {
-                    handleError(exception);
-                }
-            });
-        } catch (WebSocketException e) {
-            handleError(e);
+        if (currentProject == null || currentProject.getRootProject() == null) {
+            Log.error(getClass(), "Open the project before initialize repository");
+            return;
         }
-    }
 
-    private void getProject() {
-        // update 'vcs.provider.name' attribute value
-        final CurrentProject currentProject = appContext.getCurrentProject();
-        Unmarshallable<ProjectDescriptor> unmarshaller = dtoUnmarshallerFactory.newUnmarshaller(ProjectDescriptor.class);
-        projectServiceClient.getProject(currentProject.getRootProject().getPath(),
-                                        new AsyncRequestCallback<ProjectDescriptor>(unmarshaller) {
-                                            @Override
-                                            protected void onSuccess(ProjectDescriptor projectDescriptor) {
-                                                currentProject.setRootProject(projectDescriptor);
-                                            }
+        gitUtil.initGitRepository(currentProject.getRootProject(), new AsyncCallback<Void>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                handleError(caught);
+            }
 
-                                            @Override
-                                            protected void onFailure(Throwable throwable) {
-                                                Notification notification = new Notification(throwable.getMessage(), ERROR);
-                                                notificationManager.showNotification(notification);
-                                            }
-                                        }
-                                       );
-
+            @Override
+            public void onSuccess(Void result) {
+                Notification notification = new Notification(constant.initSuccess(), Notification.Type.INFO);
+                notificationManager.showNotification(notification);
+            }
+        });
     }
 
     /**

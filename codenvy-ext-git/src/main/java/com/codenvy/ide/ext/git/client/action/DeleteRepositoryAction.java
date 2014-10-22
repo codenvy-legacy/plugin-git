@@ -17,17 +17,18 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.delete.DeleteRepositoryPresenter;
-import com.codenvy.ide.ui.dialogs.ask.Ask;
-import com.codenvy.ide.ui.dialogs.ask.AskHandler;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-/** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
+/** @author Andrey Plotnikov */
 @Singleton
 public class DeleteRepositoryAction extends GitAction {
     private final DeleteRepositoryPresenter presenter;
     private       GitLocalizationConstant   constant;
     private final AnalyticsEventLogger      eventLogger;
+    private final DialogFactory             dialogFactory;
 
     @Inject
     public DeleteRepositoryAction(DeleteRepositoryPresenter presenter,
@@ -35,26 +36,27 @@ public class DeleteRepositoryAction extends GitAction {
                                   GitResources resources,
                                   GitLocalizationConstant constant,
                                   AnalyticsEventLogger eventLogger,
-                                  SelectionAgent selectionAgent) {
+                                  SelectionAgent selectionAgent,
+                                  DialogFactory dialogFactory) {
         super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.constant = constant;
         this.eventLogger = eventLogger;
+        this.dialogFactory = dialogFactory;
     }
 
     /** {@inheritDoc} */
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        Ask ask = new Ask(constant.deleteGitRepositoryTitle(),
-                          constant.deleteGitRepositoryQuestion(getActiveProject().getRootProject().getName()), new AskHandler() {
-            @Override
-            public void onOk() {
-                presenter.deleteRepository();
-            }
-        }
-        );
-        ask.show();
+        dialogFactory.createConfirmDialog(constant.deleteGitRepositoryTitle(),
+                                          constant.deleteGitRepositoryQuestion(getActiveProject().getRootProject().getName()),
+                                          new ConfirmCallback() {
+                                              @Override
+                                              public void accepted() {
+                                                  presenter.deleteRepository();
+                                              }
+                                          }, null).show();
     }
 
     /** {@inheritDoc} */

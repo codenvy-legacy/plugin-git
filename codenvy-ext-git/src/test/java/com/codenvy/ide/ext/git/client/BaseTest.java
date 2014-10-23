@@ -82,10 +82,13 @@ public abstract class BaseTest extends GwtTestWithMockito {
     @Before
     public void disarm() {
         when(appContext.getCurrentProject()).thenReturn(currentProject);
+
         when(currentProject.getProjectDescription()).thenReturn(projectDescriptor);
         when(currentProject.getRootProject()).thenReturn(rootProjectDescriptor);
+
         when(projectDescriptor.getName()).thenReturn(PROJECT_NAME);
         when(projectDescriptor.getPath()).thenReturn(PROJECT_PATH);
+
         when(rootProjectDescriptor.getName()).thenReturn(PROJECT_NAME);
         when(rootProjectDescriptor.getPath()).thenReturn(PROJECT_PATH);
     }

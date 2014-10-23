@@ -14,8 +14,8 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.shared.Remote;
-import com.codenvy.ide.ui.dialogs.ask.Ask;
-import com.codenvy.ide.ui.dialogs.ask.AskHandler;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.ui.window.Window;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
@@ -36,14 +36,13 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The implementation of {@link RemoteView}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 @Singleton
 public class RemoteViewImpl extends Window implements RemoteView {
@@ -52,13 +51,13 @@ public class RemoteViewImpl extends Window implements RemoteView {
 
     private static RemoteViewImplUiBinder ourUiBinder = GWT.create(RemoteViewImplUiBinder.class);
 
-    Button            btnClose;
-    Button            btnAdd;
-    Button            btnDelete;
+    Button btnClose;
+    Button btnAdd;
+    Button btnDelete;
     @UiField(provided = true)
     CellTable<Remote> repositories;
 
-    private Remote selectedObject;
+    private Remote                  selectedObject;
     @UiField(provided = true)
     final   GitResources            res;
     @UiField(provided = true)
@@ -66,16 +65,12 @@ public class RemoteViewImpl extends Window implements RemoteView {
     private ActionDelegate          delegate;
     private boolean                 isShown;
 
-    /**
-     * Create view.
-     *
-     * @param resources
-     * @param locale
-     */
+    /** Create view. */
     @Inject
     protected RemoteViewImpl(GitResources resources,
                              final GitLocalizationConstant locale,
-                             com.codenvy.ide.Resources ideResources) {
+                             com.codenvy.ide.Resources ideResources,
+                             final DialogFactory dialogFactory) {
         this.res = resources;
         this.locale = locale;
         this.ensureDebugId("git-remotes-remotes-window");
@@ -86,7 +81,7 @@ public class RemoteViewImpl extends Window implements RemoteView {
 
         this.setTitle(locale.remotesViewTitle());
         this.setWidget(widget);
-        
+
         btnClose = createButton(locale.buttonClose(), "git-remotes-remotes-close", new ClickHandler() {
 
             @Override
@@ -109,32 +104,37 @@ public class RemoteViewImpl extends Window implements RemoteView {
 
             @Override
             public void onClick(ClickEvent event) {
-
-                Ask ask = new Ask(locale.deleteRemoteRepositoryTitle(), locale.deleteRemoteRepositoryQuestion(selectedObject.getName()), new AskHandler() {
-                    @Override
-                    public void onOk() {
-                        delegate.onDeleteClicked();
-                    }
-                });
-                ask.show();
+                dialogFactory.createConfirmDialog(locale.deleteRemoteRepositoryTitle(),
+                                                  locale.deleteRemoteRepositoryQuestion(selectedObject.getName()),
+                                                  new ConfirmCallback() {
+                                                      @Override
+                                                      public void accepted() {
+                                                          delegate.onDeleteClicked();
+                                                      }
+                                                  }, null).show();
             }
         });
         getFooter().add(btnDelete);
     }
 
-    /** Initialize the columns of the grid.
-     * @param ideResources*/
+    /**
+     * Initialize the columns of the grid.
+     *
+     * @param ideResources
+     */
     private void initRepositoriesTable(com.codenvy.ide.Resources ideResources) {
-        repositories = new CellTable<Remote>(15, ideResources);
+        repositories = new CellTable<>(15, ideResources);
 
         Column<Remote, String> nameColumn = new Column<Remote, String>(new TextCell()) {
             @Override
             public String getValue(Remote remote) {
                 return remote.getName();
             }
+
             @Override
             public void render(Cell.Context context, Remote remote, SafeHtmlBuilder sb) {
-                sb.appendHtmlConstant("<div id=\"" + UIObject.DEBUG_ID_PREFIX + "git-remotes-remotes-cellTable-" + context.getIndex() + "\">");
+                sb.appendHtmlConstant(
+                        "<div id=\"" + UIObject.DEBUG_ID_PREFIX + "git-remotes-remotes-cellTable-" + context.getIndex() + "\">");
                 super.render(context, remote, sb);
             }
         };

@@ -111,24 +111,26 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     @Override
     public void onRenameClicked() {
         final String currentBranchName = selectedBranch.getDisplayName();
-        dialogFactory.createInputDialog(constant.branchTitleRename(), constant.branchTypeRename(), currentBranchName, new InputCallback() {
-            @Override
-            public void accepted(String value) {
-                service.branchRename(project.getRootProject(), currentBranchName, value, new AsyncRequestCallback<String>() {
+        dialogFactory.createInputDialog(constant.branchTitleRename(), constant.branchTypeRename(), currentBranchName,
+                                        0, currentBranchName.length(), new InputCallback() {
                     @Override
-                    protected void onSuccess(String result) {
-                        getBranches();
-                    }
+                    public void accepted(String value) {
+                        service.branchRename(project.getRootProject(), currentBranchName, value, new AsyncRequestCallback<String>() {
+                            @Override
+                            protected void onSuccess(String result) {
+                                getBranches();
+                            }
 
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        String errorMessage = (exception.getMessage() != null) ? exception.getMessage() : constant.branchRenameFailed();
-                        Notification notification = new Notification(errorMessage, ERROR);
-                        notificationManager.showNotification(notification);
+                            @Override
+                            protected void onFailure(Throwable exception) {
+                                String errorMessage =
+                                        (exception.getMessage() != null) ? exception.getMessage() : constant.branchRenameFailed();
+                                Notification notification = new Notification(errorMessage, ERROR);
+                                notificationManager.showNotification(notification);
+                            }
+                        });
                     }
-                });
-            }
-        }, null).show();
+                }, null).show();
     }
 
     /** {@inheritDoc} */
@@ -242,7 +244,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onCreateClicked() {
-        dialogFactory.createInputDialog(constant.branchCreateNew(), constant.branchTypeNew(), "", new InputCallback() {
+        dialogFactory.createInputDialog(constant.branchCreateNew(), constant.branchTypeNew(), new InputCallback() {
             @Override
             public void accepted(String value) {
                 if (!value.isEmpty()) {

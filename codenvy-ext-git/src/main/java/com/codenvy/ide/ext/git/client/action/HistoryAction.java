@@ -49,6 +49,6 @@ public class HistoryAction extends GitAction {
     @Override
     public void update(ActionEvent e) {
         e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository() && isItemSelected());
+        e.getPresentation().setEnabled(isGitRepository());
     }
 }

@@ -51,8 +51,8 @@ public class ResetFilesPresenterTest extends BaseTest {
     @Override
     public void disarm() {
         super.disarm();
-        presenter =
-                new ResetFilesPresenter(view, service, appContext, constant, notificationManager, dtoFactory, dtoUnmarshallerFactory);
+        presenter = new ResetFilesPresenter(view, service, appContext, constant, notificationManager, dtoFactory, dtoUnmarshallerFactory,
+                                            dialogFactory);
         when(dtoFactory.createDto(IndexFile.class)).thenReturn(mock(IndexFile.class));
     }
 

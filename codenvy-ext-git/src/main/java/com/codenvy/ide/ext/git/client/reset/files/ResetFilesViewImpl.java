@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.git.client.reset.files;
 
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.shared.IndexFile;
 import com.codenvy.ide.ui.window.Window;
 import com.google.gwt.cell.client.CheckboxCell;
@@ -50,12 +51,13 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
 
     private static ResetFilesViewImplUiBinder ourUiBinder = GWT.create(ResetFilesViewImplUiBinder.class);
 
-    Button               btnReset;
-    Button               btnCancel;
+    Button btnReset;
+    Button btnCancel;
     @UiField(provided = true)
     CellTable<IndexFile> indexFiles;
     @UiField(provided = true)
     final   GitLocalizationConstant locale;
+    final   GitResources            resources;
     private ActionDelegate          delegate;
 
     /**
@@ -64,8 +66,9 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
      * @param locale
      */
     @Inject
-    protected ResetFilesViewImpl(GitLocalizationConstant locale) {
+    protected ResetFilesViewImpl(GitLocalizationConstant locale, GitResources resources) {
         this.locale = locale;
+        this.resources = resources;
         this.ensureDebugId("git-resetFiles-window");
 
         initColumns();
@@ -74,7 +77,7 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
 
         this.setTitle(locale.resetFilesViewTitle());
         this.setWidget(widget);
-        
+
         btnCancel = createButton(locale.buttonCancel(), "git-resetFiles-btnCancel", new ClickHandler() {
 
             @Override
@@ -135,6 +138,7 @@ public class ResetFilesViewImpl extends Window implements ResetFilesView {
         indexFiles.setColumnWidth(checkColumn, 1, Style.Unit.PCT);
         indexFiles.addColumn(filesColumn, FILES);
         indexFiles.setColumnWidth(filesColumn, 35, Style.Unit.PCT);
+        indexFiles.addStyleName(resources.gitCSS().cells());
     }
 
     /** {@inheritDoc} */

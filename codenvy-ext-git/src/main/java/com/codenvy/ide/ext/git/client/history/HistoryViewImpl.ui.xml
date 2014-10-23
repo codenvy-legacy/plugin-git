@@ -67,7 +67,7 @@
                               title="{locale.historyDiffWithWorkTreeButtonTitle}"/>
                     <g:Button ui:field="btnDiffWithPrevCommit" addStyleNames="{style.alignRight} {style.space} {style.withoutPadding} {style.button}"
                               width="20px" height="18px" debugId="git-showHistory-diffWithPrevCommit"
-                              title="{locale.historyDiffWithPrevVersonButtonTitle}"/>
+                              title="{locale.historyDiffWithPrevVersionButtonTitle}"/>
                 </g:FlowPanel>
             </g:FlowPanel>
         </g:north>

@@ -165,16 +165,31 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public void branchDelete(BranchDeleteRequest request) throws GitException {
-        //convert ref name to displayed name
+    public void branchDelete(BranchDeleteRequest request) throws GitException, UnauthorizedException {
+        String remote = null;
         String name = getBranchRef(request.getName());
-        if (name.startsWith("refs/")) {
-            name = name.substring(name.indexOf('/', 6) + 1);
+
+        if (name.startsWith("refs/remotes/")) {
+            remote = parseRemoteName(name);
         }
+
+        //convert ref name to displayed name
+        if (name.startsWith("refs/")) {
+            name = parseBranchName(name);
+        }
+
         BranchDeleteCommand branchDeleteCommand = nativeGit.createBranchDeleteCommand();
         branchDeleteCommand.setBranchName(name)
-                           .setDeleteFullyMerged(request.isForce())
-                           .execute();
+                           .setRemote(remote)
+                           .setDeleteFullyMerged(request.isForce());
+
+        if (remote != null) {
+            //remove remote branch
+            executeWithCredentials(branchDeleteCommand, remote);
+        } else {
+            //remove local branch
+            branchDeleteCommand.execute();
+        }
     }
 
     @Override
@@ -578,6 +593,20 @@ public class NativeGitConnection implements GitConnection {
         } else {
             return null;
         }
+    }
+
+    private String parseBranchName(String name) {
+        if (name.startsWith("refs/remotes/")) {
+            name = name.substring(name.indexOf("/", 13) + 1);
+        } else if (name.startsWith("refs/heads/")) {
+            name = name.substring(name.indexOf('/', 6) + 1);
+        }
+        return name;
+    }
+
+    private String parseRemoteName(String branchRef) {
+        int remoteIndex = branchRef.indexOf("/", 13);
+        return branchRef.substring(13, remoteIndex);
     }
 
     @Override

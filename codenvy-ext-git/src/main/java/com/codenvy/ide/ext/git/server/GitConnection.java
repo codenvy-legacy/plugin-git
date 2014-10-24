@@ -102,7 +102,7 @@ public interface GitConnection extends Closeable {
      *         if any error occurs when delete branch
      * @see BranchDeleteRequest
      */
-    void branchDelete(BranchDeleteRequest request) throws GitException;
+    void branchDelete(BranchDeleteRequest request) throws GitException, UnauthorizedException;
 
     /**
      * Rename branch.

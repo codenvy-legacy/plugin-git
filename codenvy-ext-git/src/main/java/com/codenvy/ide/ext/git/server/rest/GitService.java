@@ -140,7 +140,8 @@ public class GitService {
     @Path("branch-delete")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void branchDelete(BranchDeleteRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void branchDelete(BranchDeleteRequest request)
+            throws NotFoundException, ForbiddenException, ServerException, UnauthorizedException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.branchDelete(request);

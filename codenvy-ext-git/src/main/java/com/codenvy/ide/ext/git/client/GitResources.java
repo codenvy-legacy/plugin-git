@@ -24,6 +24,8 @@ public interface GitResources extends ClientBundle {
     public interface GitCSS extends CssResource {
         String textFont();
 
+        String cells();
+
         String simpleListContainer();
     }
 
@@ -89,7 +91,7 @@ public interface GitResources extends ClientBundle {
 
     @Source("history/history.png")
     ImageResource history();
-    
+
     @Source("history/show-history.svg")
     SVGResource showHistory();
 

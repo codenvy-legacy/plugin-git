@@ -14,7 +14,6 @@ import com.google.gwt.i18n.client.Messages;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
- * @version $Id: $
  */
 public interface GitLocalizationConstant extends Messages {
     // BUTTONS
@@ -48,9 +47,6 @@ public interface GitLocalizationConstant extends Messages {
     @Key("button.remove")
     String buttonRemove();
 
-    @Key("button.init")
-    String buttonInit();
-
     @Key("button.fetch")
     String buttonFetch();
 
@@ -66,25 +62,9 @@ public interface GitLocalizationConstant extends Messages {
     @Key("button.merge")
     String buttonMerge();
 
-    @Key("button.finish")
-    String finishButton();
-
     // MESSAGES
-
-    @Key("messages.nothing_changed")
-    String nothingChanged();
-
     @Key("messages.index_empty")
     String indexIsEmpty();
-
-    @Key("messages.not_git_repository")
-    String notGitRepository();
-
-    @Key("messages.selected_items_fail")
-    String selectedItemsFail();
-
-    @Key("messages.workspace_selected")
-    String selectedWorkace();
 
     @Key("messages.add_success")
     String addSuccess();
@@ -107,32 +87,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.branch_rename_failed")
     String branchRenameFailed();
 
-    @Key("messages.clone_success")
-    String cloneSuccess(String repoUrl);
-
-    @Key("messages.clone_failed")
-    String cloneFailed(String repoUrl);
-
-    @Key("messages.commit_success")
-    String commitSuccess();
-
     @Key("messages.commit_failed")
     String commitFailed();
 
     @Key("messages.diff.failed")
     String diffFailed();
-
-    @Key("messages.findResource.failed")
-    String findResourceFailed();
-
-    @Key("messages.getContent.failed")
-    String getContentFailed();
-
-    @Key("messages.refreshChildren.failed")
-    String refreshChildrenFailed();
-
-    @Key("messages.nothing_to_commit")
-    String nothingToCommit();
 
     @Key("messages.log_failed")
     String logFailed();
@@ -194,9 +153,6 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.reset_fail")
     String resetFail();
 
-    @Key("messages.repository_already_exists")
-    String repositoryAlreadyExists();
-
     @Key("messages.status_failed")
     String statusFailed();
 
@@ -218,14 +174,8 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.delete_success")
     String deleteGitRepositorySuccess();
 
-    @Key("messages.use.ssh.protocol")
-    String useSshProtocol();
-
     @Key("messages.notAuthorized")
     String messagesNotAuthorized();
-
-    @Key("messages.workspaceRamLessRequiredRam")
-    String messagesWorkspaceRamLessRequiredRam(int requiredMemorySize, int workspaceMemorySize);
 
     @Key("importProject.messageStartWithWhiteSpace")
     String importProjectMessageStartWithWhiteSpace();
@@ -239,12 +189,7 @@ public interface GitLocalizationConstant extends Messages {
     @Key("importProject.messageHostIncorrect")
     String importProjectMessageHostIncorrect();
 
-    // Unmarshaller Errors
-    @Key("merge.unmarshal.failed")
-    String mergeUnmarshallerFailed();
-
     // ----InitRequestHandler
-
     @Key("init.started")
     String initStarted(String repo);
 
@@ -252,7 +197,6 @@ public interface GitLocalizationConstant extends Messages {
     String initFinished(String repo);
 
     // ----CloneRequestHandler-------------
-
     @Key("clone.started")
     String cloneStarted(String projectPath, String remoteName);
 
@@ -260,7 +204,6 @@ public interface GitLocalizationConstant extends Messages {
     String cloneFinished(String projectName, String remoteUri);
 
     // ----PushRequestHandler
-
     @Key("push.started")
     String pushStarted(String projectName, String localBranch, String remoteBranch);
 
@@ -269,36 +212,26 @@ public interface GitLocalizationConstant extends Messages {
 
     // ----PullRequestHandler
     @Key("pull.started")
-    String pullStarted(String projectName, String remoteBranch, String localBrach);
+    String pullStarted(String projectName, String remoteBranch, String localBranch);
 
     @Key("pull.finished")
-    String pullFinished(String projectName, String remoteBranch, String localBrach);
+    String pullFinished(String projectName, String remoteBranch, String localBranch);
 
     // ----FetchRequestHandler
     @Key("fetch.started")
-    String fetchStarted(String projectName, String remoteBranch, String localBrach);
+    String fetchStarted(String projectName, String remoteBranch, String localBranch);
 
     @Key("fetch.finished")
-    String fetchFinished(String projectName, String remoteBranch, String localBrach);
+    String fetchFinished(String projectName, String remoteBranch, String localBranch);
 
     // ----AddRequestHandler
-
     @Key("add.started")
     String addStarted(String projectName);
 
     @Key("add.finished")
     String addFinished(String projectName);
 
-    // ----RemoveRequestHandler
-
-    @Key("remove.started")
-    String removeStarted(String projectName);
-
-    @Key("remove.finished")
-    String removeFinished(String projectName);
-
     // ----CommitRequestHandler
-
     @Key("commit.started")
     String commitStarted(String projectName, String comment);
 
@@ -324,15 +257,8 @@ public interface GitLocalizationConstant extends Messages {
     String addToIndexTitle();
 
     // Branch
-
-    @Key("view.branch.grid.name_column")
-    String branchGridNameColumn();
-
-    @Key("view.branch.ceate_new")
+    @Key("view.branch.create_new")
     String branchCreateNew();
-
-    @Key("view.branch.title_new")
-    String branchTitleNew();
 
     @Key("view.branch.type_new")
     String branchTypeNew();
@@ -349,17 +275,10 @@ public interface GitLocalizationConstant extends Messages {
     @Key("view.branch.delete_ask")
     String branchDeleteAsk(String name);
 
-    @Key("view.branch.rename")
-    String branchRename();
-
-    @Key("view.branch.rename.description")
-    String branchRenameDescription();
-
     @Key("view.branch.title")
     String branchTitle();
 
     // Commit
-
     @Key("view.commit.commit_message")
     String commitMessage(String revision, String time);
 
@@ -427,14 +346,8 @@ public interface GitLocalizationConstant extends Messages {
     @Key("view.reset.keep.type.title")
     String resetKeepTypeTitle();
 
-    @Key("view.reset.keep.type.description")
-    String resetKeepTypeDescription();
-
     @Key("view.reset.merge.type.title")
     String resetMergeTypeTitle();
-
-    @Key("view.reset.merge.type.description")
-    String resetMergeTypeDescription();
 
     // Remove
     @Key("view.remove_from_index.all")
@@ -453,15 +366,8 @@ public interface GitLocalizationConstant extends Messages {
     String removeFromIndexTitle();
 
     // Create
-
     @Key("view.create.title")
     String createTitle();
-
-    @Key("view.create.workdir.field.title")
-    String createWorkdirFieldTitle();
-
-    @Key("view.create.bare.field.title")
-    String createBareFieldTitle();
 
     // Fetch
     @Key("view.fetch.title")
@@ -524,7 +430,7 @@ public interface GitLocalizationConstant extends Messages {
     String historyDiffWithWorkTreeButtonTitle();
 
     @Key("view.history.diff.with.prev.version.button.title")
-    String historyDiffWithPrevVersonButtonTitle();
+    String historyDiffWithPrevVersionButtonTitle();
 
     @Key("view.history.revisionA.title")
     String historyViewRevisionATitle();
@@ -542,17 +448,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("view.pull.title")
     String pullTitle();
 
-    @Key("view.pull.remote.field.title")
-    String pullRemoteField();
-
     @Key("view.pull.remote.branches.title")
     String pullRemoteBranches();
 
     @Key("view.pull.local.branches.title")
     String pullLocalBranches();
-
-    @Key("view.warning.title")
-    String warningTitle();
 
     // Merge
     @Key("view.merge.title")
@@ -568,29 +468,11 @@ public interface GitLocalizationConstant extends Messages {
     String mergedConflicts(String conflicts);
 
     /* Controls */
-    @Key("control.add.id")
-    String addControlId();
-
-    @Key("control.add.title")
-    String addControlTitle();
-
-    @Key("control.add.prompt")
-    String addControlPrompt();
-
-    @Key("control.branches.id")
-    String branchesControlId();
-
     @Key("control.branches.title")
     String branchesControlTitle();
 
     @Key("control.branches.prompt")
     String branchesControlPrompt();
-
-    @Key("control.clone.id")
-    String cloneControlId();
-
-    @Key("control.commit.id")
-    String commitControlId();
 
     @Key("control.commit.title")
     String commitControlTitle();
@@ -598,17 +480,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.commit.prompt")
     String commitControlPrompt();
 
-    @Key("control.delete.id")
-    String deleteControlId();
-
     @Key("control.delete.title")
     String deleteControlTitle();
 
     @Key("control.delete.prompt")
     String deleteControlPrompt();
-
-    @Key("control.fetch.id")
-    String fetchControlId();
 
     @Key("control.fetch.title")
     String fetchControlTitle();
@@ -616,17 +492,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.fetch.prompt")
     String fetchControlPrompt();
 
-    @Key("control.init.id")
-    String initControlId();
-
     @Key("control.init.title")
     String initControlTitle();
 
     @Key("control.init.prompt")
     String initControlPrompt();
-
-    @Key("control.merge.id")
-    String mergeControlId();
 
     @Key("control.merge.title")
     String mergeControlTitle();
@@ -634,17 +504,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.merge.prompt")
     String mergeControlPrompt();
 
-    @Key("control.pull.id")
-    String pullControlId();
-
     @Key("control.pull.title")
     String pullControlTitle();
 
     @Key("control.pull.prompt")
     String pullControlPrompt();
-
-    @Key("control.push.id")
-    String pushControlId();
 
     @Key("control.push.title")
     String pushControlTitle();
@@ -652,35 +516,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.push.prompt")
     String pushControlPrompt();
 
-    @Key("control.remote.id")
-    String remoteControlId();
-
-    @Key("control.remote.title")
-    String remoteControlTitle();
-
-    @Key("control.remote.prompt")
-    String remoteControlPrompt();
-
-    @Key("control.remotes.id")
-    String remotesControlId();
-
     @Key("control.remotes.title")
     String remotesControlTitle();
 
     @Key("control.remotes.prompt")
     String remotesControlPrompt();
-
-    @Key("control.remove.id")
-    String removeControlId();
-
-    @Key("control.remove.title")
-    String removeControlTitle();
-
-    @Key("control.remove.prompt")
-    String removeControlPrompt();
-
-    @Key("control.resetFiles.id")
-    String resetFilesControlId();
 
     @Key("control.resetFiles.title")
     String resetFilesControlTitle();
@@ -688,17 +528,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.resetFiles.prompt")
     String resetFilesControlPrompt();
 
-    @Key("control.resetToCommit.id")
-    String resetToCommitControlId();
-
     @Key("control.resetToCommit.title")
     String resetToCommitControlTitle();
 
     @Key("control.resetToCommit.prompt")
     String resetToCommitControlPrompt();
-
-    @Key("control.history.id")
-    String historyControlId();
 
     @Key("control.history.title")
     String historyControlTitle();
@@ -706,17 +540,11 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.history.prompt")
     String historyControlPrompt();
 
-    @Key("control.status.id")
-    String statusControlId();
-
     @Key("control.status.title")
     String statusControlTitle();
 
     @Key("control.status.prompt")
     String statusControlPrompt();
-
-    @Key("control.ro.url.id")
-    String projectReadOnlyGitUrlId();
 
     @Key("control.ro.url.title")
     String projectReadOnlyGitUrlTitle();
@@ -741,16 +569,4 @@ public interface GitLocalizationConstant extends Messages {
      */
     @Key("project.name")
     String projectName();
-
-    /*
-     * SamplesListGrid
-     */
-    @Key("samplesListGrid.column.name")
-    String samplesListRepositoryColumn();
-
-    @Key("samplesListGrid.column.description")
-    String samplesListDescriptionColumn();
-
-    @Key("samplesListGrid.column.type")
-    String samplesListTypeColumn();
 }

@@ -262,6 +262,23 @@ public class NativeGit {
         return command;
     }
 
+    /**
+     * Creates branch delete command that will be used with ssh key for delete origin branch
+     *
+     * @param sshKeyPath
+     *         path to ssh key that will be used with branch delete command
+     * @return branch delete command with ssh key parameter
+     * @throws GitException
+     *         when some error with script storing occurs
+     */
+    public BranchDeleteCommand createBranchDeleteCommand(String sshKeyPath) throws GitException {
+        storeSshScript(sshKeyPath);
+        BranchDeleteCommand command = new BranchDeleteCommand(repository);
+        command.setLineConsumerFactory(gitOutputPublisherFactory);
+        command.setSSHScriptPath(SshKeysManager.getKeyDirectoryPath() + '/' + SSH_SCRIPT);
+        return command;
+    }
+
     /** @return remote command */
     public RemoveCommand createRemoveCommand() {
         RemoveCommand command = new RemoveCommand(repository);

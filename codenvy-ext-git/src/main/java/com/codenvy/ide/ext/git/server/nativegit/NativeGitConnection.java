@@ -166,26 +166,42 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void branchDelete(BranchDeleteRequest request) throws GitException, UnauthorizedException {
-        String remote = null;
-        String name = getBranchRef(request.getName());
+        String remoteName = null;
+        String branchName = getBranchRef(request.getName());
 
-        if (name.startsWith("refs/remotes/")) {
-            remote = parseRemoteName(name);
+        if (branchName.startsWith("refs/remotes/")) {
+            remoteName = parseRemoteName(branchName);
         }
 
         //convert ref name to displayed name
-        if (name.startsWith("refs/")) {
-            name = parseBranchName(name);
+        if (branchName.startsWith("refs/")) {
+            branchName = parseBranchName(branchName);
         }
 
-        BranchDeleteCommand branchDeleteCommand = nativeGit.createBranchDeleteCommand();
-        branchDeleteCommand.setBranchName(name)
-                           .setRemote(remote)
+        String remoteUri;
+        try {
+            remoteUri = nativeGit.createRemoteListCommand()
+                                 .setRemoteName(remoteName)
+                                 .execute()
+                                 .get(0)
+                                 .getUrl();
+        } catch (GitException ignored) {
+            remoteUri = remoteName;
+        }
+        BranchDeleteCommand branchDeleteCommand;
+        if (Util.isSSH(remoteUri)) {
+            branchDeleteCommand = nativeGit.createBranchDeleteCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
+        } else {
+            branchDeleteCommand = nativeGit.createBranchDeleteCommand();
+        }
+
+        branchDeleteCommand.setBranchName(branchName)
+                           .setRemote(remoteName)
                            .setDeleteFullyMerged(request.isForce());
 
-        if (remote != null) {
+        if (remoteName != null) {
             //remove remote branch
-            executeWithCredentials(branchDeleteCommand, remote);
+            executeWithCredentials(branchDeleteCommand, remoteName);
         } else {
             //remove local branch
             branchDeleteCommand.execute();

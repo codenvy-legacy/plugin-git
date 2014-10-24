@@ -24,8 +24,7 @@ import com.codenvy.ide.ext.git.shared.ResetRequest.ResetType;
 import com.codenvy.ide.ext.git.shared.Status;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.ui.dialogs.info.Info;
-import com.google.gwt.user.client.Window;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -35,19 +34,20 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 
 /**
- * Presenter for reseting files from index.
+ * Presenter for resetting files from index.
  * <p/>
  * When user tries to reset files from index:
  * 1. Find Git work directory by selected item in browser tree.
  * 2. Get status for found work directory.
  * 3. Display files ready for commit in grid. (Checked items will be reseted from index).
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
     private final DtoFactory              dtoFactory;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private       DialogFactory           dialogFactory;
     private       ResetFilesView          view;
     private       GitServiceClient        service;
     private       AppContext              appContext;
@@ -56,22 +56,15 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
     private       CurrentProject          project;
     private       Array<IndexFile>        indexedFiles;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param notificationManager
-     */
+    /** Create presenter. */
     @Inject
     public ResetFilesPresenter(ResetFilesView view, GitServiceClient service, AppContext appContext,
                                GitLocalizationConstant constant, NotificationManager notificationManager,
-                               DtoFactory dtoFactory, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                               DtoFactory dtoFactory, DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
         this.view = view;
         this.dtoFactory = dtoFactory;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -88,12 +81,12 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
                            @Override
                            protected void onSuccess(Status result) {
                                if (result.isClean()) {
-                                   new Info(constant.indexIsEmpty()).show();
+                                   dialogFactory.createMessageDialog("", constant.indexIsEmpty(), null).show();
                                    return;
                                }
 
                                Array<IndexFile> values = Collections.createArray();
-                               ArrayList<String> valuesTmp = new ArrayList<String>();
+                               ArrayList<String> valuesTmp = new ArrayList<>();
 
                                valuesTmp.addAll(result.getAdded());
                                valuesTmp.addAll(result.getChanged());

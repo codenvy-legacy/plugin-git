@@ -24,6 +24,7 @@ import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.client.GitOutputPartPresenter;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.event.shared.GwtEvent;
 import com.google.web.bindery.event.shared.Event;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -76,6 +77,8 @@ public class BranchPresenterTest extends BaseTest {
     private GitOutputPartPresenter gitConsole;
     @Mock
     private WorkspaceAgent         workspaceAgent;
+    @Mock
+    private DialogFactory          dialogFactory;
     private BranchPresenter        presenter;
 
     @Override
@@ -83,7 +86,7 @@ public class BranchPresenterTest extends BaseTest {
         super.disarm();
 
         presenter = new BranchPresenter(view, eventBus, editorAgent, service, constant, appContext, notificationManager,
-                                        dtoUnmarshallerFactory, projectServiceClient, gitConsole, workspaceAgent);
+                                        dtoUnmarshallerFactory, gitConsole, workspaceAgent, dialogFactory);
 
         StringMap<EditorPartPresenter> partPresenterMap = Collections.createStringMap();
         partPresenterMap.put("partPresenter", partPresenter);

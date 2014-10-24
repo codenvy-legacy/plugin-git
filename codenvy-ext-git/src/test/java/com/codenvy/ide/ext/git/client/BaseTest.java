@@ -19,6 +19,7 @@ import com.codenvy.ide.api.parts.ConsolePart;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.web.bindery.event.shared.EventBus;
 import com.googlecode.gwt.test.GwtModule;
 import com.googlecode.gwt.test.GwtTestWithMockito;
@@ -76,6 +77,8 @@ public abstract class BaseTest extends GwtTestWithMockito {
     protected DtoFactory              dtoFactory;
     @Mock
     protected DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    @Mock
+    protected DialogFactory           dialogFactory;
     @Mock
     protected ProjectServiceClient    projectServiceClient;
 

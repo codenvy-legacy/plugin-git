@@ -17,17 +17,18 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.init.InitRepositoryPresenter;
-import com.codenvy.ide.ui.dialogs.ask.Ask;
-import com.codenvy.ide.ui.dialogs.ask.AskHandler;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-/** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
+/** @author Andrey Plotnikov */
 @Singleton
 public class InitRepositoryAction extends GitAction {
     private final InitRepositoryPresenter presenter;
     private final AnalyticsEventLogger    eventLogger;
     private       GitLocalizationConstant constant;
+    private final DialogFactory           dialogFactory;
 
     @Inject
     public InitRepositoryAction(InitRepositoryPresenter presenter,
@@ -35,11 +36,13 @@ public class InitRepositoryAction extends GitAction {
                                 GitLocalizationConstant constant,
                                 AppContext appContext,
                                 AnalyticsEventLogger eventLogger,
-                                SelectionAgent selectionAgent) {
+                                SelectionAgent selectionAgent,
+                                DialogFactory dialogFactory) {
         super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
         this.constant = constant;
+        this.dialogFactory = dialogFactory;
     }
 
     /** {@inheritDoc} */
@@ -47,13 +50,14 @@ public class InitRepositoryAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
 
-        String name = appContext.getCurrentProject().getRootProject().getName();
-        new Ask(constant.createTitle(), constant.messagesInitRepoQuestion(name), new AskHandler() {
-            @Override
-            public void onOk() {
-                presenter.initRepository();
-            }
-        }).show();
+        dialogFactory.createConfirmDialog(constant.createTitle(),
+                                          constant.messagesInitRepoQuestion(appContext.getCurrentProject().getRootProject().getName()),
+                                          new ConfirmCallback() {
+                                              @Override
+                                              public void accepted() {
+                                                  presenter.initRepository();
+                                              }
+                                          }, null).show();
     }
 
     /** {@inheritDoc} */

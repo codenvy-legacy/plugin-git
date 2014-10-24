@@ -18,8 +18,8 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.security.oauth.JsOAuthWindow;
 import com.codenvy.ide.security.oauth.OAuthCallback;
 import com.codenvy.ide.security.oauth.OAuthStatus;
-import com.codenvy.ide.ui.dialogs.ask.Ask;
-import com.codenvy.ide.ui.dialogs.ask.AskHandler;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.Config;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -43,16 +43,19 @@ public class GitHubSshKeyProvider implements SshKeyProvider, OAuthCallback {
     private AsyncCallback<Void>        callback;
     private String                     userId;
     private NotificationManager        notificationManager;
+    private DialogFactory              dialogFactory;
 
     @Inject
     public GitHubSshKeyProvider(GitHubClientService gitHubService,
                                 @Named("restContext") String baseUrl,
                                 GitHubLocalizationConstant constant,
-                                NotificationManager notificationManager) {
+                                NotificationManager notificationManager,
+                                DialogFactory dialogFactory) {
         this.gitHubService = gitHubService;
         this.baseUrl = baseUrl;
         this.constant = constant;
         this.notificationManager = notificationManager;
+        this.dialogFactory = dialogFactory;
     }
 
     /** {@inheritDoc} */
@@ -81,19 +84,12 @@ public class GitHubSshKeyProvider implements SshKeyProvider, OAuthCallback {
 
     /** Log in github */
     private void oAuthLoginStart() {
-        Ask ask = new Ask(constant.githubSshKeyTitle(), constant.githubSshKeyLabel(), new AskHandler() {
-
+        dialogFactory.createConfirmDialog(constant.githubSshKeyTitle(), constant.githubSshKeyLabel(), new ConfirmCallback() {
             @Override
-            public void onOk() {
+            public void accepted() {
                 showPopUp();
             }
-
-            @Override
-            public void onCancel() {
-                //nothing todo
-            }
-        });
-        ask.show();
+        }, null).show();
     }
 
     private void showPopUp() {
@@ -103,7 +99,6 @@ public class GitHubSshKeyProvider implements SshKeyProvider, OAuthCallback {
         JsOAuthWindow authWindow = new JsOAuthWindow(authUrl, "error.url", 500, 980, this);
         authWindow.loginWithOAuth();
     }
-
 
     /** {@inheritDoc} */
     @Override

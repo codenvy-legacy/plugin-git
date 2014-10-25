@@ -133,11 +133,23 @@ public class GitHub {
                                                                                             ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/orgs/" + organization + "/repos?access_token=" + oauthToken;
-        final String method = "GET";
         GitHubRepositoryList gitHubRepositoryList = DtoFactory.getInstance().createDto(GitHubRepositoryList.class);
-        final String response = doJsonRequest(url, method, 200, gitHubRepositoryList);
+        return getRepositories(url, gitHubRepositoryList);
+    }
+
+    private GitHubRepositoryList getRepositories(String url, GitHubRepositoryList gitHubRepositoryList)
+            throws IOException, GitHubException, ParsingResponseException {
+        final String method = "GET";
+        String response = doJsonRequest(url, method, 200, gitHubRepositoryList);
         GitHubRepository[] repositories = parseJsonResponse(response, GitHubRepository[].class, null);
-        gitHubRepositoryList.setRepositories(Arrays.asList(repositories));
+        gitHubRepositoryList.getRepositories().addAll(Arrays.asList(repositories));
+
+        String nextPage = gitHubRepositoryList.getNextPage();
+        if (nextPage != null) {
+            String oauthToken = getToken(getUserId());
+            String nextPageUrl = nextPage + "&access_token=" + oauthToken;
+            getRepositories(nextPageUrl, gitHubRepositoryList);
+        }
         return gitHubRepositoryList;
     }
 
@@ -443,6 +455,8 @@ public class GitHub {
         if (linkHeader == null || linkHeader.isEmpty()) {
             return;
         }
+        resetPages(repositoryList);
+        
         String[] links = linkHeader.split(DELIM_LINKS);
         for (String link : links) {
             Matcher matcher = linkPattern.matcher(link.trim());
@@ -453,17 +467,29 @@ public class GitHub {
                 value = value.replaceFirst("access_token=\\w+&?", "");
                 // Second group is page's type
                 String rel = matcher.group(2);
-                if (META_FIRST.equals(rel)) {
-                    repositoryList.setFirstPage(value);
-                } else if (META_LAST.equals(rel)) {
-                    repositoryList.setLastPage(value);
-                } else if (META_NEXT.equals(rel)) {
-                    repositoryList.setNextPage(value);
-                } else if (META_PREV.equals(rel)) {
-                    repositoryList.setPrevPage(value);
+                switch (rel) {
+                    case META_FIRST:
+                        repositoryList.setFirstPage(value);
+                        break;
+                    case META_LAST:
+                        repositoryList.setLastPage(value);
+                        break;
+                    case META_NEXT:
+                        repositoryList.setNextPage(value);
+                        break;
+                    case META_PREV:
+                        repositoryList.setPrevPage(value);
+                        break;
                 }
             }
         }
+    }
+
+    private void resetPages(GitHubRepositoryList repositoryList) {
+        repositoryList.setFirstPage(null);
+        repositoryList.setLastPage(null);
+        repositoryList.setNextPage(null);
+        repositoryList.setPrevPage(null);
     }
 
     private GitHubException fault(HttpURLConnection http) throws IOException {

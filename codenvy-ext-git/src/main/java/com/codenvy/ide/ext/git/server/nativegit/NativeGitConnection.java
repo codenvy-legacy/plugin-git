@@ -612,17 +612,19 @@ public class NativeGitConnection implements GitConnection {
     }
 
     private String parseBranchName(String name) {
+        int branchNameIndex = 0;
         if (name.startsWith("refs/remotes/")) {
-            name = name.substring(name.indexOf("/", 13) + 1);
+            branchNameIndex = name.indexOf("/", "refs/remotes/".length()) + 1;
         } else if (name.startsWith("refs/heads/")) {
-            name = name.substring(name.indexOf('/', 6) + 1);
+            branchNameIndex = name.indexOf("/", "refs/heads".length()) + 1;
         }
-        return name;
+        return name.substring(branchNameIndex);
     }
 
     private String parseRemoteName(String branchRef) {
-        int remoteIndex = branchRef.indexOf("/", 13);
-        return branchRef.substring(13, remoteIndex);
+        int remoteStartIndex = "refs/remotes/".length();
+        int remoteEndIndex = branchRef.indexOf("/", remoteStartIndex);
+        return branchRef.substring(remoteStartIndex, remoteEndIndex);
     }
 
     @Override

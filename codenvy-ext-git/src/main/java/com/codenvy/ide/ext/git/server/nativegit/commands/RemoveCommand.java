@@ -22,8 +22,9 @@ import java.util.List;
  */
 public class RemoveCommand extends GitCommand<Void> {
 
-    private List<String> listOfFiles;
+    private List<String> listOfItems;
     private boolean      cached;
+    private boolean      recursively;
 
     public RemoveCommand(File repository) {
         super(repository);
@@ -32,31 +33,39 @@ public class RemoveCommand extends GitCommand<Void> {
     /** @see com.codenvy.ide.ext.git.server.nativegit.commands.GitCommand#execute() */
     @Override
     public Void execute() throws GitException {
-        if (listOfFiles == null) {
+        if (listOfItems == null) {
             throw new GitException("Nothing to remove.");
         }
         reset();
         commandLine.add("rm");
-        commandLine.add(listOfFiles);
+        commandLine.add(listOfItems);
         if (cached) {
             commandLine.add("--cached");
+        }
+        if (recursively) {
+            commandLine.add("-r");
         }
         start();
         return null;
     }
 
     /**
-     * @param listOfFiles
-     *         files to remove
-     * @return RemoveCommand with established listOfFiles
+     * @param listOfItems
+     *         items to remove
+     * @return RemoveCommand with established listOfItems
      */
-    public RemoveCommand setListOfFiles(List<String> listOfFiles) {
-        this.listOfFiles = listOfFiles;
+    public RemoveCommand setListOfItems(List<String> listOfItems) {
+        this.listOfItems = listOfItems;
         return this;
     }
 
     public RemoveCommand setCached(boolean cached) {
         this.cached = cached;
+        return this;
+    }
+
+    public RemoveCommand setRecursively(boolean isRecursively) {
+        this.recursively = isRecursively;
         return this;
     }
 }

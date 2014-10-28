@@ -23,11 +23,11 @@ import java.util.List;
 @DTO
 public interface RmRequest extends GitRequest {
     /** @return files to remove */
-    List<String> getFiles();
+    List<String> getItems();
     
-    void setFiles(List<String> files);
+    void setItems(List<String> items);
     
-    RmRequest withFiles(List<String> files);
+    RmRequest withItems(List<String> items);
 
     /** @return is RmRequest represents remove from index only */
     boolean isCached();
@@ -35,4 +35,10 @@ public interface RmRequest extends GitRequest {
     void setCached(boolean isCached);
     
     RmRequest withCached(boolean cached);
+
+    boolean isRecursively();
+
+    void setRecursively(boolean isRecursively);
+
+    RmRequest withRecursively(boolean isRecursively);
 }

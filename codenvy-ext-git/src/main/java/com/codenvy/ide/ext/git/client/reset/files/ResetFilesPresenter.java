@@ -29,6 +29,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -81,7 +82,7 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
                            @Override
                            protected void onSuccess(Status result) {
                                if (result.isClean()) {
-                                   dialogFactory.createMessageDialog("", constant.indexIsEmpty(), null).show();
+                                   dialogFactory.createMessageDialog(constant.messagesWarningTitle(), constant.indexIsEmpty(), null).show();
                                    return;
                                }
 
@@ -98,6 +99,12 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
                                    indexFile.setIndexed(true);
                                    values.add(indexFile);
                                }
+
+                               if (values.isEmpty()) {
+                                   dialogFactory.createMessageDialog(constant.messagesWarningTitle(), constant.indexIsEmpty(), null).show();
+                                   return;
+                               }
+
                                view.setIndexedFiles(values);
                                indexedFiles = values;
                                view.showDialog();
@@ -115,9 +122,8 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onResetClicked() {
-        Array<String> files = Collections.createArray();
-        for (int i = 0; i < indexedFiles.size(); i++) {
-            IndexFile indexFile = indexedFiles.get(i);
+        List<String> files = new ArrayList<>();
+        for (IndexFile indexFile : indexedFiles.asIterable()) {
             if (!indexFile.isIndexed()) {
                 files.add(indexFile.getPath());
             }
@@ -131,7 +137,7 @@ public class ResetFilesPresenter implements ResetFilesView.ActionDelegate {
         }
         view.close();
 
-        service.reset(project.getRootProject(), "HEAD", ResetType.MIXED, new AsyncRequestCallback<Void>() {
+        service.reset(project.getRootProject(), "HEAD", ResetType.MIXED, files, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 Notification notification = new Notification(constant.resetFilesSuccessfully(), INFO);

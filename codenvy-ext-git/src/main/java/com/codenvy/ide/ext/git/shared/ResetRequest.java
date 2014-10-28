@@ -13,6 +13,8 @@ package com.codenvy.ide.ext.git.shared;
 
 import com.codenvy.dto.shared.DTO;
 
+import java.util.List;
+
 /**
  * Request to reset current HEAD to the specified state.
  *
@@ -60,4 +62,11 @@ public interface ResetRequest extends GitRequest {
     ResetType getType();
     
     void setType(ResetType type);
+
+    /** @return files to reset the index */
+    List<String> getFilePattern();
+
+    void setFilePattern(List<String> filePattern);
+
+    ResetRequest withFilePattern(List<String> filePattern);
 }

@@ -63,6 +63,9 @@ public interface GitLocalizationConstant extends Messages {
     String buttonMerge();
 
     // MESSAGES
+    @Key("messages.warningTitle")
+    String messagesWarningTitle();
+
     @Key("messages.index_empty")
     String indexIsEmpty();
 

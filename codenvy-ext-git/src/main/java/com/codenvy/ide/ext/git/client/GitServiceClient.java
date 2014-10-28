@@ -217,10 +217,13 @@ public interface GitServiceClient {
      *         commit to which current head should be reset
      * @param resetType
      *         type of the reset
+     * @param filePattern
+     *         pattern of the files to reset the index. If <code>null</code> then reset the current branch head to [commit],
+     *         else reset received files in index.
      * @param callback
      */
     void reset(@Nonnull ProjectDescriptor project, @Nonnull String commit, @Nullable ResetRequest.ResetType resetType,
-               @Nonnull AsyncRequestCallback<Void> callback);
+               @Nullable List<String> filePattern, @Nonnull AsyncRequestCallback<Void> callback);
 
     /**
      * Initializes new Git repository (over WebSocket).

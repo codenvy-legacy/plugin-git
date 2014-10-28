@@ -462,6 +462,7 @@ public class NativeGitConnection implements GitConnection {
         nativeGit.createResetCommand()
                  .setMode(request.getType().getValue())
                  .setCommit(request.getCommit())
+                 .setFilePattern(request.getFilePattern())
                  .execute();
     }
 

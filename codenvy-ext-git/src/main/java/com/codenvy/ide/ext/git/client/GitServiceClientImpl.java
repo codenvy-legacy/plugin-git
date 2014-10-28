@@ -313,11 +313,14 @@ public class GitServiceClientImpl implements GitServiceClient {
     /** {@inheritDoc} */
     @Override
     public void reset(@Nonnull ProjectDescriptor project, @Nonnull String commit, @Nullable ResetRequest.ResetType resetType,
-                      @Nonnull AsyncRequestCallback<Void> callback) {
+                      @Nullable List<String> filePattern, @Nonnull AsyncRequestCallback<Void> callback) {
 
         ResetRequest resetRequest = dtoFactory.createDto(ResetRequest.class).withCommit(commit);
         if (resetType != null) {
             resetRequest.setType(resetType);
+        }
+        if (filePattern != null) {
+            resetRequest.setFilePattern(filePattern);
         }
         String url = baseHttpUrl + RESET + "?projectPath=" + project.getPath();
         asyncRequestFactory.createPostRequest(url, resetRequest).loader(loader).send(callback);

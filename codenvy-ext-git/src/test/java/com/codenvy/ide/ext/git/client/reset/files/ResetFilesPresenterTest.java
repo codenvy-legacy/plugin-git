@@ -18,6 +18,7 @@ import com.codenvy.ide.ext.git.shared.IndexFile;
 import com.codenvy.ide.ext.git.shared.ResetRequest;
 import com.codenvy.ide.ext.git.shared.Status;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.ui.dialogs.message.MessageDialog;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -60,6 +61,7 @@ public class ResetFilesPresenterTest extends BaseTest {
     public void testShowDialogWhenStatusRequestIsSuccessful() throws Exception {
         final Status status = mock(Status.class);
         List<String> changes = new ArrayList<String>();
+        changes.add("Change");
         when(status.getAdded()).thenReturn(changes);
         when(status.getChanged()).thenReturn(changes);
         when(status.getRemoved()).thenReturn(changes);
@@ -81,6 +83,40 @@ public class ResetFilesPresenterTest extends BaseTest {
         verify(service).status(eq(rootProjectDescriptor), (AsyncRequestCallback<Status>)anyObject());
         verify(view).setIndexedFiles((Array<IndexFile>)anyObject());
         verify(view).showDialog();
+    }
+
+    @Test
+    public void testShowDialogWhenStatusRequestIsSuccessfulButIndexIsEmpty() throws Exception {
+        MessageDialog messageDialog = mock(MessageDialog.class);
+        when(constant.messagesWarningTitle()).thenReturn("Warning");
+        when(constant.indexIsEmpty()).thenReturn("Index is Empty");
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), (com.codenvy.ide.ui.dialogs.ConfirmCallback)anyObject()))
+                          .thenReturn(messageDialog);
+        final Status status = mock(Status.class);
+        List<String> changes = new ArrayList<>();
+        when(status.getAdded()).thenReturn(changes);
+        when(status.getChanged()).thenReturn(changes);
+        when(status.getRemoved()).thenReturn(changes);
+
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] arguments = invocation.getArguments();
+                AsyncRequestCallback<Status> callback = (AsyncRequestCallback<Status>)arguments[1];
+                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+                onSuccess.invoke(callback, status);
+                return callback;
+            }
+        }).when(service).status((ProjectDescriptor)anyObject(), (AsyncRequestCallback<Status>)anyObject());
+
+        presenter.showDialog();
+
+        verify(appContext).getCurrentProject();
+        verify(service).status(eq(rootProjectDescriptor), (AsyncRequestCallback<Status>)anyObject());
+        verify(dialogFactory).createMessageDialog(eq("Warning"), eq("Index is Empty"),
+                                                 (com.codenvy.ide.ui.dialogs.ConfirmCallback)anyObject());
+        verify(view, never()).setIndexedFiles((Array<IndexFile>)anyObject());
+        verify(view, never()).showDialog();
     }
 
     @Test
@@ -106,8 +142,16 @@ public class ResetFilesPresenterTest extends BaseTest {
 
     @Test
     public void testOnResetClickedWhenNothingToReset() throws Exception {
+        MessageDialog messageDialog = mock(MessageDialog.class);
         final Status status = mock(Status.class);
+        IndexFile indexFile = mock(IndexFile.class);
+        when(dtoFactory.createDto(IndexFile.class)).thenReturn(indexFile);
+        when(constant.messagesWarningTitle()).thenReturn("Warning");
+        when(constant.indexIsEmpty()).thenReturn("Index is Empty");
+        when(dialogFactory.createMessageDialog(constant.messagesWarningTitle(), constant.indexIsEmpty(), null)).thenReturn(messageDialog);
+        when(indexFile.isIndexed()).thenReturn(true);
         List<String> changes = new ArrayList<String>();
+        changes.add("Change");
         when(status.getAdded()).thenReturn(changes);
         when(status.getChanged()).thenReturn(changes);
         when(status.getRemoved()).thenReturn(changes);
@@ -127,7 +171,7 @@ public class ResetFilesPresenterTest extends BaseTest {
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service, never()).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service, never()).reset(eq(projectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(), (List<String>)anyObject(),
                                        (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).nothingToReset();
@@ -156,19 +200,19 @@ public class ResetFilesPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[4];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(service).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(),
+        }).when(service).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(), (List<String>)anyObject(),
                                (AsyncRequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onResetClicked();
 
         verify(view).close();
-        verify(service).reset(eq(rootProjectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(rootProjectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(), (List<String>)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).resetFilesSuccessfully();
@@ -197,18 +241,18 @@ public class ResetFilesPresenterTest extends BaseTest {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[3];
+                AsyncRequestCallback<Void> callback = (AsyncRequestCallback<Void>)arguments[4];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(),
+        }).when(service).reset((ProjectDescriptor)anyObject(), anyString(), (ResetRequest.ResetType)anyObject(), (List<String>)anyObject(),
                                (AsyncRequestCallback<Void>)anyObject());
 
         presenter.showDialog();
         presenter.onResetClicked();
 
-        verify(service).reset(eq(rootProjectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(),
+        verify(service).reset(eq(rootProjectDescriptor), anyString(), (ResetRequest.ResetType)anyObject(), (List<String>)anyObject(),
                               (AsyncRequestCallback<Void>)anyObject());
         verify(constant).resetFilesFailed();
         verify(notificationManager).showNotification((Notification)anyObject());

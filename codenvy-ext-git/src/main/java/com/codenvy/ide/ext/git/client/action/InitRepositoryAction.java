@@ -59,4 +59,10 @@ public class InitRepositoryAction extends GitAction {
                                               }
                                           }, null).show();
     }
+
+    @Override
+    protected void updateProjectAction(ActionEvent e) {
+        e.getPresentation().setVisible(getActiveProject() != null);
+        e.getPresentation().setEnabled(!isGitRepository());
+    }
 }

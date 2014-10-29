@@ -44,4 +44,9 @@ public class PullAction extends GitAction {
         eventLogger.log(this);
         presenter.showDialog();
     }
+
+    @Override
+    protected void updateProjectAction(ActionEvent e) {
+        e.getPresentation().setEnabledAndVisible(isGitRepository());
+    }
 }

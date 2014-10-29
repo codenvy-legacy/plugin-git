@@ -16,6 +16,7 @@ import com.codenvy.ide.ui.window.Window;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Button;
@@ -90,7 +91,7 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
     /** {@inheritDoc} */
     @Override
     public void setMessage(@Nonnull String message) {
-        this.message.getElement().setInnerHTML(message);
+        this.message.getElement().setInnerHTML(SafeHtmlUtils.fromString(message).asString());
     }
 
     /** {@inheritDoc} */

@@ -155,6 +155,6 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     @Override
     public void onRemoteSelected(@Nonnull Remote remote) {
         selectedRemote = remote;
-        view.setEnableDeleteButton(true);
+        view.setEnableDeleteButton(selectedRemote != null);
     }
 }

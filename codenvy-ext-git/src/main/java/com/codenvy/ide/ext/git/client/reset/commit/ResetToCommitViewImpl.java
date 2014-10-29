@@ -275,15 +275,6 @@ public class ResetToCommitViewImpl extends Window implements ResetToCommitView {
 
     /** {@inheritDoc} */
     @Override
-    public void clearSelection() {
-        final SingleSelectionModel<Revision> selectionModel = (SingleSelectionModel<Revision>)commits.getSelectionModel();
-        if (selectionModel != null) {
-            selectionModel.clear();
-        }
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void close() {
         this.hide();
     }

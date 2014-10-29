@@ -169,9 +169,9 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
     }
 
     /**
-     * Returns pattern of the files to be removed.
+     * Returns pattern of the items to be removed.
      *
-     * @return pattern of the files to be removed
+     * @return pattern of the items to be removed
      */
     @Nonnull
     private List<String> getFilePatterns() {

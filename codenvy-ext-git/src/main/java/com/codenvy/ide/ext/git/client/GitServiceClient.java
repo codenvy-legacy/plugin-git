@@ -192,18 +192,17 @@ public interface GitServiceClient {
                       @Nonnull AsyncRequestCallback<String> callback);
 
     /**
-     * Remove files from the working tree and the index.
+     * Remove items from the working tree and the index.
      *
      * @param project
      *         project (root of GIT repository)
-     * @param files
-     *         files to remove
+     * @param items
+     *         items to remove
      * @param cached
      *         is for removal only from index
      * @param callback
      */
-    void remove(@Nonnull ProjectDescriptor project, List<String> files, boolean cached,
-                @Nonnull AsyncRequestCallback<String> callback);
+    void remove(@Nonnull ProjectDescriptor project, List<String> items, boolean cached, @Nonnull AsyncRequestCallback<String> callback);
 
     /**
      * Reset current HEAD to the specified state. There two types of the reset: <br>

@@ -207,5 +207,6 @@ public class RemoteViewImpl extends Window implements RemoteView {
     /** {@inheritDoc} */
     @Override
     protected void onClose() {
+        this.isShown = false;
     }
 }

@@ -112,9 +112,6 @@ public interface ResetToCommitView extends View<ResetToCommitView.ActionDelegate
      */
     void setEnableResetButton(boolean enabled);
 
-    /** Clear selection. */
-    void clearSelection();
-
     /** Close dialog. */
     void close();
 

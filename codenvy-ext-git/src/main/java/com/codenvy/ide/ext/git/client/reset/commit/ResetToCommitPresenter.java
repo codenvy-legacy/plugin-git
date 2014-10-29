@@ -81,11 +81,9 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
                     new AsyncRequestCallback<LogResponse>(dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class)) {
                         @Override
                         protected void onSuccess(LogResponse result) {
-                            selectedRevision = null;
-                            view.clearSelection();
                             view.setRevisions(result.getCommits());
                             view.setMixMode(true);
-                            view.setEnableResetButton(false);
+                            view.setEnableResetButton(selectedRevision != null);
                             view.showDialog();
                         }
 

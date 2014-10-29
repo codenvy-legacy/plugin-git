@@ -33,7 +33,7 @@ public class ShowRemoteAction extends GitAction {
                             GitLocalizationConstant constant,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent) {
-        super(constant.remotesControlTitle(), constant.remotesControlPrompt(), null, resources.remotes(), appContext, selectionAgent);
+        super(constant.remotesControlTitle(), constant.remotesControlPrompt(), resources.remotes(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,11 +43,5 @@ public class ShowRemoteAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(isGitRepository());
     }
 }

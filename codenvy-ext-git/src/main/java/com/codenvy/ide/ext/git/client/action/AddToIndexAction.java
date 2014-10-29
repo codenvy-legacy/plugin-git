@@ -33,7 +33,7 @@ public class AddToIndexAction extends GitAction {
                             GitLocalizationConstant constant,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent) {
-        super(constant.addToIndexTitle(), constant.addToIndexTitle(), null, resources.addToIndex(), appContext, selectionAgent);
+        super(constant.addToIndexTitle(), constant.addToIndexTitle(), resources.addToIndex(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,12 +43,5 @@ public class AddToIndexAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

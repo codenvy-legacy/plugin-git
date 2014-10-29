@@ -33,7 +33,7 @@ public class CommitAction extends GitAction {
                         GitLocalizationConstant constant,
                         AnalyticsEventLogger eventLogger,
                         SelectionAgent selectionAgent) {
-        super(constant.commitControlTitle(), constant.commitControlPrompt(), null, resources.commit(), appContext, selectionAgent);
+        super(constant.commitControlTitle(), constant.commitControlPrompt(), resources.commit(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,12 +43,5 @@ public class CommitAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

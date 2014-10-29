@@ -27,8 +27,8 @@ import com.google.inject.Singleton;
 public class InitRepositoryAction extends GitAction {
     private final InitRepositoryPresenter presenter;
     private final AnalyticsEventLogger    eventLogger;
-    private       GitLocalizationConstant constant;
     private final DialogFactory           dialogFactory;
+    private GitLocalizationConstant constant;
 
     @Inject
     public InitRepositoryAction(InitRepositoryPresenter presenter,
@@ -38,7 +38,7 @@ public class InitRepositoryAction extends GitAction {
                                 AnalyticsEventLogger eventLogger,
                                 SelectionAgent selectionAgent,
                                 DialogFactory dialogFactory) {
-        super(constant.initControlTitle(), constant.initControlPrompt(), null, resources.initRepo(), appContext, selectionAgent);
+        super(constant.initControlTitle(), constant.initControlPrompt(), resources.initRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
         this.constant = constant;
@@ -58,12 +58,5 @@ public class InitRepositoryAction extends GitAction {
                                                   presenter.initRepository();
                                               }
                                           }, null).show();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(!isGitRepository());
     }
 }

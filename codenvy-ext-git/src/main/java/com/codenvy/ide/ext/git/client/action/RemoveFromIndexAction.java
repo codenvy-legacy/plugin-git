@@ -33,7 +33,7 @@ public class RemoveFromIndexAction extends GitAction {
                                  GitLocalizationConstant constant,
                                  AnalyticsEventLogger eventLogger,
                                  SelectionAgent selectionAgent) {
-        super(constant.removeFromIndexTitle(), constant.removeFromIndexTitle(), null, resources.removeFiles(), appContext, selectionAgent);
+        super(constant.removeFromIndexTitle(), constant.removeFromIndexTitle(), resources.removeFiles(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -45,9 +45,8 @@ public class RemoveFromIndexAction extends GitAction {
         presenter.showDialog();
     }
 
-    /** {@inheritDoc} */
     @Override
-    public void update(ActionEvent e) {
+    protected void updateProjectAction(ActionEvent e) {
         e.getPresentation().setVisible(getActiveProject() != null);
         e.getPresentation().setEnabled(isGitRepository() && isItemSelected());
     }

@@ -33,8 +33,8 @@ public class ShowGitUrlAction extends GitAction {
                             GitLocalizationConstant constant,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent) {
-        super(constant.projectReadOnlyGitUrlPrompt(), constant.projectReadOnlyGitUrlPrompt(), null,
-              resources.projectReadOnlyGitUrl(), appContext, selectionAgent);
+        super(constant.projectReadOnlyGitUrlPrompt(), constant.projectReadOnlyGitUrlPrompt(), resources.projectReadOnlyGitUrl(), appContext,
+              selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -44,12 +44,5 @@ public class ShowGitUrlAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

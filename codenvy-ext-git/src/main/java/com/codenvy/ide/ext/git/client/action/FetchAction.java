@@ -33,7 +33,7 @@ public class FetchAction extends GitAction {
                        GitLocalizationConstant constant,
                        AnalyticsEventLogger eventLogger,
                        SelectionAgent selectionAgent) {
-        super(constant.fetchControlTitle(), constant.fetchControlPrompt(), null, resources.fetch(), appContext, selectionAgent);
+        super(constant.fetchControlTitle(), constant.fetchControlPrompt(), resources.fetch(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,11 +43,5 @@ public class FetchAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(isGitRepository());
     }
 }

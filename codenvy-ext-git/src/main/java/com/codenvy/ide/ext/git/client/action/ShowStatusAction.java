@@ -33,7 +33,7 @@ public class ShowStatusAction extends GitAction {
                             GitLocalizationConstant constant,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent) {
-        super(constant.statusControlTitle(), constant.statusControlPrompt(), null, resources.status(), appContext, selectionAgent);
+        super(constant.statusControlTitle(), constant.statusControlPrompt(), resources.status(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,12 +43,5 @@ public class ShowStatusAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showStatus();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

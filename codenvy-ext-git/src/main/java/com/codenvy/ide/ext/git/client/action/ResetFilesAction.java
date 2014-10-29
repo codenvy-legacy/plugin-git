@@ -33,7 +33,7 @@ public class ResetFilesAction extends GitAction {
                             GitLocalizationConstant constant,
                             AnalyticsEventLogger eventLogger,
                             SelectionAgent selectionAgent) {
-        super(constant.resetFilesControlTitle(), constant.resetFilesControlPrompt(), null, resources.reset(), appContext, selectionAgent);
+        super(constant.resetFilesControlTitle(), constant.resetFilesControlPrompt(), resources.reset(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,12 +43,5 @@ public class ResetFilesAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

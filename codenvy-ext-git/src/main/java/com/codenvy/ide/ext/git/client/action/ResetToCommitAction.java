@@ -33,7 +33,7 @@ public class ResetToCommitAction extends GitAction {
                                GitLocalizationConstant constant,
                                AnalyticsEventLogger eventLogger,
                                SelectionAgent selectionAgent) {
-        super(constant.resetToCommitControlTitle(), constant.resetToCommitControlPrompt(), null, resources.revert(), appContext,
+        super(constant.resetToCommitControlTitle(), constant.resetToCommitControlPrompt(), resources.revert(), appContext,
               selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
@@ -44,12 +44,5 @@ public class ResetToCommitAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

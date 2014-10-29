@@ -33,7 +33,7 @@ public class ShowMergeAction extends GitAction {
                            GitLocalizationConstant constant,
                            AnalyticsEventLogger eventLogger,
                            SelectionAgent selectionAgent) {
-        super(constant.mergeControlTitle(), constant.mergeControlPrompt(), null, resources.merge(), appContext, selectionAgent);
+        super(constant.mergeControlTitle(), constant.mergeControlPrompt(), resources.merge(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,12 +43,5 @@ public class ShowMergeAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

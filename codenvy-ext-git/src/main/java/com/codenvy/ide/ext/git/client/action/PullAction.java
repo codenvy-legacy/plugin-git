@@ -33,7 +33,7 @@ public class PullAction extends GitAction {
                       GitLocalizationConstant constant,
                       AnalyticsEventLogger eventLogger,
                       SelectionAgent selectionAgent) {
-        super(constant.pullControlTitle(), constant.pullControlPrompt(), null, resources.pull(), appContext, selectionAgent);
+        super(constant.pullControlTitle(), constant.pullControlPrompt(), resources.pull(), appContext, selectionAgent);
         this.presenter = presenter;
         this.eventLogger = eventLogger;
     }
@@ -43,11 +43,5 @@ public class PullAction extends GitAction {
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
         presenter.showDialog();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setEnabledAndVisible(isGitRepository());
     }
 }

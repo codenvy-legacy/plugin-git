@@ -26,9 +26,9 @@ import com.google.inject.Singleton;
 @Singleton
 public class DeleteRepositoryAction extends GitAction {
     private final DeleteRepositoryPresenter presenter;
+    private final AnalyticsEventLogger eventLogger;
+    private final DialogFactory        dialogFactory;
     private       GitLocalizationConstant   constant;
-    private final AnalyticsEventLogger      eventLogger;
-    private final DialogFactory             dialogFactory;
 
     @Inject
     public DeleteRepositoryAction(DeleteRepositoryPresenter presenter,
@@ -38,7 +38,7 @@ public class DeleteRepositoryAction extends GitAction {
                                   AnalyticsEventLogger eventLogger,
                                   SelectionAgent selectionAgent,
                                   DialogFactory dialogFactory) {
-        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), null, resources.deleteRepo(), appContext, selectionAgent);
+        super(constant.deleteControlTitle(), constant.deleteControlPrompt(), resources.deleteRepo(), appContext, selectionAgent);
         this.presenter = presenter;
         this.constant = constant;
         this.eventLogger = eventLogger;
@@ -57,12 +57,5 @@ public class DeleteRepositoryAction extends GitAction {
                                                   presenter.deleteRepository();
                                               }
                                           }, null).show();
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void update(ActionEvent e) {
-        e.getPresentation().setVisible(getActiveProject() != null);
-        e.getPresentation().setEnabled(isGitRepository());
     }
 }

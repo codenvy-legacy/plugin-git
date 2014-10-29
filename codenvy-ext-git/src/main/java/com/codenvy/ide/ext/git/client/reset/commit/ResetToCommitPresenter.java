@@ -119,7 +119,7 @@ public class ResetToCommitPresenter implements ResetToCommitView.ActionDelegate 
     @Override
     public void onRevisionSelected(@Nonnull Revision revision) {
         selectedRevision = revision;
-        view.setEnableResetButton(true);
+        view.setEnableResetButton(selectedRevision != null);
     }
 
     /** Reset current HEAD to the specified state and refresh project in the success case.*/

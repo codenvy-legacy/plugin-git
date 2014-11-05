@@ -73,8 +73,10 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Pattern;
 
 /**
@@ -415,6 +417,18 @@ public class NativeGitConnection implements GitConnection {
         } else {
             pushCommand = nativeGit.createPushCommand();
         }
+
+        //temporary conversion of ref spec for gerrithub. to use refs/for/[branch_name] instead of refs/head/[branch_name]
+//        if (remoteUri.contains("gerrithub.io")) {
+//            ListIterator<String> it = request.getRefSpec().listIterator();
+//            while (it.hasNext()) {
+//                String spec = it.next();
+//                if (!spec.contains("refs/for/")) {
+//                    it.set(spec.replace(":", ":refs/for/"));
+//                }
+//            }
+//        }
+
         pushCommand.setRemote(request.getRemote()).setForce(request.isForce())
                    .setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());

@@ -11,7 +11,6 @@
 package com.codenvy.ide.ext.github.client.projectimporter;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.git.client.projectImporter.GitProjectImporter;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
@@ -28,9 +27,8 @@ public class GithubProjectImporter extends GitProjectImporter {
 
     @Inject
     public GithubProjectImporter(ProjectServiceClient projectService,
-                                 DtoFactory dtoFactory,
                                  DtoUnmarshallerFactory dtoUnmarshallerFactory) {
-        super(projectService, dtoFactory, dtoUnmarshallerFactory);
+        super(projectService, dtoUnmarshallerFactory);
     }
 
     @Override

@@ -11,12 +11,16 @@
 package com.codenvy.ide.ext.git.client.projectImporter.importerpage;
 
 import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.ImplementedBy;
+
 
 /**
  * @author Roman Nikitenko
  */
 @ImplementedBy(GitImporterPageViewImpl.class)
-public interface GitImporterPageView extends ImporterBasePageView {
-
+public interface GitImporterPageView extends IsWidget {
+    /** @return panel for {@link ImporterBasePageView} */
+    AcceptsOneWidget getBasePagePanel();
 }

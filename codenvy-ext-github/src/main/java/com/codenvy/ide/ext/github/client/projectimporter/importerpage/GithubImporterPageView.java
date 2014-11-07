@@ -13,7 +13,8 @@ package com.codenvy.ide.ext.github.client.projectimporter.importerpage;
 import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.github.client.load.ProjectData;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
+import com.google.gwt.user.client.ui.IsWidget;
 import com.google.inject.ImplementedBy;
 
 import javax.annotation.Nonnull;
@@ -22,11 +23,12 @@ import javax.annotation.Nonnull;
  * @author Roman Nikitenko
  */
 @ImplementedBy(GithubImporterPageViewImpl.class)
-public interface GithubImporterPageView extends ImporterBasePageView {
+public interface GithubImporterPageView extends IsWidget {
 
-    public interface ActionDelegate extends ImporterBasePageView.ActionDelegate{
+    public interface ActionDelegate {
         /** Performs any actions appropriate in response to the user having clicked the 'LoadRepo' key. */
         void onLoadRepoClicked();
+
         /**
          * Performs any actions appropriate in response to the user having selected a repository.
          *
@@ -38,10 +40,9 @@ public interface GithubImporterPageView extends ImporterBasePageView {
         /** Performs any actions appropriate in response to the user having changed account field. */
         void onAccountChanged();
     }
-    Widget asWidget();
 
     /** Sets the delegate to receive events from this view. */
-    void setDelegate(ActionDelegate delegate);
+    void setDelegate(@Nonnull ActionDelegate delegate);
 
     /**
      * Set available repositories for account.
@@ -50,14 +51,6 @@ public interface GithubImporterPageView extends ImporterBasePageView {
      *         available repositories
      */
     void setRepositories(@Nonnull Array<ProjectData> repositories);
-
-    /**
-     * Set the project's URL.
-     *
-     * @param url
-     *         the project's URL to set
-     */
-    void setProjectUrl(String url);
 
     /** @return account name */
     @Nonnull
@@ -77,6 +70,9 @@ public interface GithubImporterPageView extends ImporterBasePageView {
     /** Show github panel. */
     void showGithubPanel();
 
+    /** Reset the page. */
+    void reset();
+
     /**
      * Set the visibility state of the loader.
      *
@@ -84,5 +80,9 @@ public interface GithubImporterPageView extends ImporterBasePageView {
      *         <code>true</code> if visible.
      */
     void setLoaderVisibility(boolean isVisible);
+
+    /** @return panel for {@link ImporterBasePageView}*/
+    @Nonnull
+    AcceptsOneWidget getBasePagePanel();
 
 }

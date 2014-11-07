@@ -10,84 +10,33 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.projectImporter.importerpage;
 
-import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.inject.Inject;
 
 /**
  * @author Roman Nikitenko
  */
 public class GitImporterPageViewImpl extends Composite implements GitImporterPageView {
-    private ImporterBasePageView importerBasePageView;
+
+    interface GitImporterPageViewImplUiBinder extends UiBinder<DockLayoutPanel, GitImporterPageViewImpl> {
+    }
+
+    @UiField
+    SimplePanel            basePagePanel;
 
     @Inject
-    public GitImporterPageViewImpl(ImporterBasePageView importerBasePageView) {
-        this.importerBasePageView = importerBasePageView;
+    public GitImporterPageViewImpl(GitImporterPageViewImplUiBinder uiBinder) {
+        initWidget(uiBinder.createAndBindUi(this));
     }
 
+    /** {@inheritDoc} */
     @Override
-    public void setProjectUrl(String url) {
-        importerBasePageView.setProjectUrl(url);
-    }
-
-    @Override
-    public void reset() {
-        importerBasePageView.reset();
-    }
-
-    @Override
-    public void showNameError() {
-        importerBasePageView.showNameError();
-    }
-
-    @Override
-    public void hideNameError() {
-        importerBasePageView.hideNameError();
-    }
-
-    @Override
-    public void showUrlError(String message) {
-        importerBasePageView.showUrlError(message);
-    }
-
-    @Override
-    public void hideUrlError() {
-        importerBasePageView.hideUrlError();
-    }
-
-    @Override
-    public void setImporterDescription(String text) {
-        importerBasePageView.setImporterDescription(text);
-    }
-
-    @Override
-    public String getProjectName() {
-        return importerBasePageView.getProjectName();
-    }
-
-    @Override
-    public void setProjectName(String projectName) {
-        importerBasePageView.setProjectName(projectName);
-    }
-
-    @Override
-    public void focusInUrlInput() {
-        importerBasePageView.focusInUrlInput();
-    }
-
-    @Override
-    public void setInputsEnableState(boolean isEnabled) {
-        importerBasePageView.setInputsEnableState(isEnabled);
-    }
-
-    @Override
-    public void setDelegate(ActionDelegate delegate) {
-        importerBasePageView.setDelegate(delegate);
-    }
-
-    @Override
-    public Widget asWidget() {
-        return importerBasePageView.asWidget();
+    public AcceptsOneWidget getBasePagePanel() {
+        return basePagePanel;
     }
 }

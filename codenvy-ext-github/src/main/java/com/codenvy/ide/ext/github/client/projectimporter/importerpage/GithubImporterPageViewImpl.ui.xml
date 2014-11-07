@@ -43,7 +43,7 @@
     </ui:style>
     <g:DockLayoutPanel unit="PX">
         <g:north size="220">
-            <g:FlowPanel ui:field="basePagePanel" debugId="githubImporter-basePagePanel"/>
+            <g:SimplePanel ui:field="basePagePanel" debugId="githubImporter-basePagePanel"/>
         </g:north>
         <g:north size="30">
             <g:FlowPanel>

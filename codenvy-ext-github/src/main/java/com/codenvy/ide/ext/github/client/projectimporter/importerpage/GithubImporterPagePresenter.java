@@ -16,7 +16,8 @@ import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
-import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
+import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageListener;
+import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePagePresenter;
 import com.codenvy.ide.api.projecttype.wizard.ImportProjectWizard;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.Wizard;
@@ -52,7 +53,7 @@ import static com.codenvy.ide.api.notification.Notification.Type.*;
 /**
  * @author Roman Nikitenko
  */
-public class GithubImporterPagePresenter implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, ImporterBasePageView.ActionDelegate,
+public class GithubImporterPagePresenter implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, ImporterBasePageListener,
                                                     OAuthCallback {
 
     private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_-]*$");
@@ -79,6 +80,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
     private       ProjectData                        selectedRepository;
     private       GitLocalizationConstant            locale;
     private       GithubImporterPageView             view;
+    private       ImporterBasePagePresenter          basePagePresenter;
     private       WizardContext                      wizardContext;
     private       Wizard.UpdateDelegate              updateDelegate;
     private       String                             baseUrl;
@@ -86,6 +88,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
 
     @Inject
     public GithubImporterPagePresenter(GithubImporterPageView view,
+                                       ImporterBasePagePresenter basePagePresenter,
                                        @Named("restContext") String baseUrl,
                                        NotificationManager notificationManager,
                                        UserServiceClient userServiceClient,
@@ -95,6 +98,9 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
                                        EventBus eventBus,
                                        GitLocalizationConstant locale) {
         this.view = view;
+        this.basePagePresenter = basePagePresenter;
+        this.basePagePresenter.go(view.getBasePagePanel());
+        this.basePagePresenter.setListener(this);
         this.baseUrl = baseUrl;
         this.notificationManager = notificationManager;
         this.userServiceClient = userServiceClient;
@@ -106,94 +112,102 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         this.locale = locale;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getId() {
         return "github";
     }
 
+    /** {@inheritDoc} */
     @Override
     public void disableInputs() {
-        view.setInputsEnableState(false);
+        basePagePresenter.setInputsEnableState(false);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void enableInputs() {
-        view.setInputsEnableState(true);
+        basePagePresenter.setInputsEnableState(true);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setContext(WizardContext wizardContext) {
         this.wizardContext = wizardContext;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void setProjectWizardDelegate(Wizard.UpdateDelegate updateDelegate) {
         this.updateDelegate = updateDelegate;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void clear() {
         view.reset();
+        basePagePresenter.reset();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void projectNameChanged(String name) {
         if (name == null || name.isEmpty()) {
             wizardContext.removeData(ProjectWizard.PROJECT_NAME);
         } else if (NAME_PATTERN.test(name)) {
             wizardContext.putData(ProjectWizard.PROJECT_NAME, name);
-            view.hideNameError();
+            basePagePresenter.hideNameError();
         } else {
             wizardContext.removeData(ProjectWizard.PROJECT_NAME);
-            view.showNameError();
+            basePagePresenter.showNameError();
         }
         updateDelegate.updateControls();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void projectUrlChanged(String url) {
         if (!isGitUrlCorrect(url)) {
             wizardContext.removeData(ImportProjectWizard.PROJECT_URL);
         } else {
             wizardContext.putData(ImportProjectWizard.PROJECT_URL, url);
-            view.hideUrlError();
+            basePagePresenter.hideUrlError();
 
-            String projectName = view.getProjectName();
+            String projectName = basePagePresenter.getProjectName();
             if (projectName.isEmpty()) {
                 projectName = parseUri(url);
-                view.setProjectName(projectName);
+                basePagePresenter.setProjectName(projectName);
                 projectNameChanged(projectName);
             }
         }
         updateDelegate.updateControls();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void projectDescriptionChanged(String projectDescriptionValue) {
         wizardContext.putData(ProjectWizard.PROJECT_DESCRIPTION, projectDescriptionValue);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void projectVisibilityChanged(Boolean aPublic) {
         wizardContext.putData(ProjectWizard.PROJECT_VISIBILITY, aPublic);
     }
 
-    @Override
-    public void onEnterClicked() {
-
-    }
-
+    /** {@inheritDoc} */
     @Override
     public void go(AcceptsOneWidget container) {
         clear();
         ProjectImporterDescriptor projectImporter = wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER);
-        view.setImporterDescription(projectImporter.getDescription());
-        view.setInputsEnableState(true);
+        basePagePresenter.setImporterDescription(projectImporter.getDescription());
+        basePagePresenter.setInputsEnableState(true);
         container.setWidget(view.asWidget());
-        view.focusInUrlInput();
         getUserRepos(false);
+        basePagePresenter.focusInUrlInput();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onLoadRepoClicked() {
         clear();
@@ -253,19 +267,22 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         authWindow.loginWithOAuth();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onRepositorySelected(@Nonnull ProjectData repository) {
         selectedRepository = repository;
-        view.setProjectName(selectedRepository.getName());
-        view.setProjectUrl(selectedRepository.getRepositoryUrl());
+        basePagePresenter.setProjectName(selectedRepository.getName());
+        basePagePresenter.setProjectUrl(selectedRepository.getRepositoryUrl());
         updateDelegate.updateControls();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onAccountChanged() {
         refreshProjectList();
     }
 
+    /** {@inheritDoc} */
     @Override
     public void onAuthenticated(OAuthStatus authStatus) {
         getUserRepos(false);
@@ -298,10 +315,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         }
 
         view.setRepositories(projectsData);
-        view.setProjectName("");
-        view.setProjectUrl("");
-        view.hideUrlError();
-        view.hideNameError();
+        basePagePresenter.reset();
         selectedRepository = null;
     }
 
@@ -312,6 +326,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
      */
     private void showProcessing(boolean inProgress) {
         view.setLoaderVisibility(inProgress);
+        basePagePresenter.setInputsEnableState(!inProgress);
     }
 
     /** Gets project name from uri. */
@@ -329,32 +344,39 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         return result;
     }
 
+    /**
+     * Validate url
+     *
+     * @param url
+     *         url for validate
+     * @return <code>true</code> if url is correct
+     */
     private boolean isGitUrlCorrect(String url) {
         if (WHITE_SPACE.test(url)) {
-            view.showUrlError(locale.importProjectMessageStartWithWhiteSpace());
+            basePagePresenter.showUrlError(locale.importProjectMessageStartWithWhiteSpace());
             return false;
         }
 
         if (SCP_LIKE_SYNTAX.test(url) && REPO_NAME.test(url)) {
             return true;
         } else if (SCP_LIKE_SYNTAX.test(url) && !REPO_NAME.test(url)) {
-            view.showUrlError(locale.importProjectMessageNameRepoIncorrect());
+            basePagePresenter.showUrlError(locale.importProjectMessageNameRepoIncorrect());
             return false;
         }
 
         if (!PROTOCOL.test(url)) {
-            view.showUrlError(locale.importProjectMessageProtocolIncorrect());
+            basePagePresenter.showUrlError(locale.importProjectMessageProtocolIncorrect());
             return false;
         }
         if (!(HOST1.test(url) || HOST2.test(url))) {
-            view.showUrlError(locale.importProjectMessageHostIncorrect());
+            basePagePresenter.showUrlError(locale.importProjectMessageHostIncorrect());
             return false;
         }
         if (!(REPO_NAME.test(url))) {
-            view.showUrlError(locale.importProjectMessageNameRepoIncorrect());
+            basePagePresenter.showUrlError(locale.importProjectMessageNameRepoIncorrect());
             return false;
         }
-        view.hideUrlError();
+        basePagePresenter.hideUrlError();
         return true;
     }
 

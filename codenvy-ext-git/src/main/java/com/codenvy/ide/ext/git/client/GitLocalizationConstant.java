@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.git.client;
 
 import com.google.gwt.i18n.client.Messages;
+import com.google.gwt.safehtml.shared.SafeHtml;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
@@ -248,10 +249,10 @@ public interface GitLocalizationConstant extends Messages {
     String addToIndexAllChanges();
 
     @Key("view.add_to_index.folder")
-    String addToIndexFolder(String folder);
+    SafeHtml addToIndexFolder(String folder);
 
     @Key("view.add_to_index.file")
-    String addToIndexFile(String file);
+    SafeHtml addToIndexFile(String file);
 
     @Key("view.add_to_index.update_field_title")
     String addToIndexUpdateFieldTitle();
@@ -360,10 +361,10 @@ public interface GitLocalizationConstant extends Messages {
     String removeFromIndexOnly();
 
     @Key("view.remove_from_index.folder")
-    String removeFromIndexFolder(String folder);
+    SafeHtml removeFromIndexFolder(String folder);
 
     @Key("view.remove_from_index.file")
-    String removeFromIndexFile(String file);
+    SafeHtml removeFromIndexFile(String file);
 
     @Key("view.remove_from_index.title")
     String removeFromIndexTitle();

@@ -90,6 +90,9 @@ public class GitProjectImporter implements ProjectImporter {
     public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
                               LineConsumerFactory consumerFactory)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+        // Clone to temporary directory and copy result to destination directory.
+        // In some reason there is bad performance when clone directly to directory where glusterfs is mounted.
+        // In simple test get 10 times better performance that if clone directly to glusterfs.
         File temp = null;
         try {
             // For factory: checkout particular commit after clone

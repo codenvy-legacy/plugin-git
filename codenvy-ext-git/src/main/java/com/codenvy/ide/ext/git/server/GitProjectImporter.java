@@ -90,6 +90,7 @@ public class GitProjectImporter implements ProjectImporter {
     public void importSources(FolderEntry baseFolder, String location, Map<String, String> parameters,
                               LineConsumerFactory consumerFactory)
             throws ForbiddenException, ConflictException, UnauthorizedException, IOException, ServerException {
+        File temp = null;
         try {
             // For factory: checkout particular commit after clone
             String commitId = null;
@@ -115,74 +116,70 @@ public class GitProjectImporter implements ProjectImporter {
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             // Get path to local file. Git works with local filesystem only.
             final String localPath = localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
-            final GitConnection git;
-            if (keepDirectory == null) {
-                git = gitConnectionFactory.getConnection(localPath, consumerFactory);
+            temp = Files.createTempDirectory(null).toFile();
+            final GitConnection git = gitConnectionFactory.getConnection(temp, consumerFactory);
+            if (keepDirectory != null) {
+                sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
             } else {
-                // Clone a git repository's sub-directory only. Vcs info (.git, gitignore) always lost.
-                final File temp = Files.createTempDirectory(null).toFile();
                 try {
-                    git = gitConnectionFactory.getConnection(temp, consumerFactory);
-                    sparsecheckout(git, location, branch == null ? "master" : branch, keepDirectory, dtoFactory);
-                    // Copy content of directory to the project folder.
-                    final File projectDir = new File(localPath);
-                    IoUtil.copy(new File(temp, keepDirectory), projectDir, IoUtil.ANY_FILTER);
-                } finally {
-                    IoUtil.deleteRecursive(temp);
-                }
-                return;
-            }
-            try {
-                if (baseFolder.getChildren().size() == 0) {
-                    cloneRepository(git, "origin", location, dtoFactory);
-                    if (commitId != null) {
-                        checkoutCommit(git, commitId, dtoFactory);
-                    } else if (remoteOriginFetch != null) {
-                        git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
-                        fetch(git, "origin", dtoFactory);
-                        if (branch != null) {
-                            checkoutBranch(git, branch, dtoFactory);
-                        }
-                    } else if (branch != null) {
-                        checkoutBranch(git, branch, dtoFactory);
-                    }
-                } else {
-                    initRepository(git, dtoFactory);
-                    addRemote(git, "origin", location, dtoFactory);
-                    if (commitId != null) {
-                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
-                        checkoutCommit(git, commitId, dtoFactory);
-                    } else if (remoteOriginFetch != null) {
-                        git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
-                        fetch(git, "origin", dtoFactory);
-                        if (branch != null) {
+                    if (baseFolder.getChildren().size() == 0) {
+                        cloneRepository(git, "origin", location, dtoFactory);
+                        if (commitId != null) {
+                            checkoutCommit(git, commitId, dtoFactory);
+                        } else if (remoteOriginFetch != null) {
+                            git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
+                            fetch(git, "origin", dtoFactory);
+                            if (branch != null) {
+                                checkoutBranch(git, branch, dtoFactory);
+                            }
+                        } else if (branch != null) {
                             checkoutBranch(git, branch, dtoFactory);
                         }
                     } else {
-                        fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
+                        initRepository(git, dtoFactory);
+                        addRemote(git, "origin", location, dtoFactory);
+                        if (commitId != null) {
+                            fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
+                            checkoutCommit(git, commitId, dtoFactory);
+                        } else if (remoteOriginFetch != null) {
+                            git.getConfig().add("remote.origin.fetch", remoteOriginFetch);
+                            fetch(git, "origin", dtoFactory);
+                            if (branch != null) {
+                                checkoutBranch(git, branch, dtoFactory);
+                            }
+                        } else {
+                            fetchBranch(git, "origin", branch == null ? "*" : branch, dtoFactory);
 
-                        List<Branch> branchList = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode("r"));
-                        if (!branchList.isEmpty()) {
-                            checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                            List<Branch> branchList = git.branchList(dtoFactory.createDto(BranchListRequest.class).withListMode("r"));
+                            if (!branchList.isEmpty()) {
+                                checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
+                            }
                         }
                     }
+                    if (!keepVcs) {
+                        cleanGit(new File(localPath));
+                    }
+                } finally {
+                    git.close();
                 }
-                if (!keepVcs) {
-                    cleanGit(new File(localPath));
-                }
-            } finally {
-                git.close();
             }
+            // Copy content of directory to the project folder.
+            final File projectDir = new File(localPath);
+            IoUtil.copy(keepDirectory == null ? temp : new File(temp, keepDirectory), projectDir, IoUtil.ANY_FILTER);
         } catch (UnauthorizedException e) {
             throw new UnauthorizedException(
                     "You are not authorized to perform the remote import. Codenvy may need accurate keys to the " +
-                            "external system. You can create a new SSH key pair in Window->Preferences->Keys And " +
-                            "Certificates->SSH Keystore.");
+                    "external system. You can create a new SSH key pair in Window->Preferences->Keys And " +
+                    "Certificates->SSH Keystore.");
         } catch (URISyntaxException e) {
             throw new ServerException(
                     "Your project cannot be imported. The issue is either from git configuration, a malformed URL, " +
                     "or file system corruption. Please contact support for assistance.",
                     e);
+        } finally {
+            if (temp != null) {
+                IoUtil.deleteRecursive(temp);
+            }
         }
     }
 

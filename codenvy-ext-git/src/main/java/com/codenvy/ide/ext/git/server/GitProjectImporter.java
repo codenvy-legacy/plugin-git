@@ -117,8 +117,6 @@ public class GitProjectImporter implements ProjectImporter {
                 keepVcs = parameters.containsKey("keepVcs") ? Boolean.parseBoolean(parameters.get("keepVcs")) : true;
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
-            // Get path to local file. Git works with local filesystem only.
-            final String localPath = localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             temp = Files.createTempDirectory(null).toFile();
             final GitConnection git = gitConnectionFactory.getConnection(temp, consumerFactory);
             if (keepDirectory != null) {
@@ -160,12 +158,14 @@ public class GitProjectImporter implements ProjectImporter {
                         }
                     }
                     if (!keepVcs) {
-                        cleanGit(new File(localPath));
+                        cleanGit(temp);
                     }
                 } finally {
                     git.close();
                 }
             }
+            // Get path to local file. Git works with local filesystem only.
+            final String localPath = localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)baseFolder.getVirtualFile());
             // Copy content of directory to the project folder.
             final File projectDir = new File(localPath);
             IoUtil.copy(keepDirectory == null ? temp : new File(temp, keepDirectory), projectDir, IoUtil.ANY_FILTER);

@@ -22,6 +22,7 @@ import java.nio.file.Path;
  * Commit changes
  *
  * @author Eugene Voevodin
+ * @author Artem Zatsarynnyy
  */
 public class CommitCommand extends GitCommand<Void> {
 

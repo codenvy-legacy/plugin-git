@@ -14,6 +14,9 @@ import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Commit changes
@@ -45,7 +48,18 @@ public class CommitCommand extends GitCommand<Void> {
         if (all) {
             commandLine.add("-a");
         }
-        commandLine.add("-m", message);
+        if (!message.contains("\n")) {
+            commandLine.add("-m", message);
+        } else {
+            try {
+                final Path commitMsgFile = Files.createTempFile("git-commit-message-", null);
+                Files.write(commitMsgFile, message.getBytes());
+                commandLine.add("-F", commitMsgFile.toString());
+            } catch (IOException e) {
+                // allow to commit but message will be in 'one-line' format
+                commandLine.add("-m", message);
+            }
+        }
         if (author != null) {
             commandLine.add(String.format("--author=%s \\<%s>", author.getName(), author.getEmail()));
         }

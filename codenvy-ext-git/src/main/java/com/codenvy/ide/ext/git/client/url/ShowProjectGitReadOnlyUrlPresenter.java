@@ -11,11 +11,15 @@
 package com.codenvy.ide.ext.git.client.url;
 
 import com.codenvy.ide.api.app.AppContext;
+import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -29,11 +33,12 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  */
 @Singleton
 public class ShowProjectGitReadOnlyUrlPresenter implements ShowProjectGitReadOnlyUrlView.ActionDelegate {
-    private ShowProjectGitReadOnlyUrlView view;
-    private GitServiceClient              service;
-    private AppContext                    appContext;
-    private GitLocalizationConstant       constant;
-    private NotificationManager           notificationManager;
+    private final DtoUnmarshallerFactory        dtoUnmarshallerFactory;
+    private       ShowProjectGitReadOnlyUrlView view;
+    private       GitServiceClient              service;
+    private       AppContext                    appContext;
+    private       GitLocalizationConstant       constant;
+    private       NotificationManager           notificationManager;
 
     /**
      * Create presenter.
@@ -47,22 +52,43 @@ public class ShowProjectGitReadOnlyUrlPresenter implements ShowProjectGitReadOnl
     @Inject
     public ShowProjectGitReadOnlyUrlPresenter(ShowProjectGitReadOnlyUrlView view, GitServiceClient service,
                                               AppContext appContext, GitLocalizationConstant constant,
-                                              NotificationManager notificationManager) {
+                                              NotificationManager notificationManager, DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
+        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
     }
 
     /** Show dialog. */
     public void showDialog() {
-        service.getGitReadOnlyUrl(appContext.getCurrentProject().getRootProject(),
+        final CurrentProject project = appContext.getCurrentProject();
+        service.remoteList(project.getRootProject(), null, true,
+                           new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
+                               @Override
+                               protected void onSuccess(Array<Remote> result) {
+                                   view.setRemotes(result);
+                               }
+
+                               @Override
+                               protected void onFailure(Throwable exception) {
+                                   view.setRemotes(null);
+                                   String errorMessage =
+                                           exception.getMessage() != null ? exception.getMessage()
+                                                                          : constant.remoteListFailed();
+                                   Notification notification = new Notification(errorMessage, ERROR);
+                                   notificationManager.showNotification(notification);
+                               }
+                           }
+                          );
+
+        service.getGitReadOnlyUrl(project.getRootProject(),
                                   new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                                       @Override
                                       protected void onSuccess(String result) {
-                                          view.setUrl(result);
+                                          view.setLocaleUrl(result);
                                           view.showDialog();
                                       }
 

@@ -27,6 +27,12 @@ public interface GitResources extends ClientBundle {
         String cells();
 
         String simpleListContainer();
+
+        String zeroClipboardButton();
+
+        String emptyBorder();
+
+        String spacing();
     }
 
     @Source({"git.css", "com/codenvy/ide/api/ui/style.css"})
@@ -166,4 +172,7 @@ public interface GitResources extends ClientBundle {
 
     @Source("welcome/project_open.png")
     ImageResource project();
+
+    @Source("url/clipboard.svg")
+    SVGResource clipboard();
 }

@@ -13,14 +13,22 @@ package com.codenvy.ide.ext.git.server.nativegit.commands;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Commit changes
  *
  * @author Eugene Voevodin
+ * @author Artem Zatsarynnyy
  */
 public class CommitCommand extends GitCommand<Void> {
+    private static final Logger LOG = LoggerFactory.getLogger(CommitCommand.class);
 
     private String  message;
     private GitUser author;
@@ -45,11 +53,30 @@ public class CommitCommand extends GitCommand<Void> {
         if (all) {
             commandLine.add("-a");
         }
-        commandLine.add("-m", message);
+        Path commitMsgFile = null;
+        if (!message.contains("\n")) {
+            commandLine.add("-m", message);
+        } else {
+            try {
+                commitMsgFile = Files.createTempFile("git-commit-message-", null);
+                Files.write(commitMsgFile, message.getBytes());
+                commandLine.add("-F", commitMsgFile.toString());
+            } catch (IOException e) {
+                // allow to commit but message will be in 'one-line' format
+                commandLine.add("-m", message);
+            }
+        }
         if (author != null) {
             commandLine.add(String.format("--author=%s \\<%s>", author.getName(), author.getEmail()));
         }
         start();
+        if (commitMsgFile != null) {
+            try {
+                Files.deleteIfExists(commitMsgFile);
+            } catch (IOException e) {
+                LOG.error("Can not delete temporary file with commit message", e);
+            }
+        }
         return null;
     }
 

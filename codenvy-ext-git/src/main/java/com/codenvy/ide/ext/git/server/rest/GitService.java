@@ -22,6 +22,7 @@ import com.codenvy.api.vfs.server.VirtualFileSystemRegistry;
 import com.codenvy.api.vfs.shared.PropertyFilter;
 import com.codenvy.api.vfs.shared.dto.Item;
 import com.codenvy.dto.server.DtoFactory;
+import com.codenvy.ide.ext.git.server.Config;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
 import com.codenvy.ide.ext.git.server.GitException;
@@ -36,6 +37,7 @@ import com.codenvy.ide.ext.git.shared.BranchListRequest;
 import com.codenvy.ide.ext.git.shared.CloneRequest;
 import com.codenvy.ide.ext.git.shared.CommitRequest;
 import com.codenvy.ide.ext.git.shared.Commiters;
+import com.codenvy.ide.ext.git.shared.ConfigRequest;
 import com.codenvy.ide.ext.git.shared.DiffRequest;
 import com.codenvy.ide.ext.git.shared.FetchRequest;
 import com.codenvy.ide.ext.git.shared.InitRequest;
@@ -80,7 +82,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /** @author andrew00x */
 @Path("git/{ws-id}")
@@ -432,6 +436,32 @@ public class GitService {
         } finally {
             gitConnection.close();
         }
+    }
+
+
+    @Path("config")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> getConfig(ConfigRequest request) throws NotFoundException, ForbiddenException, ServerException {
+        GitConnection gitConnection = getGitConnection();
+        Map<String, String> result = new HashMap<>();
+        try {
+            Config config = gitConnection.getConfig();
+            if (request.isGetAll()) {
+                for (String row : config.getList()) {
+                    String[] keyValues  = row.split("=", 2);
+                    result.put(keyValues[0], keyValues[1]);
+                }
+            } else {
+               for (String entry : request.getConfigEntry()) {
+                   result.put(entry, config.get(entry));
+               }
+            }
+        } finally {
+            gitConnection.close();
+        }
+        return result;
     }
 
     @Path("tag-list")

@@ -23,6 +23,7 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.rest.StringMapUnmarshaller;
 import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -31,6 +32,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -207,11 +209,15 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         return branches;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void onPushClicked() {
+    /**
+     * Performs push.
+     *
+     * @param refSpecs
+     *         list of ref specs to push into
+     */
+    private void doPush(@Nonnull List<String> refSpecs) {
         final String repository = view.getRepository();
-        service.push(project.getRootProject(), getRefs(), repository, false, new AsyncRequestCallback<Void>() {
+        service.push(project.getRootProject(), refSpecs, repository, false, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
                 Notification notification = new Notification(constant.pushSuccess(repository), INFO);
@@ -226,12 +232,24 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         view.close();
     }
 
-    /** @return list of refs to push */
-    @Nonnull
-    private List<String> getRefs() {
-        String localBranch = "refs/heads/" + view.getLocalBranch();
-        String remoteBranch = "refs/heads/" + view.getRemoteBranch();
-        return new ArrayList<>(Arrays.asList(localBranch + ":" + remoteBranch));
+    /** {@inheritDoc} */
+    @Override
+    public void onPushClicked() {
+        final String localRef = "refs/heads/" + view.getLocalBranch();
+        final String configItem = "branch."+ view.getLocalBranch() + ".merge";
+        service.config(project.getRootProject(), Arrays.asList(configItem), false, new AsyncRequestCallback<Map<String, String>>(new StringMapUnmarshaller()) {
+            @Override
+            protected void onSuccess(Map<String, String> result) {
+                final ArrayList res = new ArrayList();
+                res.add(localRef + ":" + (result.get(configItem) != null ? result.get(configItem) :"refs/heads/" + view.getRemoteBranch()));
+                doPush(res);
+            }
+
+            @Override
+            protected void onFailure(Throwable exception) {
+                handleError(exception);
+            }
+        });
     }
 
     /**

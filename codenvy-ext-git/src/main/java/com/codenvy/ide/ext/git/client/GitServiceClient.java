@@ -30,6 +30,7 @@ import com.codenvy.ide.websocket.rest.RequestCallback;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Service contains methods for working with Git repository from client side.
@@ -312,6 +313,21 @@ public interface GitServiceClient {
      */
     void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, boolean all, boolean amend,
                 @Nonnull AsyncRequestCallback<Revision> callback);
+
+    /**
+     * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by
+     * callback in <code>onSuccess(Revision result)</code>. Sends request over WebSocket.
+     *
+     * @param project
+     *         project (root of GIT repository)
+     * @param all
+     *         automatically stage files that have been modified and deleted
+     * @param callback
+     *         callback
+     * @throws WebSocketException
+     */
+    void config(@Nonnull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
+                @Nonnull AsyncRequestCallback<Map<String, String>> callback);
 
     /**
      * Compare two commits, get the diff for pointed file(s) or for the whole project in text format.

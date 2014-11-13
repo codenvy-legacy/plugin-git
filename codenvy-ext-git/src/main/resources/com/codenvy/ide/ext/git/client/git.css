@@ -27,6 +27,7 @@
  */
 
 @CHARSET "UTF-8";
+@external .zeroclipboard-is-hover;
 
 .cells {
     font-family: mainFontFamily;
@@ -57,4 +58,83 @@
 
 .simpleListContainer {
     border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.emptyBorder {
+    margin: 6px;
+    width: 450px;
+}
+
+.spacing div {
+    margin-top: 3px;
+    margin-bottom: 1px;
+}
+
+.spacing input {
+    width: 420px;
+    margin-top: 1px;
+    margin-bottom: 9px;
+    display: inline;
+    float: left;
+}
+
+.zeroClipboardButton {
+    display: inline-block;
+    width: 19px;
+    height: 21px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    cursor: pointer;
+    visibility: visible;
+}
+
+.zeroClipboardButton svg {
+    width: 19px;
+    height: 19px;
+}
+
+.zeroClipboardButton span {
+    visibility: hidden;
+    position: relative;
+    cursor: default;
+    top: 12px;
+    padding: 8px;
+    font-size: 8pt;
+    font-weight: normal;
+    white-space: nowrap;
+    background: #202020;
+    font-family: mainFontFamily;
+    border-radius: 0;
+    -moz-border-radius: 0;
+    -webkit-border-radius: 0;
+}
+
+.zeroClipboardButton span:after {
+    content: "";
+    width: 0;
+    height: 0;
+    border-width: 8px;
+    border-style: solid;
+    border-color: transparent transparent #232323 transparent;
+    position: absolute;
+    top: -15px;
+    left: 1px;
+}
+
+div.zeroClipboardButton {
+    margin: 1px 0px 0px 0px;
+}
+
+div.zeroClipboardButton:hover,
+div.zeroClipboardButton.zeroclipboard-is-hover {
+    background: #202020;
+}
+
+.zeroClipboardButton:hover span,
+.zeroClipboardButton.zeroclipboard-is-hover span,
+.zeroClipboardButton:hover span:after,
+.zeroClipboardButton.zeroclipboard-is-hover span:after {
+    visibility: visible;
 }

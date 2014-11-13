@@ -10,19 +10,27 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.url;
 
+import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
+import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.ui.window.Window;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.vectomatic.dom.svg.ui.SVGImage;
 
 import javax.annotation.Nonnull;
 
@@ -39,8 +47,13 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
     private static ShowProjectGitReadOnlyUrlViewImplUiBinder ourUiBinder = GWT.create(ShowProjectGitReadOnlyUrlViewImplUiBinder.class);
 
     @UiField
-    TextBox url;
-    Button  btnClose;
+    FlowPanel localPanel;
+    @UiField
+    TextBox   localUrl;
+    @UiField
+    FlowPanel remotePanel;
+
+    Button btnClose;
     @UiField(provided = true)
     final   GitResources            res;
     @UiField(provided = true)
@@ -61,9 +74,9 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
-        this.setTitle(locale.projectReadOnlyGitUrlTitle());
+        this.setTitle(locale.projectReadOnlyGitUrlWindowTitle());
         this.setWidget(widget);
-        
+
         btnClose = createButton(locale.buttonClose(), "", new ClickHandler() {
 
             @Override
@@ -73,12 +86,33 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
         });
         btnClose.ensureDebugId("projectReadOnlyGitUrl-btnClose");
         getFooter().add(btnClose);
+
+        appendCopyToClipboardButton(localUrl);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setUrl(@Nonnull String url) {
-        this.url.setText(url);
+    public void setLocaleUrl(@Nonnull String url) {
+        localUrl.setText(url);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setRemotes(Array<Remote> remotes) {
+        remotePanel.clear();
+        if (remotes != null) {
+            remotePanel.add(new Label(
+                    remotes.size() > 1 ? locale.projectReadOnlyGitRemoteUrlsTitle() : locale.projectReadOnlyGitRemoteUrlTitle()));
+            for (Remote remote : remotes.asIterable()) {
+                if (remote != null && remote.getUrl() != null) {
+                    Document.get().createTextInputElement();
+                    TextBox remoteUrl = new TextBox();
+                    remoteUrl.setText(remote.getUrl());
+                    remotePanel.add(remoteUrl);
+                    appendCopyToClipboardButton(remoteUrl);
+                }
+            }
+        }
     }
 
     /** {@inheritDoc} */
@@ -103,4 +137,75 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
     @Override
     protected void onClose() {
     }
+
+    /**
+     * Append copy to clipboard button for the Widget.
+     *
+     * @param textBoxWidget
+     */
+    private void appendCopyToClipboardButton(@Nonnull Widget textBoxWidget) {
+        Element copyToClipboardButton = createCopyToClipboardButton(textBoxWidget.getElement(),
+                                                                    new SVGImage(res.clipboard()).getElement(),
+                                                                    res.gitCSS().zeroClipboardButton(),
+                                                                    locale.zeroClipboardButtonReadyCopyPrompt(),
+                                                                    locale.zeroClipboardButtonAfterCopyPrompt(),
+                                                                    locale.zeroClipboardButtonCopyErrorPrompt(),
+                                                                    locale.zeroClipboardButtonReadySelectPrompt());
+        textBoxWidget.getParent().getElement().appendChild(copyToClipboardButton);
+    }
+
+    /**
+     * Create copy to clipboard button.
+     *
+     * @param textBox
+     * @param image
+     * @param className
+     * @param readyCopyPrompt
+     * @param afterCopyPrompt
+     * @param copyErrorPrompt
+     * @param readySelectPrompt
+     */
+    private native Element createCopyToClipboardButton(Element textBox, Element image, String className, String readyCopyPrompt,
+                                                       String afterCopyPrompt, String copyErrorPrompt, String readySelectPrompt) /*-{
+        var button = document.createElement('div');
+        var tooltip = document.createElement('span');
+        button.setAttribute('class', className);
+        button.appendChild(image);
+        button.appendChild(tooltip);
+        if (typeof $wnd.ZeroClipboard !== 'undefined') {
+            button.onmouseout = function () {
+                button.setAttribute('class', className);
+            }
+            var client = new $wnd.ZeroClipboard(button);
+            client.on('ready', function (event) {
+                tooltip.innerHTML = readyCopyPrompt;
+                client.on('copy', function (event) {
+                    event.clipboardData.setData('text/plain', textBox.value);
+                });
+                client.on('aftercopy', function (event) {
+                    tooltip.innerHTML = afterCopyPrompt;
+                    client.unclip();
+                    setTimeout(function () {
+                        client.clip(button);
+                        tooltip.innerHTML = readyCopyPrompt;
+                    }, 3000);
+                });
+            });
+            client.on('error', function (event) {
+                console.log('ZeroClipboard error of type "' + event.name + '": ' + event.message);
+                tooltip.innerHTML = copyErrorPrompt;
+                ZeroClipboard.destroy();
+                setTimeout(function () {
+                    tooltip.innerHTML = readyCopyPrompt;
+                }, 5000);
+            });
+        }
+        else {
+            tooltip.innerHTML = readySelectPrompt;
+            button.onclick = function () {
+                textBox.select();
+            };
+        }
+        return button;
+    }-*/;
 }

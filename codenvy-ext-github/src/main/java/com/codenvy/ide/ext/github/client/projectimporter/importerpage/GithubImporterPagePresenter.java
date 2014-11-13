@@ -36,6 +36,8 @@ import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.security.oauth.JsOAuthWindow;
 import com.codenvy.ide.security.oauth.OAuthCallback;
 import com.codenvy.ide.security.oauth.OAuthStatus;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.Config;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.regexp.shared.RegExp;
@@ -47,13 +49,14 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 
-import static com.codenvy.ide.api.notification.Notification.Type.*;
+import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 
 /**
  * @author Roman Nikitenko
  */
-public class GithubImporterPagePresenter implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, ImporterBasePageView.ActionDelegate,
-                                                    OAuthCallback {
+public class GithubImporterPagePresenter
+        implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, ImporterBasePageView.ActionDelegate,
+                   OAuthCallback {
 
     private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_-]*$");
     // An alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
@@ -74,6 +77,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
     private       GitHubClientService                gitHubClientService;
     private final DtoUnmarshallerFactory             dtoUnmarshallerFactory;
     private final DtoFactory                         dtoFactory;
+    private       DialogFactory                      dialogFactory;
     private       EventBus                           eventBus;
     private       StringMap<Array<GitHubRepository>> repositories;
     private       ProjectData                        selectedRepository;
@@ -92,6 +96,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
                                        GitHubClientService gitHubClientService,
                                        DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        DtoFactory dtoFactory,
+                                       DialogFactory dialogFactory,
                                        EventBus eventBus,
                                        GitLocalizationConstant locale) {
         this.view = view;
@@ -101,6 +106,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         this.gitHubClientService = gitHubClientService;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
+        this.dialogFactory = dialogFactory;
         this.eventBus = eventBus;
         this.view.setDelegate(this);
         this.locale = locale;
@@ -233,7 +239,12 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
                         showProcessing(false);
                         if (isUserAction) {
                             if (exception.getMessage().contains("Bad credentials")) {
-                                showPopUp();
+                                dialogFactory.createConfirmDialog("GiHub", "Codenvy requests authorization through OAuth2 protocol", new ConfirmCallback() {
+                                    @Override
+                                    public void accepted() {
+                                        showPopUp();
+                                    }
+                                }, null).show();
                             } else {
                                 eventBus.fireEvent(new ExceptionThrownEvent(exception));
                                 Notification notification = new Notification(exception.getMessage(), ERROR);
@@ -289,20 +300,23 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         Array<ProjectData> projectsData = Collections.createArray();
 
         String accountName = view.getAccountName();
-        Array<GitHubRepository> repo = repositories.get(accountName);
+        if (repositories.containsKey(accountName)) {
+            Array<GitHubRepository> repo = repositories.get(accountName);
 
-        for (GitHubRepository repository : repo.asIterable()) {
-            ProjectData projectData = new ProjectData(repository.getName(), repository.getDescription(), null, null, repository.getSshUrl(),
-                                                      repository.getGitUrl());
-            projectsData.add(projectData);
+            for (GitHubRepository repository : repo.asIterable()) {
+                ProjectData projectData =
+                        new ProjectData(repository.getName(), repository.getDescription(), null, null, repository.getSshUrl(),
+                                        repository.getGitUrl());
+                projectsData.add(projectData);
+            }
+
+            view.setRepositories(projectsData);
+            view.setProjectName("");
+            view.setProjectUrl("");
+            view.hideUrlError();
+            view.hideNameError();
+            selectedRepository = null;
         }
-
-        view.setRepositories(projectsData);
-        view.setProjectName("");
-        view.setProjectUrl("");
-        view.hideUrlError();
-        view.hideNameError();
-        selectedRepository = null;
     }
 
     /**

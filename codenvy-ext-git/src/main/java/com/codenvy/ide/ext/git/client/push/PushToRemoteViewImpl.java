@@ -33,7 +33,8 @@ import javax.annotation.Nonnull;
 /**
  * The implementation of {@link PushToRemoteView}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Sergii Leschenko
  */
 @Singleton
 public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
@@ -56,12 +57,6 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     final   GitLocalizationConstant locale;
     private ActionDelegate          delegate;
 
-    /**
-     * Create view.
-     *
-     * @param resources
-     * @param locale
-     */
     @Inject
     protected PushToRemoteViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
@@ -146,6 +141,17 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
         }
     }
 
+    @Override
+    public boolean addRemoteBranch(@Nonnull String branch) {
+        for (int i = 0; i < remoteBranch.getItemCount(); ++i) {
+            if (branch.equals(remoteBranch.getItemText(i))) {
+                return false;
+            }
+        }
+        remoteBranch.addItem(branch);
+        return true;
+    }
+
     /** {@inheritDoc} */
     @Override
     public void setEnablePushButton(boolean enabled) {
@@ -171,13 +177,18 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
     }
 
     @UiHandler("localBranch")
-    public void onValueChanged(ChangeEvent event) {
+    public void onLocalBranchValueChanged(ChangeEvent event) {
         delegate.onLocalBranchChanged();
+    }
+
+    @UiHandler("repository")
+    public void onRepositoryValueChanged(ChangeEvent event) {
+        delegate.onRepositoryChanged();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void selectLocalBranch(String branch) {
+    public void selectLocalBranch(@Nonnull String branch) {
         for (int i = 0; i < localBranch.getItemCount(); i++) {
             if (localBranch.getValue(i).equals(branch)) {
                 localBranch.setItemSelected(i, true);
@@ -189,7 +200,7 @@ public class PushToRemoteViewImpl extends Window implements PushToRemoteView {
 
     /** {@inheritDoc} */
     @Override
-    public void selectRemoteBranch(String branch) {
+    public void selectRemoteBranch(@Nonnull String branch) {
         for (int i = 0; i < remoteBranch.getItemCount(); i++) {
             if (remoteBranch.getValue(i).equals(branch)) {
                 remoteBranch.setItemSelected(i, true);

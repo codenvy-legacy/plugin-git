@@ -18,7 +18,6 @@ import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -57,7 +56,7 @@ public class PushToRemotePresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new PushToRemotePresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new PushToRemotePresenter(dtoFactory, view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
 
         when(view.getRepository()).thenReturn(REPOSITORY_NAME);
         when(view.getLocalBranch()).thenReturn(LOCAL_BRANCH);

@@ -549,8 +549,17 @@ public interface GitLocalizationConstant extends Messages {
     @Key("control.status.prompt")
     String statusControlPrompt();
 
-    @Key("control.ro.url.title")
-    String projectReadOnlyGitUrlTitle();
+    @Key("control.ro.url.window.title")
+    String projectReadOnlyGitUrlWindowTitle();
+
+    @Key("control.ro.localUrl.title")
+    String projectReadOnlyGitLocalUrlTitle();
+
+    @Key("control.ro.remoteUrl.title")
+    String projectReadOnlyGitRemoteUrlTitle();
+
+    @Key("control.ro.remoteUrls.title")
+    String projectReadOnlyGitRemoteUrlsTitle();
 
     @Key("control.ro.url.prompt")
     String projectReadOnlyGitUrlPrompt();

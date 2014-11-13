@@ -58,3 +58,21 @@
 .simpleListContainer {
     border: 1px solid rgba(0, 0, 0, 0.2);
 }
+
+.emptyBorder {
+    margin: 6px;
+    width: 450px;
+}
+
+.spacing div {
+    margin-top: 3px;
+    margin-bottom: 1px;
+}
+
+.spacing input {
+    width: 420px;
+    margin-top: 1px;
+    margin-bottom: 9px;
+    display: inline;
+    float: left;
+}

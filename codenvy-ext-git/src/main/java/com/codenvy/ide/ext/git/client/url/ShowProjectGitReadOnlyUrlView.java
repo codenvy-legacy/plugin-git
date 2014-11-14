@@ -11,6 +11,8 @@
 package com.codenvy.ide.ext.git.client.url;
 
 import com.codenvy.ide.api.mvp.View;
+import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.ext.git.shared.Remote;
 
 import javax.annotation.Nonnull;
 
@@ -27,12 +29,20 @@ public interface ShowProjectGitReadOnlyUrlView extends View<ShowProjectGitReadOn
     }
 
     /**
-     * Set project name into field on the view.
+     * Set project locale URL into field on the view.
      *
      * @param url
      *         text what will be shown on view
      */
-    void setUrl(@Nonnull String url);
+    void setLocaleUrl(@Nonnull String url);
+
+    /**
+     * Set project remote URL into field on the view.
+     *
+     * @param remotes
+     *         remote URLs what will be shown on view
+     */
+    void setRemotes(Array<Remote> remotes);
 
     /** Close dialog. */
     void close();

@@ -29,7 +29,7 @@ public interface PushToRemoteView extends View<PushToRemoteView.ActionDelegate> 
 
         /** Performs any actions appropriate in response to the user having pressed the Cancel button. */
         void onCancelClicked();
-        
+
         /** Performs any actions appropriate in response to the local branch value changed. */
         void onLocalBranchChanged();
     }
@@ -73,21 +73,21 @@ public interface PushToRemoteView extends View<PushToRemoteView.ActionDelegate> 
      *         remote branches
      */
     void setRemoteBranches(@Nonnull Array<String> branches);
-    
-    /** 
+
+    /**
      * Selects pointed local branch
-     * 
+     *
      * @param branch local branch to select
      */
     void selectLocalBranch(@Nonnull String branch);
-    
-    /** 
+
+    /**
      * Selects pointed remote branch
-     * 
+     *
      * @param branch remote branch to select
      */
     void selectRemoteBranch(@Nonnull String branch);
-    
+
     /**
      * Change the enable state of the push button.
      *

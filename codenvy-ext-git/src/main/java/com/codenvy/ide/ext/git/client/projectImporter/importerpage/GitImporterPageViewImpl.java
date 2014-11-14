@@ -10,84 +10,186 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.projectImporter.importerpage;
 
-import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
+import com.codenvy.ide.ext.git.client.GitResources;
+import com.codenvy.ide.ui.Styles;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.uibinder.client.UiBinder;
+import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.DockLayoutPanel;
+import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.inject.Inject;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author Roman Nikitenko
  */
 public class GitImporterPageViewImpl extends Composite implements GitImporterPageView {
-    private ImporterBasePageView importerBasePageView;
+    interface GitImporterPageViewImplUiBinder extends UiBinder<DockLayoutPanel, GitImporterPageViewImpl> {
+    }
+
+    private ActionDelegate delegate;
+
+    @UiField(provided = true)
+    Style       style;
+    @UiField
+    Label       labelUrlError;
+    @UiField
+    HTMLPanel   descriptionArea;
+    @UiField
+    TextBox     projectName;
+    @UiField
+    TextArea    projectDescription;
+    @UiField
+    RadioButton projectPrivate;
+    @UiField
+    RadioButton projectPublic;
+    @UiField
+    TextBox     projectUrl;
 
     @Inject
-    public GitImporterPageViewImpl(ImporterBasePageView importerBasePageView) {
-        this.importerBasePageView = importerBasePageView;
+    public GitImporterPageViewImpl(GitResources resources,
+                                   GitImporterPageViewImplUiBinder uiBinder) {
+        style = resources.gitImporterPageStyle();
+        style.ensureInjected();
+        initWidget(uiBinder.createAndBindUi(this));
+        projectName.getElement().setAttribute("maxlength", "32");
+        projectDescription.getElement().setAttribute("maxlength", "256");
+    }
+
+    @UiHandler("projectName")
+    void onProjectNameChanged(KeyUpEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            return;
+        }
+        delegate.projectNameChanged(projectName.getValue());
+    }
+
+    @UiHandler("projectUrl")
+    void onProjectUrlChanged(KeyUpEvent event) {
+        delegate.projectUrlChanged(projectUrl.getValue());
+    }
+
+    @UiHandler("projectDescription")
+    void onProjectDescriptionChanged(KeyUpEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            return;
+        }
+        delegate.projectDescriptionChanged(projectDescription.getValue());
+    }
+
+    @UiHandler({"projectPublic", "projectPrivate"})
+    void visibilityHandler(ValueChangeEvent<Boolean> event) {
+        delegate.projectVisibilityChanged(projectPublic.getValue());
     }
 
     @Override
-    public void setProjectUrl(String url) {
-        importerBasePageView.setProjectUrl(url);
+    public void setProjectUrl(@Nonnull String url) {
+        projectUrl.setText(url);
+        delegate.projectUrlChanged(url);
     }
 
     @Override
     public void reset() {
-        importerBasePageView.reset();
+        projectUrl.setText("");
+        projectName.setText("");
+        projectDescription.setText("");
+        descriptionArea.clear();
+        projectPublic.setValue(true);
+        projectPrivate.setValue(false);
+        hideUrlError();
+        hideNameError();
     }
 
     @Override
     public void showNameError() {
-        importerBasePageView.showNameError();
+        projectName.addStyleName(style.inputError());
     }
 
     @Override
     public void hideNameError() {
-        importerBasePageView.hideNameError();
+        projectName.removeStyleName(style.inputError());
     }
 
     @Override
-    public void showUrlError(String message) {
-        importerBasePageView.showUrlError(message);
+    public void setImporterDescription(@Nonnull String text) {
+        descriptionArea.getElement().setInnerText(text);
+    }
+
+    @Override
+    public void showUrlError(@Nonnull String message) {
+        projectUrl.addStyleName(style.inputError());
+        labelUrlError.setText(message);
     }
 
     @Override
     public void hideUrlError() {
-        importerBasePageView.hideUrlError();
+        projectUrl.removeStyleName(style.inputError());
+        labelUrlError.setText("");
     }
 
-    @Override
-    public void setImporterDescription(String text) {
-        importerBasePageView.setImporterDescription(text);
-    }
-
+    @Nonnull
     @Override
     public String getProjectName() {
-        return importerBasePageView.getProjectName();
+        return projectName.getValue();
     }
 
     @Override
-    public void setProjectName(String projectName) {
-        importerBasePageView.setProjectName(projectName);
+    public void setProjectName(@Nonnull String projectName) {
+        this.projectName.setValue(projectName);
+        delegate.projectNameChanged(projectName);
     }
 
     @Override
     public void focusInUrlInput() {
-        importerBasePageView.focusInUrlInput();
+        projectUrl.setFocus(true);
     }
 
     @Override
     public void setInputsEnableState(boolean isEnabled) {
-        importerBasePageView.setInputsEnableState(isEnabled);
+        projectName.setEnabled(isEnabled);
+        projectDescription.setEnabled(isEnabled);
+        projectUrl.setEnabled(isEnabled);
+
+        if (isEnabled) {
+            focusInUrlInput();
+        }
     }
 
     @Override
-    public void setDelegate(ActionDelegate delegate) {
-        importerBasePageView.setDelegate(delegate);
+    public void setDelegate(@Nonnull ActionDelegate delegate) {
+        this.delegate = delegate;
     }
 
-    @Override
-    public Widget asWidget() {
-        return importerBasePageView.asWidget();
+    public interface Style extends Styles {
+        String mainPanel();
+
+        String namePanel();
+
+        String labelPosition();
+
+        String marginTop();
+
+        String alignRight();
+
+        String alignLeft();
+
+        String labelErrorPosition();
+
+        String radioButtonPosition();
+
+        String description();
+
+        String label();
+
+        String horizontalLine();
     }
 }

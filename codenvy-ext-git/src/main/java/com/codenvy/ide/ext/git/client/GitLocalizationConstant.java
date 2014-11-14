@@ -244,6 +244,37 @@ public interface GitLocalizationConstant extends Messages {
 
     // ----VIEWS------------------------------------------------------------------
 
+    //GitImporterPage
+    @Key("view.import.gitImporterPage.importerInfo")
+    String gitImporterPageImporterInfo();
+
+    @Key("view.import.gitImporterPage.projectUrl")
+    String gitImporterPageProjectUrl();
+
+    @Key("view.import.gitImporterPage.projectInfo")
+    String gitImporterPageProjectInfo();
+
+    @Key("view.import.gitImporterPage.projectName")
+    String gitImporterPageProjectName();
+
+    @Key("view.import.gitImporterPageProjectNamePrompt")
+    String gitImporterPageProjectNamePrompt();
+
+    @Key("view.import.gitImporterPage.projectDescription")
+    String gitImporterPageProjectDescription();
+
+    @Key("view.import.gitImporterPage.projectDescriptionPrompt")
+    String gitImporterPageProjectDescriptionPrompt();
+
+    @Key("view.import.gitImporterPage.projectPrivacy")
+    String gitImporterPageProjectPrivacy();
+
+    @Key("view.import.gitImporterPage.projectVisibilityPublic")
+    String gitImporterPageprojectVisibilityPublic();
+
+    @Key("view.import.gitImporterPage.projectVisibilityPrivate")
+    String gitImporterPageprojectVisibilityPrivate();
+
     // Add
     @Key("view.add_to_index.all_changes")
     String addToIndexAllChanges();

@@ -20,6 +20,18 @@ public interface GitHubLocalizationConstant extends Messages {
     @Key("github.ssh.key.update.failed")
     String gitHubSshKeyUpdateFailed();
 
+    @Key("importProject.messageStartWithWhiteSpace")
+    String importProjectMessageStartWithWhiteSpace();
+
+    @Key("importProject.messageNameRepoIncorrect")
+    String importProjectMessageNameRepoIncorrect();
+
+    @Key("importProject.messageProtocolIncorrect")
+    String importProjectMessageProtocolIncorrect();
+
+    @Key("importProject.messageHostIncorrect")
+    String importProjectMessageHostIncorrect();
+
     /*
      * ImportFromGitHub
      */
@@ -40,4 +52,36 @@ public interface GitHubLocalizationConstant extends Messages {
 
     @Key("github.sshkey.label")
     String githubSshKeyLabel();
+
+    //GithubImporterPage
+    @Key("view.import.githubImporterPage.importerInfo")
+    String githubImporterPageImporterInfo();
+
+    @Key("view.import.githubImporterPage.projectUrl")
+    String githubImporterPageProjectUrl();
+
+    @Key("view.import.githubImporterPage.projectInfo")
+    String githubImporterPageProjectInfo();
+
+    @Key("view.import.githubImporterPage.projectName")
+    String githubImporterPageProjectName();
+
+    @Key("view.import.githubImporterPageProjectNamePrompt")
+    String githubImporterPageProjectNamePrompt();
+
+    @Key("view.import.githubImporterPage.projectDescription")
+    String githubImporterPageProjectDescription();
+
+    @Key("view.import.githubImporterPage.projectDescriptionPrompt")
+    String githubImporterPageProjectDescriptionPrompt();
+
+    @Key("view.import.githubImporterPage.projectPrivacy")
+    String githubImporterPageProjectPrivacy();
+
+    @Key("view.import.githubImporterPage.projectVisibilityPublic")
+    String githubImporterPageprojectVisibilityPublic();
+
+    @Key("view.import.githubImporterPage.projectVisibilityPrivate")
+    String githubImporterPageprojectVisibilityPrivate();
+
 }

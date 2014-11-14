@@ -21,12 +21,14 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Roman Nikitenko
  */
-public class GitImporterPagePresenter implements ImporterPagePresenter, GitImporterPageView.ActionDelegate{
+public class GitImporterPagePresenter implements ImporterPagePresenter, GitImporterPageView.ActionDelegate {
 
-    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_-]*$");
+    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_\\-]*$");
     // An alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
     private static final RegExp SCP_LIKE_SYNTAX = RegExp.compile("([A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-:]+)+:");
     // the transport protocol
@@ -53,6 +55,7 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
         this.locale = locale;
     }
 
+    @Nonnull
     @Override
     public String getId() {
         return "git";
@@ -69,12 +72,12 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
     }
 
     @Override
-    public void setContext(WizardContext wizardContext) {
+    public void setContext(@Nonnull WizardContext wizardContext) {
         this.wizardContext = wizardContext;
     }
 
     @Override
-    public void setProjectWizardDelegate(Wizard.UpdateDelegate updateDelegate) {
+    public void setProjectWizardDelegate(@Nonnull Wizard.UpdateDelegate updateDelegate) {
         this.updateDelegate = updateDelegate;
     }
 
@@ -84,8 +87,8 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
     }
 
     @Override
-    public void projectNameChanged(String name) {
-        if (name == null || name.isEmpty()) {
+    public void projectNameChanged(@Nonnull String name) {
+        if (name.isEmpty()) {
             wizardContext.removeData(ProjectWizard.PROJECT_NAME);
         } else if (NAME_PATTERN.test(name)) {
             wizardContext.putData(ProjectWizard.PROJECT_NAME, name);
@@ -98,13 +101,11 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
     }
 
     @Override
-    public void projectUrlChanged(String url) {
+    public void projectUrlChanged(@Nonnull String url) {
         if (!isGitUrlCorrect(url)) {
             wizardContext.removeData(ImportProjectWizard.PROJECT_URL);
         } else {
             wizardContext.putData(ImportProjectWizard.PROJECT_URL, url);
-            view.hideUrlError();
-
             String projectName = view.getProjectName();
             if (projectName.isEmpty()) {
                 projectName = parseUri(url);
@@ -116,32 +117,30 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
     }
 
     @Override
-    public void projectDescriptionChanged(String projectDescriptionValue) {
+    public void projectDescriptionChanged(@Nonnull String projectDescriptionValue) {
         wizardContext.putData(ProjectWizard.PROJECT_DESCRIPTION, projectDescriptionValue);
     }
 
     @Override
-    public void projectVisibilityChanged(Boolean aPublic) {
+    public void projectVisibilityChanged(boolean aPublic) {
         wizardContext.putData(ProjectWizard.PROJECT_VISIBILITY, aPublic);
     }
 
     @Override
-    public void onEnterClicked() {
-
-    }
-
-    @Override
-    public void go(AcceptsOneWidget container) {
+    public void go(@Nonnull AcceptsOneWidget container) {
         clear();
         ProjectImporterDescriptor projectImporter = wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER);
-        view.setImporterDescription(projectImporter.getDescription());
+        if (projectImporter != null) {
+            view.setImporterDescription(projectImporter.getDescription());
+        }
+
         view.setInputsEnableState(true);
         container.setWidget(view);
         view.focusInUrlInput();
     }
 
     /** Gets project name from uri. */
-    private String parseUri(String uri) {
+    private String parseUri(@Nonnull String uri) {
         String result;
         int indexStartProjectName = uri.lastIndexOf("/") + 1;
         int indexFinishProjectName = uri.indexOf(".", indexStartProjectName);
@@ -155,13 +154,21 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
         return result;
     }
 
-    private boolean isGitUrlCorrect(String url) {
+    /**
+     * Validate url
+     *
+     * @param url
+     *         url for validate
+     * @return <code>true</code> if url is correct
+     */
+    private boolean isGitUrlCorrect(@Nonnull String url) {
         if (WHITE_SPACE.test(url)) {
             view.showUrlError(locale.importProjectMessageStartWithWhiteSpace());
             return false;
         }
 
         if (SCP_LIKE_SYNTAX.test(url) && REPO_NAME.test(url)) {
+            view.hideUrlError();
             return true;
         } else if (SCP_LIKE_SYNTAX.test(url) && !REPO_NAME.test(url)) {
             view.showUrlError(locale.importProjectMessageNameRepoIncorrect());

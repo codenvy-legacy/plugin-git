@@ -16,7 +16,6 @@ import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
-import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
 import com.codenvy.ide.api.projecttype.wizard.ImportProjectWizard;
 import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.Wizard;
@@ -26,20 +25,18 @@ import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.github.client.GitHubClientService;
+import com.codenvy.ide.ext.github.client.GitHubLocalizationConstant;
 import com.codenvy.ide.ext.github.client.load.ProjectData;
 import com.codenvy.ide.ext.github.client.marshaller.AllRepositoriesUnmarshaller;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.security.oauth.JsOAuthWindow;
 import com.codenvy.ide.security.oauth.OAuthCallback;
 import com.codenvy.ide.security.oauth.OAuthStatus;
 import com.codenvy.ide.ui.dialogs.ConfirmCallback;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.Config;
-import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
@@ -54,11 +51,9 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 /**
  * @author Roman Nikitenko
  */
-public class GithubImporterPagePresenter
-        implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, ImporterBasePageView.ActionDelegate,
-                   OAuthCallback {
+public class GithubImporterPagePresenter implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, OAuthCallback {
 
-    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_-]*$");
+    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_\\-]*$");
     // An alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
     private static final RegExp SCP_LIKE_SYNTAX = RegExp.compile("([A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-:]+)+:");
     // the transport protocol
@@ -81,7 +76,7 @@ public class GithubImporterPagePresenter
     private       EventBus                           eventBus;
     private       StringMap<Array<GitHubRepository>> repositories;
     private       ProjectData                        selectedRepository;
-    private       GitLocalizationConstant            locale;
+    private       GitHubLocalizationConstant         locale;
     private       GithubImporterPageView             view;
     private       WizardContext                      wizardContext;
     private       Wizard.UpdateDelegate              updateDelegate;
@@ -98,7 +93,7 @@ public class GithubImporterPagePresenter
                                        DtoFactory dtoFactory,
                                        DialogFactory dialogFactory,
                                        EventBus eventBus,
-                                       GitLocalizationConstant locale) {
+                                       GitHubLocalizationConstant locale) {
         this.view = view;
         this.baseUrl = baseUrl;
         this.notificationManager = notificationManager;
@@ -112,6 +107,7 @@ public class GithubImporterPagePresenter
         this.locale = locale;
     }
 
+    @Nonnull
     @Override
     public String getId() {
         return "github";
@@ -128,12 +124,12 @@ public class GithubImporterPagePresenter
     }
 
     @Override
-    public void setContext(WizardContext wizardContext) {
+    public void setContext(@Nonnull WizardContext wizardContext) {
         this.wizardContext = wizardContext;
     }
 
     @Override
-    public void setProjectWizardDelegate(Wizard.UpdateDelegate updateDelegate) {
+    public void setProjectWizardDelegate(@Nonnull Wizard.UpdateDelegate updateDelegate) {
         this.updateDelegate = updateDelegate;
     }
 
@@ -143,8 +139,8 @@ public class GithubImporterPagePresenter
     }
 
     @Override
-    public void projectNameChanged(String name) {
-        if (name == null || name.isEmpty()) {
+    public void projectNameChanged(@Nonnull String name) {
+        if (name.isEmpty()) {
             wizardContext.removeData(ProjectWizard.PROJECT_NAME);
         } else if (NAME_PATTERN.test(name)) {
             wizardContext.putData(ProjectWizard.PROJECT_NAME, name);
@@ -157,13 +153,11 @@ public class GithubImporterPagePresenter
     }
 
     @Override
-    public void projectUrlChanged(String url) {
+    public void projectUrlChanged(@Nonnull String url) {
         if (!isGitUrlCorrect(url)) {
             wizardContext.removeData(ImportProjectWizard.PROJECT_URL);
         } else {
             wizardContext.putData(ImportProjectWizard.PROJECT_URL, url);
-            view.hideUrlError();
-
             String projectName = view.getProjectName();
             if (projectName.isEmpty()) {
                 projectName = parseUri(url);
@@ -175,29 +169,27 @@ public class GithubImporterPagePresenter
     }
 
     @Override
-    public void projectDescriptionChanged(String projectDescriptionValue) {
+    public void projectDescriptionChanged(@Nonnull String projectDescriptionValue) {
         wizardContext.putData(ProjectWizard.PROJECT_DESCRIPTION, projectDescriptionValue);
     }
 
     @Override
-    public void projectVisibilityChanged(Boolean aPublic) {
+    public void projectVisibilityChanged(boolean aPublic) {
         wizardContext.putData(ProjectWizard.PROJECT_VISIBILITY, aPublic);
     }
 
     @Override
-    public void onEnterClicked() {
-
-    }
-
-    @Override
-    public void go(AcceptsOneWidget container) {
+    public void go(@Nonnull AcceptsOneWidget container) {
         clear();
         ProjectImporterDescriptor projectImporter = wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER);
-        view.setImporterDescription(projectImporter.getDescription());
+        if (projectImporter != null) {
+            view.setImporterDescription(projectImporter.getDescription());
+        }
+
         view.setInputsEnableState(true);
-        container.setWidget(view.asWidget());
-        view.focusInUrlInput();
+        container.setWidget(view);
         getUserRepos(false);
+        view.focusInUrlInput();
     }
 
     @Override
@@ -216,7 +208,6 @@ public class GithubImporterPagePresenter
                     protected void onFailure(Throwable exception) {
                         showProcessing(false);
                         notificationManager.showNotification(new Notification(exception.getMessage(), Notification.Type.ERROR));
-                        Log.error(getClass(), "Can't get user", exception);
                     }
                 }
                                         );
@@ -239,12 +230,13 @@ public class GithubImporterPagePresenter
                         showProcessing(false);
                         if (isUserAction) {
                             if (exception.getMessage().contains("Bad credentials")) {
-                                dialogFactory.createConfirmDialog("GiHub", "Codenvy requests authorization through OAuth2 protocol", new ConfirmCallback() {
-                                    @Override
-                                    public void accepted() {
-                                        showPopUp();
-                                    }
-                                }, null).show();
+                                dialogFactory.createConfirmDialog("GiHub", "Codenvy requests authorization through OAuth2 protocol",
+                                                                  new ConfirmCallback() {
+                                                                      @Override
+                                                                      public void accepted() {
+                                                                          showAuthWindow();
+                                                                      }
+                                                                  }, null).show();
                             } else {
                                 eventBus.fireEvent(new ExceptionThrownEvent(exception));
                                 Notification notification = new Notification(exception.getMessage(), ERROR);
@@ -256,12 +248,15 @@ public class GithubImporterPagePresenter
                                               );
     }
 
-    private void showPopUp() {
-        String authUrl = baseUrl + "/oauth/authenticate?oauth_provider=github"
-                         + "&scope=user,repo,write:public_key&userId=" + userDescriptor.getId() + "&redirect_after_login=" +
-                         Window.Location.getProtocol() + "//" + Window.Location.getHost() + "/ws/" + Config.getWorkspaceName();
-        JsOAuthWindow authWindow = new JsOAuthWindow(authUrl, "error.url", 500, 980, this);
-        authWindow.loginWithOAuth();
+    private void showAuthWindow() {
+        String authUrl = baseUrl
+                         + "/oauth/authenticate?oauth_provider=github"
+                         + "&scope=user,repo,write:public_key&userId=" + userDescriptor.getId()
+                         + "&redirect_after_login="
+                         + Window.Location.getProtocol() + "//"
+                         + Window.Location.getHost() + "/ws/"
+                         + Config.getWorkspaceName();
+        view.showAuthWindow(authUrl, this);
     }
 
     @Override
@@ -269,6 +264,7 @@ public class GithubImporterPagePresenter
         selectedRepository = repository;
         view.setProjectName(selectedRepository.getName());
         view.setProjectUrl(selectedRepository.getRepositoryUrl());
+        view.setProjectDescription(selectedRepository.getDescription());
         updateDelegate.updateControls();
     }
 
@@ -278,7 +274,7 @@ public class GithubImporterPagePresenter
     }
 
     @Override
-    public void onAuthenticated(OAuthStatus authStatus) {
+    public void onAuthenticated(@Nonnull OAuthStatus authStatus) {
         getUserRepos(false);
     }
 
@@ -311,10 +307,8 @@ public class GithubImporterPagePresenter
             }
 
             view.setRepositories(projectsData);
-            view.setProjectName("");
-            view.setProjectUrl("");
-            view.hideUrlError();
-            view.hideNameError();
+            view.reset();
+            view.showGithubPanel();
             selectedRepository = null;
         }
     }
@@ -326,10 +320,11 @@ public class GithubImporterPagePresenter
      */
     private void showProcessing(boolean inProgress) {
         view.setLoaderVisibility(inProgress);
+        view.setInputsEnableState(!inProgress);
     }
 
     /** Gets project name from uri. */
-    private String parseUri(String uri) {
+    private String parseUri(@Nonnull String uri) {
         String result;
         int indexStartProjectName = uri.lastIndexOf("/") + 1;
         int indexFinishProjectName = uri.indexOf(".", indexStartProjectName);
@@ -343,13 +338,21 @@ public class GithubImporterPagePresenter
         return result;
     }
 
-    private boolean isGitUrlCorrect(String url) {
+    /**
+     * Validate url
+     *
+     * @param url
+     *         url for validate
+     * @return <code>true</code> if url is correct
+     */
+    private boolean isGitUrlCorrect(@Nonnull String url) {
         if (WHITE_SPACE.test(url)) {
             view.showUrlError(locale.importProjectMessageStartWithWhiteSpace());
             return false;
         }
 
         if (SCP_LIKE_SYNTAX.test(url) && REPO_NAME.test(url)) {
+            view.hideUrlError();
             return true;
         } else if (SCP_LIKE_SYNTAX.test(url) && !REPO_NAME.test(url)) {
             view.showUrlError(locale.importProjectMessageNameRepoIncorrect());

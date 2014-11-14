@@ -11,17 +11,22 @@
 package com.codenvy.ide.ext.github.client.projectimporter.importerpage;
 
 import com.codenvy.ide.Resources;
-import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.github.client.GitHubLocalizationConstant;
 import com.codenvy.ide.ext.github.client.GitHubResources;
 import com.codenvy.ide.ext.github.client.load.ProjectData;
+import com.codenvy.ide.security.oauth.JsOAuthWindow;
+import com.codenvy.ide.security.oauth.OAuthCallback;
+import com.codenvy.ide.ui.Styles;
 import com.google.gwt.cell.client.ImageResourceCell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
@@ -35,8 +40,12 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.HTMLPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.ListBox;
-import com.google.gwt.user.client.ui.Widget;
+import com.google.gwt.user.client.ui.RadioButton;
+import com.google.gwt.user.client.ui.TextArea;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
@@ -53,21 +62,34 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     interface GithubImporterPageViewImplUiBinder extends UiBinder<DockLayoutPanel, GithubImporterPageViewImpl> {
     }
 
-    private ImporterBasePageView importerBasePageView;
-    private ActionDelegate       delegate;
+    private ActionDelegate delegate;
 
-    @UiField
-    FlowPanel              basePagePanel;
-    @UiField
-    FlowPanel              bottomPanel;
-    @UiField
-    DockLayoutPanel        githubPanel;
-    @UiField
-    Button                 loadRepo;
-    @UiField
-    ListBox                accountName;
     @UiField(provided = true)
-    CellTable<ProjectData> repositories;
+    GithubStyle style;
+    @UiField
+    Label                   labelUrlError;
+    @UiField
+    HTMLPanel               descriptionArea;
+    @UiField
+    TextBox                 projectName;
+    @UiField
+    TextArea                projectDescription;
+    @UiField
+    RadioButton             projectPrivate;
+    @UiField
+    RadioButton             projectPublic;
+    @UiField
+    TextBox                 projectUrl;
+    @UiField
+    FlowPanel               bottomPanel;
+    @UiField
+    DockLayoutPanel         githubPanel;
+    @UiField
+    Button                  loadRepo;
+    @UiField
+    ListBox                 accountName;
+    @UiField(provided = true)
+    CellTable<ProjectData>  repositories;
     @UiField(provided = true)
     final GitHubResources            resources;
     @UiField(provided = true)
@@ -77,16 +99,21 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     public GithubImporterPageViewImpl(GitHubResources resources,
                                       GitHubLocalizationConstant locale,
                                       Resources ideResources,
-                                      ImporterBasePageView importerBasePageView,
                                       GithubImporterPageViewImplUiBinder uiBinder) {
+
         this.resources = resources;
         this.locale = locale;
-        this.importerBasePageView = importerBasePageView;
+
+        style = resources.githubImporterPageStyle();
+        style.ensureInjected();
+
         createRepositoriesTable(ideResources);
         initWidget(uiBinder.createAndBindUi(this));
+
+        projectName.getElement().setAttribute("maxlength", "32");
+        projectDescription.getElement().setAttribute("maxlength", "256");
         closeGithubPanel();
 
-        basePagePanel.add(importerBasePageView);
         loadRepo.addStyleName(ideResources.Css().buttonLoader());
         loadRepo.sinkEvents(Event.ONCLICK);
         loadRepo.addHandler(new ClickHandler() {
@@ -99,9 +126,12 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
         }, ClickEvent.getType());
     }
 
-    /** Creates table what contains list of available repositories.
-     * @param ideResources*/
-    private void createRepositoriesTable(Resources ideResources) {
+    /**
+     * Creates table what contains list of available repositories.
+     *
+     * @param ideResources
+     */
+    private void createRepositoriesTable(@Nonnull Resources ideResources) {
         repositories = new CellTable<ProjectData>(15, ideResources);
 
         Column<ProjectData, ImageResource> iconColumn = new Column<ProjectData, ImageResource>(new ImageResourceCell()) {
@@ -153,71 +183,125 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
         repositories.setSelectionModel(selectionModel);
     }
 
+    @UiHandler("projectName")
+    void onProjectNameChanged(KeyUpEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            return;
+        }
+        delegate.projectNameChanged(projectName.getValue());
+    }
+
+    @UiHandler("projectUrl")
+    void onProjectUrlChanged(KeyUpEvent event) {
+        delegate.projectUrlChanged(projectUrl.getValue());
+    }
+
+    @UiHandler("projectDescription")
+    void onProjectDescriptionChanged(KeyUpEvent event) {
+        if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+            return;
+        }
+        delegate.projectDescriptionChanged(projectDescription.getValue());
+    }
+
+    @UiHandler({"projectPublic", "projectPrivate"})
+    void visibilityHandler(ValueChangeEvent<Boolean> event) {
+        delegate.projectVisibilityChanged(projectPublic.getValue());
+    }
+
+    @UiHandler("accountName")
+    public void onAccountChange(ChangeEvent event) {
+        delegate.onAccountChanged();
+    }
+
+    @Override
+    public void setProjectUrl(@Nonnull String url) {
+        projectUrl.setText(url);
+        delegate.projectUrlChanged(url);
+    }
+
     @Override
     public void reset() {
-        importerBasePageView.reset();
+        projectUrl.setText("");
+        projectName.setText("");
+        projectDescription.setText("");
+        projectPublic.setValue(true);
+        projectPrivate.setValue(false);
         githubPanel.removeFromParent();
+        hideUrlError();
+        hideNameError();
     }
 
     @Override
     public void showNameError() {
-        importerBasePageView.showNameError();
+        projectName.addStyleName(style.inputError());
     }
 
     @Override
     public void hideNameError() {
-        importerBasePageView.hideNameError();
+        projectName.removeStyleName(style.inputError());
     }
 
     @Override
-    public void showUrlError(String message) {
-        importerBasePageView.showUrlError(message);
+    public void setImporterDescription(@Nonnull String text) {
+        descriptionArea.getElement().setInnerText(text);
+    }
+
+    @Override
+    public void showUrlError(@Nonnull String message) {
+        projectUrl.addStyleName(style.inputError());
+        labelUrlError.setText(message);
     }
 
     @Override
     public void hideUrlError() {
-        importerBasePageView.hideUrlError();
+        projectUrl.removeStyleName(style.inputError());
+        labelUrlError.setText("");
     }
 
-    @Override
-    public void setImporterDescription(String text) {
-        importerBasePageView.setImporterDescription(text);
-    }
-
+    @Nonnull
     @Override
     public String getProjectName() {
-        return importerBasePageView.getProjectName();
+        return projectName.getValue();
     }
 
     @Override
-    public void setProjectName(String projectName) {
-        importerBasePageView.setProjectName(projectName);
+    public void setProjectName(@Nonnull String projectName) {
+        this.projectName.setValue(projectName);
+        delegate.projectNameChanged(projectName);
+    }
+
+    @Override
+    public void setProjectDescription(@Nonnull String projectDescription) {
+        this.projectDescription.setText(projectDescription);
+        delegate.projectDescriptionChanged(projectDescription);
     }
 
     @Override
     public void focusInUrlInput() {
-        importerBasePageView.focusInUrlInput();
+        projectUrl.setFocus(true);
     }
 
     @Override
     public void setInputsEnableState(boolean isEnabled) {
-        importerBasePageView.setInputsEnableState(isEnabled);
+        projectName.setEnabled(isEnabled);
+        projectDescription.setEnabled(isEnabled);
+        projectUrl.setEnabled(isEnabled);
+
+        if (isEnabled) {
+            focusInUrlInput();
+        }
     }
 
     @Override
-    public void setDelegate(ImporterBasePageView.ActionDelegate delegate) {
-
-    }
-
-    @Override
-    public Widget asWidget() {
-        return this;
-    }
-
-    @Override
-    public void setDelegate(ActionDelegate delegate) {
-        importerBasePageView.setDelegate(delegate);
+    public void setDelegate(@Nonnull ActionDelegate delegate) {
         this.delegate = delegate;
+    }
+
+    @Override
+    public void showAuthWindow(@Nonnull String authUrl, OAuthCallback callback) {
+        JsOAuthWindow authWindow = new JsOAuthWindow(authUrl, "error.url", 500, 980, callback);
+        authWindow.loginWithOAuth();
     }
 
     @Override
@@ -228,11 +312,6 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
             list.add(repositories.get(i));
         }
         this.repositories.setRowData(list);
-    }
-
-    @Override
-    public void setProjectUrl(String url) {
-        importerBasePageView.setProjectUrl(url);
     }
 
     @Nonnull
@@ -264,18 +343,44 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     @Override
     public void setLoaderVisibility(boolean isVisible) {
         if (isVisible) {
-            importerBasePageView.setInputsEnableState(false);
             loadRepo.setHTML("<i></i>");
             loadRepo.setEnabled(false);
         } else {
-            importerBasePageView.setInputsEnableState(true);
             loadRepo.setText("Load Repo");
             loadRepo.setEnabled(true);
         }
     }
 
-    @UiHandler("accountName")
-    public void onAccountChange(ChangeEvent event) {
-        delegate.onAccountChanged();
+    public interface GithubStyle extends Styles {
+        String mainPanel();
+
+        String namePanel();
+
+        String labelPosition();
+
+        String marginTop();
+
+        String alignRight();
+
+        String alignLeft();
+
+        String labelErrorPosition();
+
+        String radioButtonPosition();
+
+        String description();
+
+        String label();
+
+        String horizontalLine();
+
+        String bottomSpace();
+
+        String textPosition();
+
+        String rightSpace();
+
+        String loadRepo();
+
     }
 }

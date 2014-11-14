@@ -15,25 +15,12 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
     <ui:with field='locale' type='com.codenvy.ide.ext.git.client.GitLocalizationConstant'/>
     <ui:with field='res' type='com.codenvy.ide.ext.git.client.GitResources'/>
-    <ui:style>
-        .spacing {
-            margin-bottom: 10px;
-        }
-
-        .emptyBorder {
-            margin: 6px;
-        }
-    </ui:style>
-    <g:DockLayoutPanel unit="PX" width="450px" height="90px" addStyleNames="{style.emptyBorder}" debugId="projectReadOnlyGitUrl-panel">
-        <g:center>
-            <g:DockLayoutPanel unit="PX" width="100%" height="100%" styleName="{style.spacing}">
-                <g:north size="20.0">
-                    <g:Label text="{locale.projectReadOnlyGitUrlTitle}" addStyleNames="{res.gitCSS.textFont}"/>
-                </g:north>
-                <g:center>
-                    <g:TextBox width="438px" ui:field="url" addStyleNames="{res.gitCSS.textFont}" readOnly="true" debugId="projectReadOnlyGitUrl-url"/>
-                </g:center>
-            </g:DockLayoutPanel>
-        </g:center>
-    </g:DockLayoutPanel>
+    <g:FlowPanel styleName="{res.gitCSS.textFont} {res.gitCSS.emptyBorder}" debugId="projectReadOnlyGitUrl-panel">
+        <g:FlowPanel styleName="{res.gitCSS.spacing}">
+            <g:Label text="{locale.projectReadOnlyGitLocalUrlTitle}"/>
+            <g:TextBox ui:field="localUrl" readOnly="true" debugId="projectReadOnlyGitUrl-url"/>
+        </g:FlowPanel>
+        <g:FlowPanel ui:field="remotePanel" styleName="{res.gitCSS.spacing}">
+        </g:FlowPanel>
+    </g:FlowPanel>
 </ui:UiBinder>

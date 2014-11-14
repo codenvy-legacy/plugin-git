@@ -20,6 +20,7 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.ext.git.client.utils.BranchUtil;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -28,6 +29,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
@@ -64,14 +66,16 @@ public class PullPresenterTest extends BaseTest {
     private EditorInput         editorInput;
     @Mock
     private EditorPartPresenter partPresenter;
-    private PullPresenter       presenter;
+    //TODO add to tests
+    @Mock
+    private BranchUtil          branchUtil;
+
+    @InjectMocks
+    private PullPresenter presenter;
 
     @Override
     public void disarm() {
         super.disarm();
-
-        presenter = new PullPresenter(view, editorAgent, service, projectServiceClient, eventBus, appContext, constant, notificationManager,
-                                      dtoUnmarshallerFactory);
 
         StringMap<EditorPartPresenter> partPresenterMap = Collections.createStringMap();
         partPresenterMap.put("partPresenter", partPresenter);

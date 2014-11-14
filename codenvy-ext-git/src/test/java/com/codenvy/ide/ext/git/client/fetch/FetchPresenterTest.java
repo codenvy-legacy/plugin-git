@@ -15,6 +15,7 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.ext.git.client.utils.BranchUtil;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -22,6 +23,7 @@ import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -51,13 +53,15 @@ public class FetchPresenterTest extends BaseTest {
     private FetchView      view;
     @Mock
     private Branch         branch;
+    //TODO add to tests
+    @Mock
+    private BranchUtil     branchUtil;
+    @InjectMocks
     private FetchPresenter presenter;
 
     @Override
     public void disarm() {
         super.disarm();
-
-        presenter = new FetchPresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory, branchUtil);
 
         when(view.getRepositoryName()).thenReturn(REPOSITORY_NAME);
         when(view.getRepositoryUrl()).thenReturn(REMOTE_URI);
@@ -82,7 +86,8 @@ public class FetchPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, remotes);
                 return callback;
             }
-        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
+        }).when(service)
+          .remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -131,7 +136,8 @@ public class FetchPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, remotes);
                 return callback;
             }
-        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
+        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
+                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
@@ -173,7 +179,8 @@ public class FetchPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
+        }).when(service)
+          .remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
 
         presenter.showDialog();
 

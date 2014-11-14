@@ -33,7 +33,6 @@ import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -42,11 +41,10 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -197,8 +195,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             view.setCommitADate("");
             view.setCommitARevision("");
         } else {
-            DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-            view.setCommitADate(formatter.format(new Date((long)revision.getCommitTime())));
+//            DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
+//            view.setCommitADate(formatter.format(new Date((long)revision.getCommitTime())));
+            //TODO
+            view.setCommitADate("Adfas");
             view.setCommitARevision(revision.getId());
         }
     }
@@ -215,8 +215,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             view.setCommitBDate("");
             view.setCommitBRevision("");
         } else {
-            DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-            view.setCommitBDate(formatter.format(new Date(revision.getCommitTime())));
+//            DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
+//            view.setCommitBDate(formatter.format(new Date(revision.getCommitTime())));
+            //TODO
+            view.setCommitBDate("TODO");
             view.setCommitBRevision(revision.getId());
         }
         view.setCommitBPanelVisible(!isEmpty);
@@ -339,7 +341,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
      * Perform diff between pointed revision and index or working tree.
      *
      * @param filePatterns
-     *         patterns for which to show diff
+     *         patterns for which to show dif
      * @param revision
      *         revision to compare with
      * @param isCached

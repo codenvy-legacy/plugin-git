@@ -21,7 +21,6 @@ import com.codenvy.ide.ext.git.client.remote.add.AddRemoteRepositoryPresenter;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -33,7 +32,7 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 /**
  * Presenter for working with remote repository list (view, add and delete).
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class RemotePresenter implements RemoteView.ActionDelegate {
@@ -97,7 +96,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   Window.alert(errorMessage);
+                                   handleError(errorMessage);
                                }
                            }
                           );
@@ -131,7 +130,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     @Override
     public void onDeleteClicked() {
         if (selectedRemote == null) {
-            Window.alert(constant.selectRemoteRepositoryFail());
+            handleError(constant.selectRemoteRepositoryFail());
             return;
         }
 
@@ -156,5 +155,10 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     public void onRemoteSelected(@Nonnull Remote remote) {
         selectedRemote = remote;
         view.setEnableDeleteButton(selectedRemote != null);
+    }
+
+    private void handleError(@Nonnull String errorMessage) {
+        Notification notification = new Notification(errorMessage, ERROR);
+        notificationManager.showNotification(notification);
     }
 }

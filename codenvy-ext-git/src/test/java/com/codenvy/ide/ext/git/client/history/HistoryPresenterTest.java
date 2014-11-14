@@ -56,7 +56,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link HistoryPresenter} functionality.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 public class HistoryPresenterTest extends BaseTest {
     public static final boolean TEXT_NOT_FORMATTED = false;

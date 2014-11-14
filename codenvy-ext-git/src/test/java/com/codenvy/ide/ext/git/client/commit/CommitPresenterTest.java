@@ -18,6 +18,9 @@ import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -37,23 +40,26 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link CommitPresenter} functionality.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 public class CommitPresenterTest extends BaseTest {
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<Revision>> asyncRequestCallbackRevisionCaptor;
+
     public static final boolean ALL_FILE_INCLUDES = true;
     public static final boolean IS_OVERWRITTEN    = true;
     public static final String  COMMIT_TEXT       = "commit text";
     @Mock
-    private CommitView      view;
+    private CommitView view;
     @Mock
-    private Revision        revision;
+    private Revision   revision;
+
+    @InjectMocks
     private CommitPresenter presenter;
 
     @Override
     public void disarm() {
         super.disarm();
-
-        presenter = new CommitPresenter(view, service, constant, notificationManager, dtoUnmarshallerFactory, appContext);
 
         when(revision.isFake()).thenReturn(false);
     }

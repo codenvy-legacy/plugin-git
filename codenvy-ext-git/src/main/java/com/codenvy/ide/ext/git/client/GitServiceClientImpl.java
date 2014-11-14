@@ -212,8 +212,10 @@ public class GitServiceClientImpl implements GitServiceClient {
     @Override
     public void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, boolean all, boolean amend,
                        @Nonnull AsyncRequestCallback<Revision> callback) {
-        CommitRequest commitRequest =
-                dtoFactory.createDto(CommitRequest.class).withMessage(message).withAmend(amend).withAll(all);
+        CommitRequest commitRequest = dtoFactory.createDto(CommitRequest.class)
+                                                .withMessage(message)
+                                                .withAmend(amend)
+                                                .withAll(all);
         String url = baseHttpUrl + COMMIT + "?projectPath=" + project.getPath();
 
         asyncRequestFactory.createPostRequest(url, commitRequest).loader(loader).send(callback);

@@ -31,7 +31,7 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 /**
  * Presenter for commit changes on git.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class CommitPresenter implements CommitView.ActionDelegate {
@@ -42,16 +42,6 @@ public class CommitPresenter implements CommitView.ActionDelegate {
     private       GitLocalizationConstant constant;
     private       NotificationManager     notificationManager;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param constant
-     * @param notificationManager
-     * @param dtoUnmarshallerFactory
-     * @param appContext
-     */
     @Inject
     public CommitPresenter(CommitView view,
                            GitServiceClient service,
@@ -112,13 +102,16 @@ public class CommitPresenter implements CommitView.ActionDelegate {
      *         a {@link Revision}
      */
     private void onCommitSuccess(@Nonnull final Revision revision) {
-        DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-        String date = formatter.format(new Date(revision.getCommitTime()));
+//        DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
+        String date = "qwe";//formatter.format(new Date(revision.getCommitTime()));
+        //TODO
 
         String message = constant.commitMessage(revision.getId(), date);
-        message += (revision.getCommitter() != null && revision.getCommitter().getName() != null &&
-                    !revision.getCommitter().getName().isEmpty())
-                   ? " " + constant.commitUser(revision.getCommitter().getName()) : "";
+
+        if ((revision.getCommitter() != null && revision.getCommitter().getName() != null &&
+             !revision.getCommitter().getName().isEmpty())) {
+            message += " " + constant.commitUser(revision.getCommitter().getName());
+        }
 
         Notification notification = new Notification(message, INFO);
         notificationManager.showNotification(notification);

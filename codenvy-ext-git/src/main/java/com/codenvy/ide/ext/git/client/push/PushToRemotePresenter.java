@@ -81,19 +81,19 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /** Show dialog. */
     public void showDialog() {
         project = appContext.getCurrentProject();
-        getRemotes();
+        updateRemotes();
     }
 
     /**
      * Get the list of remote repositories for local one.
      * If remote repositories are found, then get the list of branches (remote and local).
      */
-    private void getRemotes() {
+    /* used in tests */ void updateRemotes() {
         service.remoteList(project.getRootProject(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   updateBranches();
+                                   updateLocalBranches();
                                    view.setRepositories(result);
                                    view.setEnablePushButton(!result.isEmpty());
                                    view.showDialog();
@@ -111,7 +111,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Update list of local and remote branches on view.
      */
-    private void updateBranches() {
+    /* used in tests */ void updateLocalBranches() {
         //getting local branches
         getBranchesForCurrentProject(LIST_LOCAL, new AsyncCallback<Array<Branch>>() {
             @Override
@@ -127,7 +127,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                 }
 
                 //getting remote branch only after selecting current local branch
-                getRemoteBranches();
+                updateRemoteBranches();
             }
 
             @Override
@@ -141,7 +141,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Update list of remote branches on view.
      */
-    private void getRemoteBranches() {
+    /* used in tests */ void updateRemoteBranches() {
         getBranchesForCurrentProject(LIST_REMOTE, new AsyncCallback<Array<Branch>>() {
             @Override
             public void onSuccess(final Array<Branch> result) {
@@ -197,7 +197,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Get upstream branch for selected local branch. Can invoke {@code onSuccess(null)} if upstream branch isn't set
      */
-    public void getUpstreamBranch(final AsyncCallback<Branch> result) {
+    /* used in tests */ void getUpstreamBranch(final AsyncCallback<Branch> result) {
         final String configBranchRemote = "branch." + view.getLocalBranch() + ".remote";
         final String configUpstreamBranch = "branch." + view.getLocalBranch() + ".merge";
         service.config(project.getRootProject(), Arrays.asList(configUpstreamBranch, configBranchRemote), false,
@@ -231,7 +231,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranchesForCurrentProject(@Nonnull final String remoteMode, final AsyncCallback<Array<Branch>> asyncResult) {
+    /* used in tests */ void getBranchesForCurrentProject(@Nonnull final String remoteMode,
+                                                          final AsyncCallback<Array<Branch>> asyncResult) {
         service.branchList(project.getRootProject(),
                            remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
@@ -290,7 +291,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
 
     @Override
     public void onRepositoryChanged() {
-        updateBranches();
+        updateLocalBranches();
     }
 
     /**

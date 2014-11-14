@@ -20,6 +20,7 @@ import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -46,8 +47,9 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
  */
 public class AddToIndexPresenterTest extends BaseTest {
-    public static final boolean NEED_UPDATING = true;
-    public static final String  MESSAGE       = "message";
+    public static final boolean  NEED_UPDATING = true;
+    public static final SafeHtml SAFE_HTML     = mock(SafeHtml.class);
+    public static final String   MESSAGE       = "message";
     @Mock
     private AddToIndexView      view;
     @Mock
@@ -86,7 +88,7 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(folder.getPath()).thenReturn(folderPath);
         when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
-        when(constant.addToIndexFolder(anyString())).thenReturn(MESSAGE);
+        when(constant.addToIndexFolder(anyString())).thenReturn(SAFE_HTML);
 
         presenter.showDialog();
 
@@ -105,7 +107,8 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(file.getPath()).thenReturn(filePath);
         when(selection.getFirstElement()).thenReturn(file);
         when(selectionAgent.getSelection()).thenReturn(selection);
-        when(constant.addToIndexFile(anyString())).thenReturn(MESSAGE);
+        when(constant.addToIndexFile(anyString())).thenReturn(SAFE_HTML);
+        when(SAFE_HTML.asString()).thenReturn(MESSAGE);
 
         presenter.showDialog();
 

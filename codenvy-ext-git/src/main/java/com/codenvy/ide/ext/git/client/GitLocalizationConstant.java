@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.git.client;
 
 import com.google.gwt.i18n.client.Messages;
+import com.google.gwt.safehtml.shared.SafeHtml;
 
 /**
  * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
@@ -252,15 +253,46 @@ public interface GitLocalizationConstant extends Messages {
 
     // ----VIEWS------------------------------------------------------------------
 
+    //GitImporterPage
+    @Key("view.import.gitImporterPage.importerInfo")
+    String gitImporterPageImporterInfo();
+
+    @Key("view.import.gitImporterPage.projectUrl")
+    String gitImporterPageProjectUrl();
+
+    @Key("view.import.gitImporterPage.projectInfo")
+    String gitImporterPageProjectInfo();
+
+    @Key("view.import.gitImporterPage.projectName")
+    String gitImporterPageProjectName();
+
+    @Key("view.import.gitImporterPageProjectNamePrompt")
+    String gitImporterPageProjectNamePrompt();
+
+    @Key("view.import.gitImporterPage.projectDescription")
+    String gitImporterPageProjectDescription();
+
+    @Key("view.import.gitImporterPage.projectDescriptionPrompt")
+    String gitImporterPageProjectDescriptionPrompt();
+
+    @Key("view.import.gitImporterPage.projectPrivacy")
+    String gitImporterPageProjectPrivacy();
+
+    @Key("view.import.gitImporterPage.projectVisibilityPublic")
+    String gitImporterPageprojectVisibilityPublic();
+
+    @Key("view.import.gitImporterPage.projectVisibilityPrivate")
+    String gitImporterPageprojectVisibilityPrivate();
+
     // Add
     @Key("view.add_to_index.all_changes")
     String addToIndexAllChanges();
 
     @Key("view.add_to_index.folder")
-    String addToIndexFolder(String folder);
+    SafeHtml addToIndexFolder(String folder);
 
     @Key("view.add_to_index.file")
-    String addToIndexFile(String file);
+    SafeHtml addToIndexFile(String file);
 
     @Key("view.add_to_index.update_field_title")
     String addToIndexUpdateFieldTitle();
@@ -369,10 +401,10 @@ public interface GitLocalizationConstant extends Messages {
     String removeFromIndexOnly();
 
     @Key("view.remove_from_index.folder")
-    String removeFromIndexFolder(String folder);
+    SafeHtml removeFromIndexFolder(String folder);
 
     @Key("view.remove_from_index.file")
-    String removeFromIndexFile(String file);
+    SafeHtml removeFromIndexFile(String file);
 
     @Key("view.remove_from_index.title")
     String removeFromIndexTitle();

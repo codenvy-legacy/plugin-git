@@ -108,9 +108,9 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         }
 
         if (selection.getFirstElement() instanceof FolderNode) {
-            return constant.addToIndexFolder(pattern);
+            return constant.addToIndexFolder(pattern).asString();
         } else {
-            return constant.addToIndexFile(pattern);
+            return constant.addToIndexFile(pattern).asString();
         }
     }
 

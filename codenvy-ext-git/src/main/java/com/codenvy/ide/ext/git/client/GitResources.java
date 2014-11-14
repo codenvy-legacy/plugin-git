@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client;
 
+import com.codenvy.ide.ext.git.client.projectImporter.importerpage.GitImporterPageViewImpl;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.resources.client.ImageResource;
@@ -28,6 +29,9 @@ public interface GitResources extends ClientBundle {
 
         String simpleListContainer();
     }
+
+    @Source({"projectimporter/importerpage/GitImporterPage.css", "com/codenvy/ide/ui/Styles.css"})
+    GitImporterPageViewImpl.Style gitImporterPageStyle();
 
     @Source({"git.css", "com/codenvy/ide/api/ui/style.css"})
     GitCSS gitCSS();

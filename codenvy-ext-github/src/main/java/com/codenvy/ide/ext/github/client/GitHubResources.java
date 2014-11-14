@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client;
 
+import com.codenvy.ide.ext.github.client.projectimporter.importerpage.GithubImporterPageViewImpl;
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.ImageResource;
 
@@ -20,6 +21,9 @@ import org.vectomatic.dom.svg.ui.SVGResource;
  * @version $Id: Mar 22, 2011 2:39:07 PM anya $
  */
 public interface GitHubResources extends ClientBundle {
+
+    @Source({"projectimporter/importerpage/GithubImporterPage.css", "com/codenvy/ide/ui/Styles.css"})
+    GithubImporterPageViewImpl.GithubStyle githubImporterPageStyle();
 
     @Source("buttons/ok.png")
     ImageResource ok();

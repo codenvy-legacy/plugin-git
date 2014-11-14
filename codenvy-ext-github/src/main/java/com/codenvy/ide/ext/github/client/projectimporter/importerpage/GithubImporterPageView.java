@@ -10,10 +10,10 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client.projectimporter.importerpage;
 
-import com.codenvy.ide.api.projectimporter.basepage.ImporterBasePageView;
+import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.github.client.load.ProjectData;
-import com.google.gwt.user.client.ui.Widget;
+import com.codenvy.ide.security.oauth.OAuthCallback;
 import com.google.inject.ImplementedBy;
 
 import javax.annotation.Nonnull;
@@ -22,11 +22,24 @@ import javax.annotation.Nonnull;
  * @author Roman Nikitenko
  */
 @ImplementedBy(GithubImporterPageViewImpl.class)
-public interface GithubImporterPageView extends ImporterBasePageView {
+public interface GithubImporterPageView extends View<GithubImporterPageView.ActionDelegate> {
 
-    public interface ActionDelegate extends ImporterBasePageView.ActionDelegate{
+    public interface ActionDelegate {
+        /** Performs any actions appropriate in response to the user having changed the project's name. */
+        void projectNameChanged(@Nonnull String name);
+
+        /** Performs any actions appropriate in response to the user having changed the project's URL. */
+        void projectUrlChanged(@Nonnull String url);
+
+        /** Performs any actions appropriate in response to the user having changed the project's description. */
+        void projectDescriptionChanged(@Nonnull String projectDescriptionValue);
+
+        /** Performs any actions appropriate in response to the user having changed the project's visibility. */
+        void projectVisibilityChanged(boolean aPublic);
+
         /** Performs any actions appropriate in response to the user having clicked the 'LoadRepo' key. */
         void onLoadRepoClicked();
+
         /**
          * Performs any actions appropriate in response to the user having selected a repository.
          *
@@ -38,10 +51,69 @@ public interface GithubImporterPageView extends ImporterBasePageView {
         /** Performs any actions appropriate in response to the user having changed account field. */
         void onAccountChanged();
     }
-    Widget asWidget();
 
-    /** Sets the delegate to receive events from this view. */
-    void setDelegate(ActionDelegate delegate);
+    /** Show the name error. */
+    void showNameError();
+
+    /** Hide the name error. */
+    void hideNameError();
+
+    /** Show URL error. */
+    void showUrlError(@Nonnull String message);
+
+    /** Hide URL error. */
+    void hideUrlError();
+
+    /**
+     * Set the importer's description.
+     *
+     * @param text
+     *         description
+     */
+    void setImporterDescription(@Nonnull String text);
+
+    /**
+     * Set the project's URL.
+     *
+     * @param url
+     *         the project's URL to set
+     */
+    void setProjectUrl(@Nonnull String url);
+
+    /**
+     * Get the project's name value.
+     *
+     * @return {@link String} project's name
+     */
+    @Nonnull
+    String getProjectName();
+
+    /**
+     * Set the project's name value.
+     *
+     * @param projectName
+     *         project's name to set
+     */
+    void setProjectName(@Nonnull String projectName);
+
+    /**
+     * Set the project's description value.
+     *
+     * @param projectDescription
+     *         project's description to set
+     */
+    void setProjectDescription(@Nonnull String projectDescription);
+
+    /** Give focus to project's URL input. */
+    void focusInUrlInput();
+
+    /**
+     * Set the enable state of the inputs.
+     *
+     * @param isEnabled
+     *         <code>true</code> if enabled, <code>false</code> if disabled
+     */
+    void setInputsEnableState(boolean isEnabled);
 
     /**
      * Set available repositories for account.
@@ -50,14 +122,6 @@ public interface GithubImporterPageView extends ImporterBasePageView {
      *         available repositories
      */
     void setRepositories(@Nonnull Array<ProjectData> repositories);
-
-    /**
-     * Set the project's URL.
-     *
-     * @param url
-     *         the project's URL to set
-     */
-    void setProjectUrl(String url);
 
     /** @return account name */
     @Nonnull
@@ -76,6 +140,12 @@ public interface GithubImporterPageView extends ImporterBasePageView {
 
     /** Show github panel. */
     void showGithubPanel();
+
+    /** Reset the page. */
+    void reset();
+
+    /** Show authorization window. */
+    void showAuthWindow(@Nonnull String authUrl, OAuthCallback callback);
 
     /**
      * Set the visibility state of the loader.

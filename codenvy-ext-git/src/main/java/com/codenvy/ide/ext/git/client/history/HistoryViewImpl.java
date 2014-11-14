@@ -23,7 +23,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
-import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -241,7 +240,7 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
     /** {@inheritDoc} */
     @Override
     public void setCompareType(@Nonnull String type) {
-        compareType.setHTML(SafeHtmlUtils.fromString(type).asString());
+        compareType.setHTML(type);
     }
 
     /** {@inheritDoc} */

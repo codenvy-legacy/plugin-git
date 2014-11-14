@@ -118,9 +118,9 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
         }
 
         if (selection != null && selection.getFirstElement() instanceof FolderNode) {
-            return constant.removeFromIndexFolder(pattern);
+            return constant.removeFromIndexFolder(pattern).asString();
         } else {
-            return constant.removeFromIndexFile(pattern);
+            return constant.removeFromIndexFile(pattern).asString();
         }
     }
 

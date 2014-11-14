@@ -23,6 +23,7 @@ import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.google.gwt.safehtml.shared.SafeHtml;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
@@ -48,8 +49,9 @@ import static org.mockito.Mockito.when;
  * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
  */
 public class RemoveFromIndexPresenterTest extends BaseTest {
-    public static final boolean REMOVED = true;
-    public static final String  MESSAGE = "message";
+    public static final boolean  REMOVED = true;
+    public static final String   MESSAGE = "message";
+    public static final SafeHtml SAFE_HTML = mock(SafeHtml.class);
     @Mock
     private RemoveFromIndexView      view;
     private RemoveFromIndexPresenter presenter;
@@ -90,7 +92,8 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         when(file.getPath()).thenReturn(filePath);
         when(selection.getFirstElement()).thenReturn(file);
         when(selectionAgent.getSelection()).thenReturn(selection);
-        when(constant.removeFromIndexFile(anyString())).thenReturn(MESSAGE);
+        when(constant.removeFromIndexFile(anyString())).thenReturn(SAFE_HTML);
+        when(SAFE_HTML.asString()).thenReturn(MESSAGE);
 
         presenter.showDialog();
 
@@ -108,7 +111,8 @@ public class RemoveFromIndexPresenterTest extends BaseTest {
         when(folder.getPath()).thenReturn(folderPath);
         when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
-        when(constant.removeFromIndexFolder(anyString())).thenReturn(MESSAGE);
+        when(constant.removeFromIndexFolder(anyString())).thenReturn(SAFE_HTML);
+        when(SAFE_HTML.asString()).thenReturn(MESSAGE);
 
         presenter.showDialog();
 

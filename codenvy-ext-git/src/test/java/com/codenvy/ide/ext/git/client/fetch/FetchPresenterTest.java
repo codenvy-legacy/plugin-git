@@ -57,7 +57,7 @@ public class FetchPresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new FetchPresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new FetchPresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory, branchUtil);
 
         when(view.getRepositoryName()).thenReturn(REPOSITORY_NAME);
         when(view.getRepositoryUrl()).thenReturn(REMOTE_URI);

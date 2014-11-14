@@ -8,9 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.client;
+package com.codenvy.ide.ext.git.client.utils;
 
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.ext.git.client.utils.GitUtil;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;

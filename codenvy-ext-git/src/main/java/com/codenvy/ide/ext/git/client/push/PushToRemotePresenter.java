@@ -15,11 +15,12 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.ext.git.client.utils.BranchFilterByRemote;
+import com.codenvy.ide.ext.git.client.utils.BranchUtil;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -55,6 +56,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private final AppContext              appContext;
     private final GitLocalizationConstant constant;
     private final NotificationManager     notificationManager;
+    private final BranchUtil              branchUtil;
     private       CurrentProject          project;
 
     @Inject
@@ -64,9 +66,10 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                  AppContext appContext,
                                  GitLocalizationConstant constant,
                                  NotificationManager notificationManager,
-                                 DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                                 DtoUnmarshallerFactory dtoUnmarshallerFactory, BranchUtil branchUtil) {
         this.dtoFactory = dtoFactory;
         this.view = view;
+        this.branchUtil = branchUtil;
         this.view.setDelegate(this);
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.service = service;
@@ -113,7 +116,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         getBranchesForCurrentProject(LIST_LOCAL, new AsyncCallback<Array<Branch>>() {
             @Override
             public void onSuccess(Array<Branch> result) {
-                Array<String> localBranches = getLocalBranchesToDisplay(result);
+                Array<String> localBranches = branchUtil.getLocalBranchesToDisplay(result);
                 view.setLocalBranches(localBranches);
 
                 for (Branch branch : result.asIterable()) {
@@ -147,12 +150,12 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                 getUpstreamBranch(new AsyncCallback<Branch>() {
                     @Override
                     public void onSuccess(Branch upstream) {
-                        RemoteRefsHandler remoteRefsHandler = new RemoteRefsHandler(view.getRepository());
+                        BranchFilterByRemote remoteRefsHandler = new BranchFilterByRemote(view.getRepository());
 
-                        final Array<String> remoteBranches = getRemoteBranchesToDisplay(remoteRefsHandler, result);
+                        final Array<String> remoteBranches = branchUtil.getRemoteBranchesToDisplay(remoteRefsHandler, result);
 
                         String selectedRemoteBranch = null;
-                        if (upstream != null && upstream.isRemote() && remoteRefsHandler.startWith(upstream.getName())) {
+                        if (upstream != null && upstream.isRemote() && remoteRefsHandler.isLinkedTo(upstream)) {
                             String simpleUpstreamName = remoteRefsHandler.getBranchNameWithoutRefs(upstream);
                             if (!remoteBranches.contains(simpleUpstreamName)) {
                                 remoteBranches.add(simpleUpstreamName);
@@ -245,54 +248,6 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                           );
     }
 
-    /**
-     * Set values of remote branches: filter remote branches due to selected remote repository.
-     */
-    @Nonnull
-    private Array<String> getRemoteBranchesToDisplay(RemoteRefsHandler remoteRefsHandler,
-                                                     @Nonnull Array<Branch> remoteBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (remoteBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        for (int i = 0; i < remoteBranches.size(); i++) {
-            Branch branch = remoteBranches.get(i);
-            if (remoteRefsHandler.startWith(branch.getName())) {
-                branches.add(remoteRefsHandler.getBranchNameWithoutRefs(branch));
-            }
-        }
-
-        if (branches.isEmpty()) {
-            branches.add("master");
-        }
-        return branches;
-    }
-
-    /**
-     * Set values of local branches.
-     *
-     * @param localBranches
-     *         local branches
-     */
-    @Nonnull
-    private Array<String> getLocalBranchesToDisplay(@Nonnull Array<Branch> localBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (localBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        for (Branch branch : localBranches.asIterable()) {
-            branches.add(branch.getDisplayName());
-        }
-
-        return branches;
-    }
-
     /** {@inheritDoc} */
     @Override
     public void onPushClicked() {
@@ -360,22 +315,5 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private void handleError(@Nonnull String errorMessage) {
         Notification notification = new Notification(errorMessage, ERROR);
         notificationManager.showNotification(notification);
-    }
-
-    private static class RemoteRefsHandler {
-        private final String refsForRemoteRepository;
-
-        private RemoteRefsHandler(String remoteName) {
-            this.refsForRemoteRepository = "refs/remotes/" + remoteName + "/";
-        }
-
-        //TODO Think about name of this method
-        private boolean startWith(String refs) {
-            return refs.startsWith(refsForRemoteRepository);
-        }
-
-        public String getBranchNameWithoutRefs(Branch branch) {
-            return branch.getName().replaceFirst(refsForRemoteRepository, "");
-        }
     }
 }

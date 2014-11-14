@@ -56,7 +56,8 @@ public class PushToRemotePresenterTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        presenter = new PushToRemotePresenter(dtoFactory, view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new PushToRemotePresenter(dtoFactory, view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory,
+                                              branchUtil);
 
         when(view.getRepository()).thenReturn(REPOSITORY_NAME);
         when(view.getLocalBranch()).thenReturn(LOCAL_BRANCH);

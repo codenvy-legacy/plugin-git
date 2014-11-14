@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.git.client.init;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.ext.git.client.GitUtil;
+import com.codenvy.ide.ext.git.client.utils.GitUtil;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 

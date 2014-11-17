@@ -22,9 +22,9 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
-import com.google.gwt.user.client.Window;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -46,6 +46,7 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 @Singleton
 public class FetchPresenter implements FetchView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private       DialogFactory           dialogFactory;
     private       FetchView               view;
     private       GitServiceClient        service;
     private       AppContext              appContext;
@@ -65,9 +66,10 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     @Inject
     public FetchPresenter(FetchView view, GitServiceClient service, AppContext appContext,
                           GitLocalizationConstant constant, NotificationManager notificationManager,
-                          DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                          DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -102,7 +104,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   Window.alert(errorMessage);
+                                   dialogFactory.createMessageDialog("", errorMessage, null).show();
                                    view.setEnableFetchButton(false);
                                }
                            });

@@ -18,10 +18,14 @@ import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.client.remote.add.AddRemoteRepositoryPresenter;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
+import com.codenvy.ide.ui.dialogs.message.MessageDialog;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -52,6 +56,8 @@ public class RemotePresenterTest extends BaseTest {
     @Mock
     private Remote                       selectedRemote;
     @Mock
+    private DialogFactory                dialogFactory;
+    @Mock
     private AddRemoteRepositoryPresenter addRemoteRepositoryPresenter;
     private RemotePresenter              presenter;
 
@@ -60,7 +66,7 @@ public class RemotePresenterTest extends BaseTest {
         super.disarm();
 
         presenter = new RemotePresenter(view, service, appContext, constant, addRemoteRepositoryPresenter, notificationManager,
-                                        dtoUnmarshallerFactory);
+                                        dtoUnmarshallerFactory, dialogFactory);
 
         when(selectedRemote.getName()).thenReturn(REPOSITORY_NAME);
     }
@@ -105,6 +111,8 @@ public class RemotePresenterTest extends BaseTest {
             }
         }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
                                     (AsyncRequestCallback<Array<Remote>>)anyObject());
+        MessageDialog messageDialog = mock(MessageDialog.class);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject())).thenReturn(messageDialog);
 
         presenter.showDialog();
 
@@ -112,6 +120,8 @@ public class RemotePresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
+        verify(dialogFactory).createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject());
+        verify(messageDialog).show();
     }
 
     @Test

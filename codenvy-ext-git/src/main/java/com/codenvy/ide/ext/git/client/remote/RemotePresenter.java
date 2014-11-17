@@ -21,7 +21,7 @@ import com.codenvy.ide.ext.git.client.remote.add.AddRemoteRepositoryPresenter;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.google.gwt.user.client.Window;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -38,6 +38,7 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 @Singleton
 public class RemotePresenter implements RemoteView.ActionDelegate {
     private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
+    private       DialogFactory                dialogFactory;
     private       RemoteView                   view;
     private       GitServiceClient             service;
     private       AppContext                   appContext;
@@ -60,9 +61,10 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     @Inject
     public RemotePresenter(RemoteView view, GitServiceClient service, AppContext appContext, GitLocalizationConstant constant,
                            AddRemoteRepositoryPresenter addRemoteRepositoryPresenter, NotificationManager notificationManager,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -97,7 +99,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   Window.alert(errorMessage);
+                                   dialogFactory.createMessageDialog("", errorMessage, null).show();
                                }
                            }
                           );
@@ -131,7 +133,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     @Override
     public void onDeleteClicked() {
         if (selectedRemote == null) {
-            Window.alert(constant.selectRemoteRepositoryFail());
+            dialogFactory.createMessageDialog("", constant.selectRemoteRepositoryFail(), null).show();
             return;
         }
 

@@ -23,7 +23,7 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.google.gwt.user.client.Window;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -45,6 +45,7 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 @Singleton
 public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private       DialogFactory           dialogFactory;
     private       PushToRemoteView        view;
     private       GitServiceClient        service;
     private       AppContext              appContext;
@@ -64,9 +65,10 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     @Inject
     public PushToRemotePresenter(PushToRemoteView view, GitServiceClient service, AppContext appContext,
                                  GitLocalizationConstant constant, NotificationManager notificationManager,
-                                 DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                                 DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -99,7 +101,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    final String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   Window.alert(errorMessage);
+                                   dialogFactory.createMessageDialog("", errorMessage, null).show();
                                    view.setEnablePushButton(false);
                                }
                            }

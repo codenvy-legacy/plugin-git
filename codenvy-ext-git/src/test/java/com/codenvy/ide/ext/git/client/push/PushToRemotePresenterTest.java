@@ -18,10 +18,13 @@ import com.codenvy.ide.ext.git.client.BaseTest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.websocket.rest.RequestCallback;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
+import com.codenvy.ide.ui.dialogs.message.MessageDialog;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -51,13 +54,16 @@ public class PushToRemotePresenterTest extends BaseTest {
     private PushToRemoteView      view;
     @Mock
     private Branch                branch;
+    @Mock
+    private DialogFactory         dialogFactory;
     private PushToRemotePresenter presenter;
 
     @Override
     public void disarm() {
         super.disarm();
 
-        presenter = new PushToRemotePresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory);
+        presenter = new PushToRemotePresenter(view, service, appContext, constant, notificationManager, dtoUnmarshallerFactory,
+                                              dialogFactory);
 
         when(view.getRepository()).thenReturn(REPOSITORY_NAME);
         when(view.getLocalBranch()).thenReturn(LOCAL_BRANCH);
@@ -229,6 +235,8 @@ public class PushToRemotePresenterTest extends BaseTest {
             }
         }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
                                     (AsyncRequestCallback<Array<Remote>>)anyObject());
+        MessageDialog messageDialog = mock(MessageDialog.class);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject())).thenReturn(messageDialog);
 
         presenter.showDialog();
 
@@ -236,6 +244,8 @@ public class PushToRemotePresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
+        verify(dialogFactory).createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject());
+        verify(messageDialog).show();
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));
     }
 

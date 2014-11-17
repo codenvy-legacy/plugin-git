@@ -13,6 +13,7 @@ package com.codenvy.ide.ext.git.client.commit;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.ext.git.client.utils.DateTimeFormatter;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
@@ -50,9 +51,11 @@ public class CommitPresenterTest extends BaseTest {
     public static final boolean IS_OVERWRITTEN    = true;
     public static final String  COMMIT_TEXT       = "commit text";
     @Mock
-    private CommitView view;
+    private CommitView        view;
     @Mock
-    private Revision   revision;
+    private Revision          revision;
+    @Mock
+    private DateTimeFormatter dateTimeFormatter;
 
     @InjectMocks
     private CommitPresenter presenter;

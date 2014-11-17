@@ -197,7 +197,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Get upstream branch for selected local branch. Can invoke {@code onSuccess(null)} if upstream branch isn't set
      */
-    /* used in tests */ void getUpstreamBranch(final AsyncCallback<Branch> result) {
+    private void getUpstreamBranch(final AsyncCallback<Branch> result) {
+
         final String configBranchRemote = "branch." + view.getLocalBranch() + ".remote";
         final String configUpstreamBranch = "branch." + view.getLocalBranch() + ".merge";
         service.config(project.getRootProject(), Arrays.asList(configUpstreamBranch, configBranchRemote), false,
@@ -291,7 +292,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
 
     @Override
     public void onRepositoryChanged() {
-        updateLocalBranches();
+        updateRemoteBranches();
     }
 
     /**
@@ -300,7 +301,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param throwable
      *         exception what happened
      */
-    private void handleError(@Nonnull Throwable throwable) {
+    /* used in tests */ void handleError(@Nonnull Throwable throwable) {
         String errorMessage;
         if (throwable instanceof UnauthorizedException) {
             errorMessage = constant.messagesNotAuthorized();

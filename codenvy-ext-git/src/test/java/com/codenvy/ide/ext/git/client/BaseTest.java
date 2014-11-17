@@ -47,6 +47,7 @@ public abstract class BaseTest {
     public static final String  EMPTY_TEXT      = "";
     public static final String  PROJECT_NAME    = "test";
     public static final String  REMOTE_NAME     = "codenvy";
+    public static final String  LOCALE_URI      = "http://codenvy.com/git/workspace/test";
     public static final String  REMOTE_URI      = "git@github.com:codenvy/test.git";
     public static final String  REPOSITORY_NAME = "origin";
     public static final String  LOCAL_BRANCH    = "localBranch";

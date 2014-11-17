@@ -10,15 +10,20 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.url;
 
+import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
+import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.ui.window.Window;
+import com.codenvy.ide.ui.zeroClipboard.ClipboardButtonBuilder;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.FlowPanel;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Widget;
 import com.google.inject.Inject;
@@ -27,9 +32,10 @@ import com.google.inject.Singleton;
 import javax.annotation.Nonnull;
 
 /**
- * The implementation of {@link ShowProjectGitReadOnlyUrlView}.
+ * The implementation of View.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Oleksii Orel
  */
 @Singleton
 public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowProjectGitReadOnlyUrlView {
@@ -39,13 +45,18 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
     private static ShowProjectGitReadOnlyUrlViewImplUiBinder ourUiBinder = GWT.create(ShowProjectGitReadOnlyUrlViewImplUiBinder.class);
 
     @UiField
-    TextBox url;
-    Button  btnClose;
+    TextBox   localUrl;
+    @UiField
+    FlowPanel remotePanel;
+
+    Button btnClose;
     @UiField(provided = true)
-    final   GitResources            res;
+    final GitResources            res;
     @UiField(provided = true)
-    final   GitLocalizationConstant locale;
-    private ActionDelegate          delegate;
+    final GitLocalizationConstant locale;
+
+    private final ClipboardButtonBuilder buttonBuilder;
+    private       ActionDelegate         delegate;
 
     /**
      * Create view.
@@ -54,16 +65,18 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
      * @param locale
      */
     @Inject
-    protected ShowProjectGitReadOnlyUrlViewImpl(GitResources resources, GitLocalizationConstant locale) {
+    protected ShowProjectGitReadOnlyUrlViewImpl(GitResources resources, GitLocalizationConstant locale,
+                                                ClipboardButtonBuilder buttonBuilder) {
         this.res = resources;
         this.locale = locale;
+        this.buttonBuilder = buttonBuilder;
         this.ensureDebugId("projectReadOnlyGitUrl-window");
 
         Widget widget = ourUiBinder.createAndBindUi(this);
 
-        this.setTitle(locale.projectReadOnlyGitUrlTitle());
+        this.setTitle(locale.projectReadOnlyGitUrlWindowTitle());
         this.setWidget(widget);
-        
+
         btnClose = createButton(locale.buttonClose(), "", new ClickHandler() {
 
             @Override
@@ -73,12 +86,34 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
         });
         btnClose.ensureDebugId("projectReadOnlyGitUrl-btnClose");
         getFooter().add(btnClose);
+
+        buttonBuilder.withResourceWidget(localUrl).build();
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setUrl(@Nonnull String url) {
-        this.url.setText(url);
+    public void setLocaleUrl(@Nonnull String url) {
+        localUrl.setText(url);
+    }
+
+    @Override
+    public void setRemotes(Array<Remote> remotes) {
+        remotePanel.clear();
+        if (remotes == null || remotes.size() == 0) {
+            return;
+        }
+        remotePanel.add(new Label(
+                remotes.size() > 1 ? locale.projectReadOnlyGitRemoteUrlsTitle() : locale.projectReadOnlyGitRemoteUrlTitle()));
+        for (Remote remote : remotes.asIterable()) {
+            if (remote == null || remote.getUrl() == null) {
+                continue;
+            }
+            TextBox remoteUrl = new TextBox();
+            remoteUrl.setReadOnly(true);
+            remoteUrl.setText(remote.getUrl());
+            remotePanel.add(remoteUrl);
+            buttonBuilder.withResourceWidget(remoteUrl).build();
+        }
     }
 
     /** {@inheritDoc} */

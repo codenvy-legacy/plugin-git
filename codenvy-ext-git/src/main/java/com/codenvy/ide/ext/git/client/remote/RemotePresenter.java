@@ -85,7 +85,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   view.setEnableDeleteButton(false);
+                                   view.setEnableDeleteButton(selectedRemote != null);
                                    view.setRemotes(result);
                                    if (!view.isShown()) {
                                        view.showDialog();

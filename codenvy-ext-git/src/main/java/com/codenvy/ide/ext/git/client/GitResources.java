@@ -28,6 +28,10 @@ public interface GitResources extends ClientBundle {
         String cells();
 
         String simpleListContainer();
+
+        String emptyBorder();
+
+        String spacing();
     }
 
     @Source({"projectimporter/importerpage/GitImporterPage.css", "com/codenvy/ide/ui/Styles.css"})

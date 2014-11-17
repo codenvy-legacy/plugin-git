@@ -109,6 +109,7 @@ public class ShowProjectGitReadOnlyUrlViewImpl extends Window implements ShowPro
                 continue;
             }
             TextBox remoteUrl = new TextBox();
+            remoteUrl.setReadOnly(true);
             remoteUrl.setText(remote.getUrl());
             remotePanel.add(remoteUrl);
             buttonBuilder.withResourceWidget(remoteUrl).build();

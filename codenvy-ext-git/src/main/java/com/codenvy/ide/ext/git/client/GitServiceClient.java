@@ -323,8 +323,7 @@ public interface GitServiceClient {
      * @param all
      *         automatically stage files that have been modified and deleted
      * @param callback
-     *         callback
-     * @throws WebSocketException
+     *         callback for sending asynchronous response
      */
     void config(@Nonnull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
                 @Nonnull AsyncRequestCallback<Map<String, String>> callback);

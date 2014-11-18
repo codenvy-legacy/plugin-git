@@ -327,7 +327,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
      * Perform diff between pointed revision and index or working tree.
      *
      * @param filePatterns
-     *         patterns for which to show dif
+     *         patterns for which to show diff
      * @param revision
      *         revision to compare with
      * @param isCached

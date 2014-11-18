@@ -66,7 +66,6 @@ public class PullPresenterTest extends BaseTest {
     private EditorInput         editorInput;
     @Mock
     private EditorPartPresenter partPresenter;
-    //TODO add to tests
     @Mock
     private BranchSearcher      branchSearcher;
 

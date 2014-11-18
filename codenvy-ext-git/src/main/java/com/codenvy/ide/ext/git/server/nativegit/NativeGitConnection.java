@@ -73,8 +73,10 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.regex.Pattern;
 
 /**
@@ -415,6 +417,7 @@ public class NativeGitConnection implements GitConnection {
         } else {
             pushCommand = nativeGit.createPushCommand();
         }
+
         pushCommand.setRemote(request.getRemote()).setForce(request.isForce())
                    .setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());

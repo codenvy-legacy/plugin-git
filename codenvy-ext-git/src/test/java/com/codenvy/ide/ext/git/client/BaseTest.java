@@ -21,21 +21,21 @@ import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.google.web.bindery.event.shared.EventBus;
-import com.googlecode.gwt.test.GwtModule;
-import com.googlecode.gwt.test.GwtTestWithMockito;
 
 import org.junit.Before;
+import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Mockito.when;
 
 /**
  * Base test for git extension.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
-@GwtModule("com.codenvy.ide.ext.git.Git")
-public abstract class BaseTest extends GwtTestWithMockito {
+@RunWith(MockitoJUnitRunner.class)
+public abstract class BaseTest {
     public static final String  PROJECT_PATH    = "/test";
     public static final boolean SELECTED_ITEM   = true;
     public static final boolean UNSELECTED_ITEM = false;

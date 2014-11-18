@@ -28,12 +28,12 @@ import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.ext.git.client.DateTimeFormatter;
 import com.codenvy.ide.ext.git.shared.LogResponse;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.rest.StringUnmarshaller;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -42,11 +42,10 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import org.vectomatic.dom.svg.ui.SVGResource;
 
-import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -57,17 +56,18 @@ import static com.codenvy.ide.ext.git.shared.DiffRequest.DiffType.RAW;
  * This presenter must implements ActivePartChangedHandler and PropertyListener to be able to get the changes for the selected resource
  * and change a dedicated resource with the history-window open
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class HistoryPresenter extends BasePresenter implements HistoryView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private       HistoryView             view;
-    private       GitServiceClient        service;
-    private       GitLocalizationConstant constant;
-    private       GitResources            resources;
-    private       AppContext              appContext;
-    private       WorkspaceAgent          workspaceAgent;
+    private final HistoryView             view;
+    private final GitServiceClient        service;
+    private final GitLocalizationConstant constant;
+    private final GitResources            resources;
+    private final AppContext              appContext;
+    private final WorkspaceAgent          workspaceAgent;
+    private final DateTimeFormatter       dateTimeFormatter;
     /** If <code>true</code> then show all changes in project, if <code>false</code> then show changes of the selected resource. */
     private       boolean                 showChangesInProject;
     private       DiffWith                diffType;
@@ -77,18 +77,6 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
     private Revision            selectedRevision;
     private NotificationManager notificationManager;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param constant
-     * @param resources
-     * @param appContext
-     * @param workspaceAgent
-     * @param notificationManager
-     * @param selectionAgent
-     */
     @Inject
     public HistoryPresenter(final HistoryView view,
                             EventBus eventBus,
@@ -99,8 +87,10 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
                             AppContext appContext,
                             NotificationManager notificationManager,
                             DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                            DateTimeFormatter dateTimeFormatter,
                             SelectionAgent selectionAgent) {
         this.view = view;
+        this.dateTimeFormatter = dateTimeFormatter;
         this.view.setDelegate(this);
         this.view.setTitle(constant.historyTitle());
         this.resources = resources;
@@ -197,8 +187,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             view.setCommitADate("");
             view.setCommitARevision("");
         } else {
-            DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-            view.setCommitADate(formatter.format(new Date((long)revision.getCommitTime())));
+            view.setCommitADate(dateTimeFormatter.getFormattedDate(revision.getCommitTime()));
             view.setCommitARevision(revision.getId());
         }
     }
@@ -215,8 +204,7 @@ public class HistoryPresenter extends BasePresenter implements HistoryView.Actio
             view.setCommitBDate("");
             view.setCommitBRevision("");
         } else {
-            DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-            view.setCommitBDate(formatter.format(new Date(revision.getCommitTime())));
+            view.setCommitBDate(dateTimeFormatter.getFormattedDate(revision.getCommitTime()));
             view.setCommitBRevision(revision.getId());
         }
         view.setCommitBPanelVisible(!isEmpty);

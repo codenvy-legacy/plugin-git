@@ -27,6 +27,7 @@ import com.codenvy.ide.ext.git.shared.BranchListRequest;
 import com.codenvy.ide.ext.git.shared.CloneRequest;
 import com.codenvy.ide.ext.git.shared.CommitRequest;
 import com.codenvy.ide.ext.git.shared.Commiters;
+import com.codenvy.ide.ext.git.shared.ConfigRequest;
 import com.codenvy.ide.ext.git.shared.DiffRequest;
 import com.codenvy.ide.ext.git.shared.FetchRequest;
 import com.codenvy.ide.ext.git.shared.GitUrlVendorInfo;
@@ -62,6 +63,7 @@ import com.google.web.bindery.event.shared.EventBus;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 
 import static com.codenvy.ide.MimeType.APPLICATION_JSON;
 import static com.codenvy.ide.MimeType.TEXT_PLAIN;
@@ -84,6 +86,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     public static final String BRANCH_RENAME     = "/branch-rename";
     public static final String CLONE             = "/clone";
     public static final String COMMIT            = "/commit";
+    public static final String CONFIG            = "/config";
     public static final String DIFF              = "/diff";
     public static final String FETCH             = "/fetch";
     public static final String INIT              = "/init";
@@ -209,11 +212,25 @@ public class GitServiceClientImpl implements GitServiceClient {
     @Override
     public void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, boolean all, boolean amend,
                        @Nonnull AsyncRequestCallback<Revision> callback) {
-        CommitRequest commitRequest =
-                dtoFactory.createDto(CommitRequest.class).withMessage(message).withAmend(amend).withAll(all);
+        CommitRequest commitRequest = dtoFactory.createDto(CommitRequest.class)
+                                                .withMessage(message)
+                                                .withAmend(amend)
+                                                .withAll(all);
         String url = baseHttpUrl + COMMIT + "?projectPath=" + project.getPath();
 
         asyncRequestFactory.createPostRequest(url, commitRequest).loader(loader).send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void config(@Nonnull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
+                       @Nonnull AsyncRequestCallback<Map<String, String>> callback) {
+        ConfigRequest configRequest = dtoFactory.createDto(ConfigRequest.class)
+                                                .withGetAll(all)
+                                                .withConfigEntry(entries);
+        String url = baseHttpUrl + CONFIG + "?projectPath=" + project.getPath();
+
+        asyncRequestFactory.createPostRequest(url, configRequest).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */
@@ -303,7 +320,8 @@ public class GitServiceClientImpl implements GitServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void remove(@Nonnull ProjectDescriptor project, List<String> items, boolean cached, @Nonnull AsyncRequestCallback<String> callback) {
+    public void remove(@Nonnull ProjectDescriptor project, List<String> items, boolean cached,
+                       @Nonnull AsyncRequestCallback<String> callback) {
         RmRequest rmRequest = dtoFactory.createDto(RmRequest.class).withItems(items).withCached(cached).withRecursively(true);
         String url = baseHttpUrl + REMOVE + "?projectPath=" + project.getPath();
         asyncRequestFactory.createPostRequest(url, rmRequest).loader(loader).send(callback);

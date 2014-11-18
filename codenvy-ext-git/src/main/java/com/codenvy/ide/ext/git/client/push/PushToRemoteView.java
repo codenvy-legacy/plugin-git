@@ -19,7 +19,8 @@ import javax.annotation.Nonnull;
 /**
  * The view of {@link PushToRemotePresenter}.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
+ * @author Sergii Leschenko
  */
 public interface PushToRemoteView extends View<PushToRemoteView.ActionDelegate> {
     /** Needs for delegate some function into PushToRemote view. */
@@ -32,6 +33,9 @@ public interface PushToRemoteView extends View<PushToRemoteView.ActionDelegate> 
 
         /** Performs any actions appropriate in response to the local branch value changed. */
         void onLocalBranchChanged();
+
+        /** Performs any actions appropriate in response to the repository value changed. */
+        void onRepositoryChanged();
     }
 
     /**
@@ -75,6 +79,15 @@ public interface PushToRemoteView extends View<PushToRemoteView.ActionDelegate> 
     void setRemoteBranches(@Nonnull Array<String> branches);
 
     /**
+     * Add remote branch into view.
+     *
+     * @param branch
+     *         remote branch
+     * @return {@code true} if branch added and {@code false} if branch already exist
+     */
+    boolean addRemoteBranch(@Nonnull String branch);
+
+    /**
      * Selects pointed local branch
      *
      * @param branch
@@ -94,7 +107,7 @@ public interface PushToRemoteView extends View<PushToRemoteView.ActionDelegate> 
      * Change the enable state of the push button.
      *
      * @param enabled
-     *         <code>true</code> to enable the button, <code>false</code> to disable it
+     *         {@code true} to enable the button, {@code false} to disable it
      */
     void setEnablePushButton(boolean enabled);
 

@@ -33,12 +33,11 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 /**
  * Presenter for working with remote repository list (view, add and delete).
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class RemotePresenter implements RemoteView.ActionDelegate {
     private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
-    private       DialogFactory                dialogFactory;
     private       RemoteView                   view;
     private       GitServiceClient             service;
     private       AppContext                   appContext;
@@ -48,23 +47,12 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     private       Remote                       selectedRemote;
     private       ProjectDescriptor            project;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param addRemoteRepositoryPresenter
-     * @param notificationManager
-     */
     @Inject
     public RemotePresenter(RemoteView view, GitServiceClient service, AppContext appContext, GitLocalizationConstant constant,
                            AddRemoteRepositoryPresenter addRemoteRepositoryPresenter, NotificationManager notificationManager,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -99,7 +87,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   dialogFactory.createMessageDialog("", errorMessage, null).show();
+                                   handleError(errorMessage);
                                }
                            }
                           );
@@ -133,7 +121,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     @Override
     public void onDeleteClicked() {
         if (selectedRemote == null) {
-            dialogFactory.createMessageDialog("", constant.selectRemoteRepositoryFail(), null).show();
+            handleError(constant.selectRemoteRepositoryFail());
             return;
         }
 
@@ -158,5 +146,10 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     public void onRemoteSelected(@Nonnull Remote remote) {
         selectedRemote = remote;
         view.setEnableDeleteButton(selectedRemote != null);
+    }
+
+    private void handleError(@Nonnull String errorMessage) {
+        Notification notification = new Notification(errorMessage, ERROR);
+        notificationManager.showNotification(notification);
     }
 }

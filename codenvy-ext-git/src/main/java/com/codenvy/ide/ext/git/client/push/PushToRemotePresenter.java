@@ -15,15 +15,18 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.commons.exception.UnauthorizedException;
+import com.codenvy.ide.dto.DtoFactory;
+import com.codenvy.ide.ext.git.client.BranchFilterByRemote;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.ui.dialogs.DialogFactory;
+import com.codenvy.ide.rest.StringMapUnmarshaller;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -31,6 +34,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -40,12 +44,14 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 /**
  * Presenter for pushing changes to remote repository.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
+ * @author Sergii Leschenko
  */
 @Singleton
 public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
+    private final DtoFactory              dtoFactory;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private       DialogFactory           dialogFactory;
+    private final BranchSearcher          branchSearcher;
     private       PushToRemoteView        view;
     private       GitServiceClient        service;
     private       AppContext              appContext;
@@ -53,22 +59,22 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private       NotificationManager     notificationManager;
     private       CurrentProject          project;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param notificationManager
-     */
     @Inject
-    public PushToRemotePresenter(PushToRemoteView view, GitServiceClient service, AppContext appContext,
-                                 GitLocalizationConstant constant, NotificationManager notificationManager,
-                                 DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
+
+    public PushToRemotePresenter(DtoFactory dtoFactory,
+                                 PushToRemoteView view,
+                                 GitServiceClient service,
+                                 AppContext appContext,
+                                 GitLocalizationConstant constant,
+                                 NotificationManager notificationManager,
+                                 DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                 BranchSearcher branchSearcher) {
+        this.dtoFactory = dtoFactory;
+        this.view = view;
+        this.branchSearcher = branchSearcher;
+
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -77,35 +83,152 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     }
 
     /** Show dialog. */
+
     public void showDialog() {
         project = appContext.getCurrentProject();
-        getRemotes();
+        updateRemotes();
     }
 
     /**
      * Get the list of remote repositories for local one.
      * If remote repositories are found, then get the list of branches (remote and local).
      */
-    private void getRemotes() {
+    void updateRemotes() {
         service.remoteList(project.getRootProject(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
                                protected void onSuccess(Array<Remote> result) {
-                                   getBranches(LIST_LOCAL);
-                                   view.setEnablePushButton(!result.isEmpty());
+                                   updateLocalBranches();
                                    view.setRepositories(result);
+                                   view.setEnablePushButton(!result.isEmpty());
                                    view.showDialog();
                                }
 
                                @Override
                                protected void onFailure(Throwable exception) {
-                                   final String errorMessage =
-                                           exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   dialogFactory.createMessageDialog("", errorMessage, null).show();
+                                   handleError(exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed());
                                    view.setEnablePushButton(false);
                                }
                            }
                           );
+    }
+
+    /**
+     * Update list of local and remote branches on view.
+     */
+    void updateLocalBranches() {
+        //getting local branches
+        getBranchesForCurrentProject(LIST_LOCAL, new AsyncCallback<Array<Branch>>() {
+            @Override
+            public void onSuccess(Array<Branch> result) {
+                Array<String> localBranches = branchSearcher.getLocalBranchesToDisplay(result);
+                view.setLocalBranches(localBranches);
+
+                for (Branch branch : result.asIterable()) {
+                    if (branch.isActive()) {
+                        view.selectLocalBranch(branch.getDisplayName());
+                        break;
+                    }
+                }
+
+                //getting remote branch only after selecting current local branch
+                updateRemoteBranches();
+            }
+
+            @Override
+            public void onFailure(Throwable exception) {
+                handleError(exception.getMessage() != null ? exception.getMessage() : constant.localBranchesListFailed());
+                view.setEnablePushButton(false);
+            }
+        });
+    }
+
+    /**
+     * Update list of remote branches on view.
+     */
+    void updateRemoteBranches() {
+        getBranchesForCurrentProject(LIST_REMOTE, new AsyncCallback<Array<Branch>>() {
+            @Override
+            public void onSuccess(final Array<Branch> result) {
+                // Need to add the upstream of local branch in the list of remote branches
+                // to be able to push changes to the remote upstream branch
+                getUpstreamBranch(new AsyncCallback<Branch>() {
+                    @Override
+                    public void onSuccess(Branch upstream) {
+                        BranchFilterByRemote remoteRefsHandler = new BranchFilterByRemote(view.getRepository());
+
+                        final Array<String> remoteBranches = branchSearcher.getRemoteBranchesToDisplay(remoteRefsHandler, result);
+
+                        String selectedRemoteBranch = null;
+                        if (upstream != null && upstream.isRemote() && remoteRefsHandler.isLinkedTo(upstream)) {
+                            String simpleUpstreamName = remoteRefsHandler.getBranchNameWithoutRefs(upstream);
+                            if (!remoteBranches.contains(simpleUpstreamName)) {
+                                remoteBranches.add(simpleUpstreamName);
+                            }
+                            selectedRemoteBranch = simpleUpstreamName;
+                        }
+
+                        // Need to add the current local branch in the list of remote branches
+                        // to be able to push changes to the remote branch  with same name
+                        final String currentBranch = view.getLocalBranch();
+                        if (!remoteBranches.contains(currentBranch)) {
+                            remoteBranches.add(currentBranch);
+                        }
+                        if (selectedRemoteBranch == null) {
+                            selectedRemoteBranch = currentBranch;
+                        }
+
+                        view.setRemoteBranches(remoteBranches);
+                        view.selectRemoteBranch(selectedRemoteBranch);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        handleError(constant.failedGettingConfig());
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(Throwable exception) {
+                handleError(exception.getMessage() != null ? exception.getMessage() : constant.remoteBranchesListFailed());
+                view.setEnablePushButton(false);
+            }
+
+        });
+    }
+
+
+    /**
+     * Get upstream branch for selected local branch. Can invoke {@code onSuccess(null)} if upstream branch isn't set
+     */
+    private void getUpstreamBranch(final AsyncCallback<Branch> result) {
+
+        final String configBranchRemote = "branch." + view.getLocalBranch() + ".remote";
+        final String configUpstreamBranch = "branch." + view.getLocalBranch() + ".merge";
+        service.config(project.getRootProject(), Arrays.asList(configUpstreamBranch, configBranchRemote), false,
+                       new AsyncRequestCallback<Map<String, String>>(new StringMapUnmarshaller()) {
+                           @Override
+                           protected void onSuccess(Map<String, String> configs) {
+                               if (configs.containsKey(configBranchRemote) && configs.containsKey(configUpstreamBranch)) {
+                                   String displayName = configs.get(configBranchRemote) + "/" + configs.get(configUpstreamBranch);
+                                   Branch upstream = dtoFactory.createDto(Branch.class)
+                                                               .withActive(false)
+                                                               .withRemote(true)
+                                                               .withDisplayName(displayName)
+                                                               .withName("refs/remotes/" + displayName);
+
+                                   result.onSuccess(upstream);
+                               } else {
+                                   result.onSuccess(null);
+                               }
+                           }
+
+                           @Override
+                           protected void onFailure(Throwable exception) {
+                               result.onFailure(exception);
+                           }
+                       });
     }
 
     /**
@@ -114,99 +237,22 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param remoteMode
      *         is a remote mode
      */
-    private void getBranches(@Nonnull final String remoteMode) {
-        service.branchList(project.getRootProject(), remoteMode,
+    void getBranchesForCurrentProject(@Nonnull final String remoteMode,
+                                      final AsyncCallback<Array<Branch>> asyncResult) {
+        service.branchList(project.getRootProject(),
+                           remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
-                                   if (!LIST_REMOTE.equals(remoteMode)) {
-                                       Array<String> localBranches = getLocalBranchesToDisplay(result);
-                                       view.setLocalBranches(localBranches);
-
-                                       for (Branch branch : result.asIterable()) {
-                                           if (branch.isActive()) {
-                                               view.selectLocalBranch(branch.getDisplayName());
-                                               break;
-                                           }
-                                       }
-                                       getBranches(LIST_REMOTE);
-                                   } else {
-                                       Array<String> remoteBranches = getRemoteBranchesToDisplay(view.getRepository(), result);
-                                       // Need to add the current local branch in the list of remote branches
-                                       // to be able to push changes to the remote branch  with same name
-                                       String currentBranch = view.getLocalBranch();
-                                       if (!remoteBranches.contains(currentBranch)) {
-                                           remoteBranches.add(currentBranch);
-                                       }
-                                       view.setRemoteBranches(remoteBranches);
-                                       view.selectRemoteBranch(currentBranch);
-                                   }
+                                   asyncResult.onSuccess(result);
                                }
 
                                @Override
                                protected void onFailure(Throwable exception) {
-                                   String errorMessage =
-                                           exception.getMessage() != null ? exception.getMessage()
-                                                                          : constant.branchesListFailed();
-                                   Notification notification = new Notification(errorMessage, ERROR);
-                                   notificationManager.showNotification(notification);
-                                   view.setEnablePushButton(false);
+                                   asyncResult.onFailure(exception);
                                }
                            }
                           );
-    }
-
-    /**
-     * Set values of remote branches: filter remote branches due to selected remote repository.
-     *
-     * @param remoteName
-     *         remote name
-     * @param remoteBranches
-     *         remote branches
-     */
-    @Nonnull
-    private Array<String> getRemoteBranchesToDisplay(@Nonnull String remoteName, @Nonnull Array<Branch> remoteBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (remoteBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        String compareString = "refs/remotes/" + remoteName + "/";
-        for (int i = 0; i < remoteBranches.size(); i++) {
-            Branch branch = remoteBranches.get(i);
-            if (branch.getName().startsWith(compareString)) {
-                branches.add(branch.getName().replaceFirst(compareString, ""));
-            }
-        }
-
-        if (branches.isEmpty()) {
-            branches.add("master");
-        }
-        return branches;
-    }
-
-    /**
-     * Set values of local branches.
-     *
-     * @param localBranches
-     *         local branches
-     */
-    @Nonnull
-    private Array<String> getLocalBranchesToDisplay(@Nonnull Array<Branch> localBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (localBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        for (Branch branch : localBranches.asIterable()) {
-            branches.add(branch.getDisplayName());
-        }
-
-        return branches;
     }
 
     /** {@inheritDoc} */
@@ -231,28 +277,9 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /** @return list of refs to push */
     @Nonnull
     private List<String> getRefs() {
-        String localBranch = "refs/heads/" + view.getLocalBranch();
-        String remoteBranch = "refs/heads/" + view.getRemoteBranch();
+        String localBranch = view.getLocalBranch();
+        String remoteBranch = view.getRemoteBranch();
         return new ArrayList<>(Arrays.asList(localBranch + ":" + remoteBranch));
-    }
-
-    /**
-     * Handler some action whether some exception happened.
-     *
-     * @param throwable
-     *         exception what happened
-     */
-    private void handleError(@Nonnull Throwable throwable) {
-        String errorMessage;
-        if (throwable instanceof UnauthorizedException) {
-            errorMessage = constant.messagesNotAuthorized();
-        } else if (throwable.getMessage() != null) {
-            errorMessage = throwable.getMessage();
-        } else {
-            errorMessage = constant.pushFail();
-        }
-        Notification notification = new Notification(errorMessage, ERROR);
-        notificationManager.showNotification(notification);
     }
 
     /** {@inheritDoc} */
@@ -264,6 +291,36 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onLocalBranchChanged() {
+        view.addRemoteBranch(view.getLocalBranch());
         view.selectRemoteBranch(view.getLocalBranch());
+    }
+
+    @Override
+    public void onRepositoryChanged() {
+        updateRemoteBranches();
+    }
+
+    /**
+     * Handler some action whether some exception happened.
+     *
+     * @param throwable
+     *         exception what happened
+     */
+    void handleError(@Nonnull Throwable throwable) {
+        String errorMessage;
+        if (throwable instanceof UnauthorizedException) {
+            errorMessage = constant.messagesNotAuthorized();
+        } else if (throwable.getMessage() != null) {
+            errorMessage = throwable.getMessage();
+        } else {
+            errorMessage = constant.pushFail();
+        }
+
+        handleError(errorMessage);
+    }
+
+    private void handleError(@Nonnull String errorMessage) {
+        Notification notification = new Notification(errorMessage, ERROR);
+        notificationManager.showNotification(notification);
     }
 }

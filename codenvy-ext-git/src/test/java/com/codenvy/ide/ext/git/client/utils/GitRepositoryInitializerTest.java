@@ -8,9 +8,11 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.client;
+package com.codenvy.ide.ext.git.client.utils;
 
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
+import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.ext.git.client.GitRepositoryInitializer;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -39,10 +41,10 @@ import static org.mockito.Mockito.verify;
 /**
  * @author Sergii Leschenko
  */
-public class GitUtilTest extends BaseTest {
+public class GitRepositoryInitializerTest extends BaseTest {
     public static final boolean BARE = false;
 
-    private GitUtil gitUtil;
+    private GitRepositoryInitializer gitRepositoryInitializer;
 
     @Mock
     private AsyncCallback         callback;
@@ -53,7 +55,8 @@ public class GitUtilTest extends BaseTest {
     public void disarm() {
         super.disarm();
 
-        gitUtil = new GitUtil(service, constant, appContext, notificationManager, dtoUnmarshallerFactory, projectServiceClient);
+        gitRepositoryInitializer = new GitRepositoryInitializer(service, constant, appContext, notificationManager, dtoUnmarshallerFactory,
+                                                                projectServiceClient);
     }
 
     @Test
@@ -80,7 +83,7 @@ public class GitUtilTest extends BaseTest {
             }
         }).when(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
 
-        gitUtil.initGitRepository(rootProjectDescriptor, callback);
+        gitRepositoryInitializer.initGitRepository(rootProjectDescriptor, callback);
 
         verify(service).init(eq(rootProjectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
@@ -126,7 +129,7 @@ public class GitUtilTest extends BaseTest {
             }
         }).when(service).getGitReadOnlyUrl((ProjectDescriptor)anyObject(), (AsyncRequestCallback<String>)anyObject());
 
-        gitUtil.getGitUrlWithAutoInit(rootProjectDescriptor, stringCallback);
+        gitRepositoryInitializer.getGitUrlWithAutoInit(rootProjectDescriptor, stringCallback);
 
         verify(service).init(eq(rootProjectDescriptor), eq(BARE), (RequestCallback<Void>)anyObject());
         verify(projectServiceClient).getProject(anyString(), (AsyncRequestCallback<ProjectDescriptor>)anyObject());
@@ -151,7 +154,7 @@ public class GitUtilTest extends BaseTest {
             }
         }).when(service).getGitReadOnlyUrl((ProjectDescriptor)anyObject(), (AsyncRequestCallback<String>)anyObject());
 
-        gitUtil.getGitUrlWithAutoInit(rootProjectDescriptor, stringCallback);
+        gitRepositoryInitializer.getGitUrlWithAutoInit(rootProjectDescriptor, stringCallback);
 
         verify(service, never()).init((ProjectDescriptor)anyObject(), anyBoolean(), (RequestCallback<Void>)anyObject());
         verify(stringCallback).onSuccess(eq(REMOTE_URI));

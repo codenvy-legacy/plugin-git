@@ -108,6 +108,7 @@ public class GitProjectImporter implements ProjectImporter {
             // For factory and for our projects templates:
             // Keep all info related to the vcs. In case of Git: ".git" directory and ".gitignore" file.
             // Delete vcs info if false.
+            String branchMerge = null;
             boolean keepVcs = true;
             if (parameters != null) {
                 commitId = parameters.get("commitId");
@@ -115,6 +116,7 @@ public class GitProjectImporter implements ProjectImporter {
                 remoteOriginFetch = parameters.get("remoteOriginFetch");
                 keepDirectory = parameters.get("keepDirectory");
                 keepVcs = parameters.containsKey("keepVcs") ? Boolean.parseBoolean(parameters.get("keepVcs")) : true;
+                branchMerge = parameters.get("branchMerge");
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             temp = Files.createTempDirectory(null).toFile();
@@ -156,6 +158,9 @@ public class GitProjectImporter implements ProjectImporter {
                                 checkoutBranch(git, branch == null ? "master" : branch, dtoFactory);
                             }
                         }
+                    }
+                    if (branchMerge != null) {
+                        git.getConfig().set("branch." + (branch == null ? "master" : branch) + ".merge", branchMerge);
                     }
                     if (!keepVcs) {
                         cleanGit(temp);

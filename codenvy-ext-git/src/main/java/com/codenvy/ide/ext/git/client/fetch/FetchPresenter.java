@@ -15,9 +15,9 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -41,35 +41,30 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 /**
  * Presenter for fetching changes from remote repository.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class FetchPresenter implements FetchView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private       DialogFactory           dialogFactory;
+    private final NotificationManager     notificationManager;
+    private final BranchSearcher          branchSearcher;
     private       FetchView               view;
     private       GitServiceClient        service;
     private       AppContext              appContext;
     private       GitLocalizationConstant constant;
     private       CurrentProject          project;
-    private       NotificationManager     notificationManager;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param notificationManager
-     */
     @Inject
-    public FetchPresenter(FetchView view, GitServiceClient service, AppContext appContext,
-                          GitLocalizationConstant constant, NotificationManager notificationManager,
-                          DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
+    public FetchPresenter(FetchView view,
+                          GitServiceClient service,
+                          AppContext appContext,
+                          GitLocalizationConstant constant,
+                          NotificationManager notificationManager,
+                          DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                          BranchSearcher branchSearcher) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.dialogFactory = dialogFactory;
+        this.branchSearcher = branchSearcher;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -104,10 +99,15 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
-                                   dialogFactory.createMessageDialog("", errorMessage, null).show();
+                                   handleError(errorMessage);
                                    view.setEnableFetchButton(false);
                                }
                            });
+    }
+
+    private void handleError(@Nonnull String errorMessage) {
+        Notification notification = new Notification(errorMessage, ERROR);
+        notificationManager.showNotification(notification);
     }
 
     /**
@@ -122,10 +122,10 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
                                    if (LIST_REMOTE.equals(remoteMode)) {
-                                       view.setRemoteBranches(getRemoteBranchesToDisplay(view.getRepositoryName(), result));
+                                       view.setRemoteBranches(branchSearcher.getRemoteBranchesToDisplay(view.getRepositoryName(), result));
                                        getBranches(LIST_LOCAL);
                                    } else {
-                                       view.setLocalBranches(getLocalBranchesToDisplay(result));
+                                       view.setLocalBranches(branchSearcher.getLocalBranchesToDisplay(result));
                                        for (Branch branch : result.asIterable()) {
                                            if (branch.isActive()) {
                                                view.selectRemoteBranch(branch.getDisplayName());
@@ -144,60 +144,6 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                                    view.setEnableFetchButton(false);
                                }
                            });
-    }
-
-    /**
-     * Set values of remote branches: filter remote branches due to selected remote repository.
-     *
-     * @param remoteName
-     *         remote name
-     * @param remoteBranches
-     *         remote branches
-     */
-    @Nonnull
-    private Array<String> getRemoteBranchesToDisplay(@Nonnull String remoteName, @Nonnull Array<Branch> remoteBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (remoteBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        String compareString = "refs/remotes/" + remoteName + "/";
-        for (int i = 0; i < remoteBranches.size(); i++) {
-            Branch branch = remoteBranches.get(i);
-            String branchName = branch.getName();
-            if (branchName.startsWith(compareString)) {
-                branches.add(branchName.replaceFirst(compareString, ""));
-            }
-        }
-
-        if (branches.isEmpty()) {
-            branches.add("master");
-        }
-        return branches;
-    }
-
-    /**
-     * Set values of local branches.
-     *
-     * @param localBranches
-     *         local branches
-     */
-    @Nonnull
-    private Array<String> getLocalBranchesToDisplay(@Nonnull Array<Branch> localBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (localBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        for (Branch branch : localBranches.asIterable()) {
-            branches.add(branch.getDisplayName());
-        }
-
-        return branches;
     }
 
     /** {@inheritDoc} */

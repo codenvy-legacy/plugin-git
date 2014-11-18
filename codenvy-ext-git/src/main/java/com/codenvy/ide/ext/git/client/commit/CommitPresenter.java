@@ -15,15 +15,14 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.ext.git.client.DateTimeFormatter;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import javax.annotation.Nonnull;
-import java.util.Date;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 import static com.codenvy.ide.api.notification.Notification.Type.INFO;
@@ -31,37 +30,30 @@ import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 /**
  * Presenter for commit changes on git.
  *
- * @author <a href="mailto:zhulevaanna@gmail.com">Ann Zhuleva</a>
+ * @author Ann Zhuleva
  */
 @Singleton
 public class CommitPresenter implements CommitView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private       AppContext              appContext;
-    private       CommitView              view;
-    private       GitServiceClient        service;
-    private       GitLocalizationConstant constant;
-    private       NotificationManager     notificationManager;
+    private final AppContext              appContext;
+    private final CommitView              view;
+    private final GitServiceClient        service;
+    private final GitLocalizationConstant constant;
+    private final NotificationManager     notificationManager;
+    private final DateTimeFormatter       dateTimeFormatter;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param constant
-     * @param notificationManager
-     * @param dtoUnmarshallerFactory
-     * @param appContext
-     */
     @Inject
     public CommitPresenter(CommitView view,
                            GitServiceClient service,
                            GitLocalizationConstant constant,
                            NotificationManager notificationManager,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                           AppContext appContext) {
+                           AppContext appContext,
+                           DateTimeFormatter dateTimeFormatter) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.appContext = appContext;
+        this.dateTimeFormatter = dateTimeFormatter;
         this.view.setDelegate(this);
         this.service = service;
         this.constant = constant;
@@ -112,13 +104,13 @@ public class CommitPresenter implements CommitView.ActionDelegate {
      *         a {@link Revision}
      */
     private void onCommitSuccess(@Nonnull final Revision revision) {
-        DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
-        String date = formatter.format(new Date(revision.getCommitTime()));
-
+        String date = dateTimeFormatter.getFormattedDate(revision.getCommitTime());
         String message = constant.commitMessage(revision.getId(), date);
-        message += (revision.getCommitter() != null && revision.getCommitter().getName() != null &&
-                    !revision.getCommitter().getName().isEmpty())
-                   ? " " + constant.commitUser(revision.getCommitter().getName()) : "";
+
+        if ((revision.getCommitter() != null && revision.getCommitter().getName() != null &&
+             !revision.getCommitter().getName().isEmpty())) {
+            message += " " + constant.commitUser(revision.getCommitter().getName());
+        }
 
         Notification notification = new Notification(message, INFO);
         notificationManager.showNotification(notification);

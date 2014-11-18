@@ -27,9 +27,11 @@ import javax.inject.Inject;
 import java.util.List;
 
 /**
+ * Class for init repository
+ *
  * @author Sergii Leschenko
  */
-public class GitUtil {
+public class GitRepositoryInitializer {
     private final GitServiceClient        gitService;
     private final GitLocalizationConstant gitLocale;
     private final AppContext              appContext;
@@ -38,12 +40,12 @@ public class GitUtil {
     private final ProjectServiceClient    projectServiceClient;
 
     @Inject
-    public GitUtil(GitServiceClient gitService,
-                   GitLocalizationConstant gitLocale,
-                   AppContext appContext,
-                   NotificationManager notificationManager,
-                   DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                   ProjectServiceClient projectServiceClient) {
+    public GitRepositoryInitializer(GitServiceClient gitService,
+                                    GitLocalizationConstant gitLocale,
+                                    AppContext appContext,
+                                    NotificationManager notificationManager,
+                                    DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                    ProjectServiceClient projectServiceClient) {
         this.gitService = gitService;
         this.gitLocale = gitLocale;
         this.appContext = appContext;
@@ -92,8 +94,11 @@ public class GitUtil {
         }
     }
 
+    /**
+     * Returns git url using callback. If the project has no repository then method initializes it.
+     */
     public void getGitUrlWithAutoInit(@Nonnull final ProjectDescriptor project, final AsyncCallback<String> callback) {
-        if (!GitUtil.isGitRepository(project)) {
+        if (!GitRepositoryInitializer.isGitRepository(project)) {
             initGitRepository(project, new AsyncCallback<Void>() {
                 @Override
                 public void onSuccess(Void result) {
@@ -125,6 +130,9 @@ public class GitUtil {
                                      });
     }
 
+    /**
+     * Update information about vcs provider name of current project in application context.
+     */
     void updateGitProvider(@Nonnull final ProjectDescriptor project, final AsyncCallback<ProjectDescriptor> callback) {
         // update 'vcs.provider.name' attribute value
         projectServiceClient.getProject(project.getPath(),

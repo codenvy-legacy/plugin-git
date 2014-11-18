@@ -10,12 +10,9 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.pull;
 
-import com.codenvy.api.project.gwt.client.ProjectServiceClient;
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.editor.EditorAgent;
-import com.codenvy.ide.api.editor.EditorInitException;
-import com.codenvy.ide.api.editor.EditorInput;
 import com.codenvy.ide.api.editor.EditorPartPresenter;
 import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
@@ -23,14 +20,13 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.collections.Array;
-import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
-import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -51,40 +47,32 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
  */
 @Singleton
 public class PullPresenter implements PullView.ActionDelegate {
-    private       PullView                view;
-    private       GitServiceClient        gitServiceClient;
-    private       ProjectServiceClient    projectServiceClient;
-    private       EventBus                eventBus;
-    private       CurrentProject          project;
-    private       GitLocalizationConstant constant;
-    private       EditorAgent             editorAgent;
-    private       AppContext              appContext;
-    private       NotificationManager     notificationManager;
+    private final PullView                view;
+    private final GitServiceClient        gitServiceClient;
+    private final EventBus                eventBus;
+    private final GitLocalizationConstant constant;
+    private final EditorAgent             editorAgent;
+    private final AppContext              appContext;
+    private final NotificationManager     notificationManager;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private final BranchSearcher          branchSearcher;
+    private       CurrentProject          project;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param gitServiceClient
-     * @param appContext
-     * @param constant
-     * @param notificationManager
-     */
+
     @Inject
     public PullPresenter(PullView view,
                          EditorAgent editorAgent,
                          GitServiceClient gitServiceClient,
-                         ProjectServiceClient projectServiceClient,
                          EventBus eventBus,
                          AppContext appContext,
                          GitLocalizationConstant constant,
                          NotificationManager notificationManager,
-                         DtoUnmarshallerFactory dtoUnmarshallerFactory) {
+                         DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                         BranchSearcher branchSearcher) {
         this.view = view;
+        this.branchSearcher = branchSearcher;
         this.view.setDelegate(this);
         this.gitServiceClient = gitServiceClient;
-        this.projectServiceClient = projectServiceClient;
         this.eventBus = eventBus;
         this.constant = constant;
         this.editorAgent = editorAgent;
@@ -141,10 +129,11 @@ public class PullPresenter implements PullView.ActionDelegate {
                                         @Override
                                         protected void onSuccess(Array<Branch> result) {
                                             if (LIST_REMOTE.equals(remoteMode)) {
-                                                view.setRemoteBranches(getRemoteBranchesToDisplay(view.getRepositoryName(), result));
+                                                view.setRemoteBranches(branchSearcher.getRemoteBranchesToDisplay(view.getRepositoryName(),
+                                                                                                             result));
                                                 getBranches(LIST_LOCAL);
                                             } else {
-                                                view.setLocalBranches(getLocalBranchesToDisplay(result));
+                                                view.setLocalBranches(branchSearcher.getLocalBranchesToDisplay(result));
                                                 for (Branch branch : result.asIterable()) {
                                                     if (branch.isActive()) {
                                                         view.selectRemoteBranch(branch.getDisplayName());
@@ -165,60 +154,6 @@ public class PullPresenter implements PullView.ActionDelegate {
                                         }
                                     }
                                    );
-    }
-
-    /**
-     * Set values of remote branches: filter remote branches due to selected remote repository.
-     *
-     * @param remoteName
-     *         remote name
-     * @param remoteBranches
-     *         remote branches
-     */
-    @Nonnull
-    private Array<String> getRemoteBranchesToDisplay(@Nonnull String remoteName, @Nonnull Array<Branch> remoteBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (remoteBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        String compareString = "refs/remotes/" + remoteName + "/";
-        for (int i = 0; i < remoteBranches.size(); i++) {
-            Branch branch = remoteBranches.get(i);
-            String branchName = branch.getName();
-            if (branchName.startsWith(compareString)) {
-                branches.add(branchName.replaceFirst(compareString, ""));
-            }
-        }
-
-        if (branches.isEmpty()) {
-            branches.add("master");
-        }
-        return branches;
-    }
-
-    /**
-     * Set values of local branches.
-     *
-     * @param localBranches
-     *         local branches
-     */
-    @Nonnull
-    private Array<String> getLocalBranchesToDisplay(@Nonnull Array<Branch> localBranches) {
-        Array<String> branches = Collections.createArray();
-
-        if (localBranches.isEmpty()) {
-            branches.add("master");
-            return branches;
-        }
-
-        for (Branch branch : localBranches.asIterable()) {
-            branches.add(branch.getDisplayName());
-        }
-
-        return branches;
     }
 
     /** {@inheritDoc} */

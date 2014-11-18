@@ -32,6 +32,8 @@ public abstract class Config {
 
     public abstract List<String> getAll(String name) throws GitException;
 
+    public abstract List<String> getList() throws GitException;
+
     /**
      * @param name
      *         git config file parameter such as user.name

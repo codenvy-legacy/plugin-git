@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.git.client.init;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.ext.git.client.GitUtil;
+import com.codenvy.ide.ext.git.client.GitRepositoryInitializer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
@@ -38,7 +38,7 @@ import static org.mockito.Mockito.verify;
  */
 public class InitRepositoryPresenterTest extends BaseTest {
     @Mock
-    private GitUtil gitUtil;
+    private GitRepositoryInitializer gitRepositoryInitializer;
 
     private InitRepositoryPresenter presenter;
 
@@ -49,7 +49,7 @@ public class InitRepositoryPresenterTest extends BaseTest {
         presenter = new InitRepositoryPresenter(appContext,
                                                 constant,
                                                 notificationManager,
-                                                gitUtil);
+                                                gitRepositoryInitializer);
     }
 
     @Test
@@ -63,11 +63,11 @@ public class InitRepositoryPresenterTest extends BaseTest {
                 onSuccess.invoke(callback, (Void)null);
                 return callback;
             }
-        }).when(gitUtil).initGitRepository((ProjectDescriptor)anyObject(), (AsyncCallback<Void>)anyObject());
+        }).when(gitRepositoryInitializer).initGitRepository((ProjectDescriptor)anyObject(), (AsyncCallback<Void>)anyObject());
 
         presenter.initRepository();
 
-        verify(gitUtil).initGitRepository(eq(rootProjectDescriptor), (AsyncCallback<Void>)anyObject());
+        verify(gitRepositoryInitializer).initGitRepository(eq(rootProjectDescriptor), (AsyncCallback<Void>)anyObject());
         verify(constant).initSuccess();
         verify(notificationManager).showNotification((Notification)anyObject());
     }
@@ -83,11 +83,11 @@ public class InitRepositoryPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(gitUtil).initGitRepository((ProjectDescriptor)anyObject(), (AsyncCallback<Void>)anyObject());
+        }).when(gitRepositoryInitializer).initGitRepository((ProjectDescriptor)anyObject(), (AsyncCallback<Void>)anyObject());
 
         presenter.initRepository();
 
-        verify(gitUtil).initGitRepository(eq(rootProjectDescriptor), (AsyncCallback<Void>)anyObject());
+        verify(gitRepositoryInitializer).initGitRepository(eq(rootProjectDescriptor), (AsyncCallback<Void>)anyObject());
         verify(constant).initFailed();
         verify(notificationManager).showNotification((Notification)anyObject());
     }

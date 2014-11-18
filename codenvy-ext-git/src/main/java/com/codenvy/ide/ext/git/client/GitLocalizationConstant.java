@@ -79,6 +79,15 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.branches_list_failed")
     String branchesListFailed();
 
+    @Key("messages.local_branches_list_failed")
+    String localBranchesListFailed();
+
+    @Key("messages.remote_branches_list_failed")
+    String remoteBranchesListFailed();
+
+    @Key("messages.get_config_failed")
+    String failedGettingConfig();
+
     @Key("messages.branch_create_failed")
     String branchCreateFailed();
 

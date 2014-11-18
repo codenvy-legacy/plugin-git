@@ -52,6 +52,14 @@ public class ConfigImpl extends Config {
     }
 
     @Override
+    public List<String> getList() throws GitException {
+        final GetConfigCommand command = new GetConfigCommand(repository).setGetList(true);
+        command.execute();
+        return command.getLines();
+    }
+
+
+    @Override
     public Config set(String name, String value) throws GitException {
         final SetConfigCommand command = new SetConfigCommand(repository);
         command.setValue(name, value);

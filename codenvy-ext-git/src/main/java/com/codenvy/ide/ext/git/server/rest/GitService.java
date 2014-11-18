@@ -443,7 +443,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getConfig(ConfigRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public Map<String, String> getConfig(ConfigRequest request) throws ServerException, NotFoundException, ForbiddenException {
         GitConnection gitConnection = getGitConnection();
         Map<String, String> result = new HashMap<>();
         try {
@@ -455,7 +455,12 @@ public class GitService {
                 }
             } else {
                for (String entry : request.getConfigEntry()) {
-                   result.put(entry, config.get(entry));
+                   try {
+                       String value = config.get(entry);
+                       result.put(entry, value);
+                   } catch (GitException exception) {
+                        //value for this config property non found. Do nothing
+                   }
                }
             }
         } finally {

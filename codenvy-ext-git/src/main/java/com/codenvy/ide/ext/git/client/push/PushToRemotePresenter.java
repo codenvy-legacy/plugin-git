@@ -179,7 +179,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
 
                     @Override
                     public void onFailure(Throwable caught) {
-                        handleError(constant.failedGettingConfig() + " " + caught.getMessage());
+                        handleError(constant.failedGettingConfig());
                     }
                 });
             }

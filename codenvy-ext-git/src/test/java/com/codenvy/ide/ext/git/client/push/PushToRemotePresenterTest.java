@@ -267,6 +267,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
+        verify(notificationManager).showNotification((Notification)anyObject());
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));
     }
 

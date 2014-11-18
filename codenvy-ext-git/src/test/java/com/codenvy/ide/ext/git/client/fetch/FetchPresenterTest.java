@@ -19,11 +19,14 @@ import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.ui.dialogs.ConfirmCallback;
+import com.codenvy.ide.ui.dialogs.message.MessageDialog;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -53,7 +56,6 @@ public class FetchPresenterTest extends BaseTest {
     private FetchView      view;
     @Mock
     private Branch         branch;
-    //TODO add to tests
     @Mock
     private BranchSearcher branchSearcher;
     @InjectMocks
@@ -179,8 +181,10 @@ public class FetchPresenterTest extends BaseTest {
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service)
-          .remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<Array<Remote>>)anyObject());
+        }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
+                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
+        MessageDialog messageDialog = mock(MessageDialog.class);
+        when(dialogFactory.createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject())).thenReturn(messageDialog);
 
         presenter.showDialog();
 
@@ -188,6 +192,7 @@ public class FetchPresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
+        verify(dialogFactory).createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject());
         verify(view).setEnableFetchButton(eq(DISABLE_BUTTON));
     }
 

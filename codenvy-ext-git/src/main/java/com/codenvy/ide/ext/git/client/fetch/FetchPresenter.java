@@ -22,6 +22,7 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
@@ -45,12 +46,12 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 @Singleton
 public class FetchPresenter implements FetchView.ActionDelegate {
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private final FetchView               view;
-    private final GitServiceClient        service;
-    private final AppContext              appContext;
-    private final GitLocalizationConstant constant;
     private final NotificationManager     notificationManager;
     private final BranchSearcher          branchSearcher;
+    private       FetchView               view;
+    private       GitServiceClient        service;
+    private       AppContext              appContext;
+    private       GitLocalizationConstant constant;
     private       CurrentProject          project;
 
     @Inject

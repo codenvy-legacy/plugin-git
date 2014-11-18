@@ -17,10 +17,10 @@ import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.dto.DtoFactory;
-import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.client.BranchFilterByRemote;
 import com.codenvy.ide.ext.git.client.BranchSearcher;
+import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.ext.git.client.GitServiceClient;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -51,27 +51,31 @@ import static com.codenvy.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private final DtoFactory              dtoFactory;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
-    private final PushToRemoteView        view;
-    private final GitServiceClient        service;
-    private final AppContext              appContext;
-    private final GitLocalizationConstant constant;
-    private final NotificationManager     notificationManager;
     private final BranchSearcher          branchSearcher;
+    private       PushToRemoteView        view;
+    private       GitServiceClient        service;
+    private       AppContext              appContext;
+    private       GitLocalizationConstant constant;
+    private       NotificationManager     notificationManager;
     private       CurrentProject          project;
 
     @Inject
+
     public PushToRemotePresenter(DtoFactory dtoFactory,
                                  PushToRemoteView view,
                                  GitServiceClient service,
                                  AppContext appContext,
                                  GitLocalizationConstant constant,
                                  NotificationManager notificationManager,
-                                 DtoUnmarshallerFactory dtoUnmarshallerFactory, BranchSearcher branchSearcher) {
+                                 DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                 BranchSearcher branchSearcher) {
         this.dtoFactory = dtoFactory;
         this.view = view;
         this.branchSearcher = branchSearcher;
-        this.view.setDelegate(this);
+
+        this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
+        this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
         this.constant = constant;
@@ -79,6 +83,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     }
 
     /** Show dialog. */
+
     public void showDialog() {
         project = appContext.getCurrentProject();
         updateRemotes();

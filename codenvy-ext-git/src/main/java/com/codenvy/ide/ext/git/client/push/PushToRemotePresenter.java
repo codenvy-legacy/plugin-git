@@ -19,8 +19,8 @@ import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.dto.DtoFactory;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
-import com.codenvy.ide.ext.git.client.utils.BranchFilterByRemote;
-import com.codenvy.ide.ext.git.client.utils.BranchUtil;
+import com.codenvy.ide.ext.git.client.BranchFilterByRemote;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -56,7 +56,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     private final AppContext              appContext;
     private final GitLocalizationConstant constant;
     private final NotificationManager     notificationManager;
-    private final BranchUtil              branchUtil;
+    private final BranchSearcher          branchSearcher;
     private       CurrentProject          project;
 
     @Inject
@@ -66,10 +66,10 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                                  AppContext appContext,
                                  GitLocalizationConstant constant,
                                  NotificationManager notificationManager,
-                                 DtoUnmarshallerFactory dtoUnmarshallerFactory, BranchUtil branchUtil) {
+                                 DtoUnmarshallerFactory dtoUnmarshallerFactory, BranchSearcher branchSearcher) {
         this.dtoFactory = dtoFactory;
         this.view = view;
-        this.branchUtil = branchUtil;
+        this.branchSearcher = branchSearcher;
         this.view.setDelegate(this);
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.service = service;
@@ -116,7 +116,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         getBranchesForCurrentProject(LIST_LOCAL, new AsyncCallback<Array<Branch>>() {
             @Override
             public void onSuccess(Array<Branch> result) {
-                Array<String> localBranches = branchUtil.getLocalBranchesToDisplay(result);
+                Array<String> localBranches = branchSearcher.getLocalBranchesToDisplay(result);
                 view.setLocalBranches(localBranches);
 
                 for (Branch branch : result.asIterable()) {
@@ -152,7 +152,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
                     public void onSuccess(Branch upstream) {
                         BranchFilterByRemote remoteRefsHandler = new BranchFilterByRemote(view.getRepository());
 
-                        final Array<String> remoteBranches = branchUtil.getRemoteBranchesToDisplay(remoteRefsHandler, result);
+                        final Array<String> remoteBranches = branchSearcher.getRemoteBranchesToDisplay(remoteRefsHandler, result);
 
                         String selectedRemoteBranch = null;
                         if (upstream != null && upstream.isRemote() && remoteRefsHandler.isLinkedTo(upstream)) {

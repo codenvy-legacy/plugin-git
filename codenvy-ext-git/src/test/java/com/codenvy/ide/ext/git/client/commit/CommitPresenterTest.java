@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.git.client.commit;
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.ext.git.client.utils.DateTimeFormatter;
+import com.codenvy.ide.ext.git.client.DateTimeFormatter;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;

@@ -28,7 +28,7 @@ import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
-import com.codenvy.ide.ext.git.client.utils.DateTimeFormatter;
+import com.codenvy.ide.ext.git.client.DateTimeFormatter;
 import com.codenvy.ide.ext.git.shared.LogResponse;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.codenvy.ide.rest.AsyncRequestCallback;

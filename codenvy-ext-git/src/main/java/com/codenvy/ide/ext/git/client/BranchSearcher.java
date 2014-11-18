@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.client.utils;
+package com.codenvy.ide.ext.git.client;
 
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
@@ -19,12 +19,13 @@ import javax.annotation.Nonnull;
 /**
  * @author Serii Leschenko
  */
-public class BranchUtil {
+public class BranchSearcher {
+
     /**
-     * Set values of remote branches: filter remote branches due to selected remote repository.
+     * Get values of remote branches: filter remote branches due to selected remote repository.
      *
      * @param remoteName
-     *         remote name
+     *         remote name for filtering
      * @param remoteBranches
      *         remote branches
      */
@@ -34,7 +35,7 @@ public class BranchUtil {
     }
 
     /**
-     * Set values of remote branches: filter remote branches due to selected remote repository.
+     * Get simple names of remote branches: filter remote branches due to selected remote repository.
      */
     @Nonnull
     public Array<String> getRemoteBranchesToDisplay(BranchFilterByRemote filterByRemote, @Nonnull Array<Branch> remoteBranches) {
@@ -44,7 +45,6 @@ public class BranchUtil {
             branches.add("master");
             return branches;
         }
-
 
         for (int i = 0; i < remoteBranches.size(); i++) {
             Branch branch = remoteBranches.get(i);
@@ -60,7 +60,7 @@ public class BranchUtil {
     }
 
     /**
-     * Set values of local branches.
+     * Get simple names of local branches.
      *
      * @param localBranches
      *         local branches

@@ -15,7 +15,7 @@ import com.codenvy.ide.api.app.CurrentProject;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.ext.git.client.utils.GitUtil;
+import com.codenvy.ide.ext.git.client.GitRepositoryInitializer;
 import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
@@ -33,20 +33,20 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  */
 @Singleton
 public class InitRepositoryPresenter {
-    private final GitUtil                 gitUtil;
-    private final AppContext              appContext;
-    private final GitLocalizationConstant constant;
-    private final NotificationManager     notificationManager;
+    private final GitRepositoryInitializer gitRepositoryInitializer;
+    private final AppContext               appContext;
+    private final GitLocalizationConstant  constant;
+    private final NotificationManager      notificationManager;
 
     @Inject
     public InitRepositoryPresenter(AppContext appContext,
                                    GitLocalizationConstant constant,
                                    NotificationManager notificationManager,
-                                   GitUtil gitUtil) {
+                                   GitRepositoryInitializer gitRepositoryInitializer) {
         this.appContext = appContext;
         this.constant = constant;
         this.notificationManager = notificationManager;
-        this.gitUtil = gitUtil;
+        this.gitRepositoryInitializer = gitRepositoryInitializer;
     }
 
     public void initRepository() {
@@ -57,7 +57,7 @@ public class InitRepositoryPresenter {
             return;
         }
 
-        gitUtil.initGitRepository(currentProject.getRootProject(), new AsyncCallback<Void>() {
+        gitRepositoryInitializer.initGitRepository(currentProject.getRootProject(), new AsyncCallback<Void>() {
             @Override
             public void onFailure(Throwable caught) {
                 handleError(caught);

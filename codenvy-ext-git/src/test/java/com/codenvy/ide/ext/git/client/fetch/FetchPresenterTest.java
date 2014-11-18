@@ -15,7 +15,7 @@ import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.ext.git.client.utils.BranchUtil;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -55,7 +55,7 @@ public class FetchPresenterTest extends BaseTest {
     private Branch         branch;
     //TODO add to tests
     @Mock
-    private BranchUtil     branchUtil;
+    private BranchSearcher branchSearcher;
     @InjectMocks
     private FetchPresenter presenter;
 

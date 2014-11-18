@@ -16,8 +16,8 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.ext.git.client.utils.BranchFilterByRemote;
-import com.codenvy.ide.ext.git.client.utils.BranchUtil;
+import com.codenvy.ide.ext.git.client.BranchFilterByRemote;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -73,7 +73,7 @@ public class PushToRemotePresenterTest extends BaseTest {
     @Mock
     private Branch           remoteBranch;
     @Mock
-    private BranchUtil       branchUtil;
+    private BranchSearcher   branchSearcher;
 
     @InjectMocks
     private PushToRemotePresenter presenter;
@@ -111,7 +111,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         Method onSuccessRemotes = GwtReflectionUtils.getMethod(value.getClass(), "onSuccess");
         onSuccessRemotes.invoke(value, localBranches);
 
-        verify(branchUtil).getLocalBranchesToDisplay(eq(localBranches));
+        verify(branchSearcher).getLocalBranchesToDisplay(eq(localBranches));
         verify(view).setLocalBranches((Array<String>)anyObject());
         verify(view).selectLocalBranch(localBranch.getDisplayName());
     }
@@ -138,7 +138,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         when(upstream.isRemote()).thenReturn(true);
 
         Array<String> array = Collections.createArray(remoteBranch.getDisplayName());
-        when(branchUtil.getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), (Array<Branch>)anyObject())).thenReturn(array);
+        when(branchSearcher.getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), (Array<Branch>)anyObject())).thenReturn(array);
 
         presenter.updateRemoteBranches();
 
@@ -153,7 +153,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         Method onSuccessConfig = GwtReflectionUtils.getMethod(mapCallback.getClass(), "onSuccess");
         onSuccessConfig.invoke(mapCallback, configs);
 
-        verify(branchUtil).getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), eq(remoteBranches));
+        verify(branchSearcher).getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), eq(remoteBranches));
         verify(view).setRemoteBranches((Array<String>)anyObject());
         verify(view).selectRemoteBranch(upstreamBranchName);
     }
@@ -164,7 +164,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         remoteBranches.add(remoteBranch);
 
         Array<String> array = Collections.createArray(remoteBranch.getDisplayName());
-        when(branchUtil.getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), (Array<Branch>)anyObject())).thenReturn(array);
+        when(branchSearcher.getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), (Array<Branch>)anyObject())).thenReturn(array);
 
         presenter.updateRemoteBranches();
 
@@ -179,7 +179,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         Method onSuccessConfig = GwtReflectionUtils.getMethod(mapCallback.getClass(), "onSuccess");
         onSuccessConfig.invoke(mapCallback, new HashMap());
 
-        verify(branchUtil).getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), eq(remoteBranches));
+        verify(branchSearcher).getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), eq(remoteBranches));
         verify(view).setRemoteBranches((Array<String>)anyObject());
         verify(view).selectRemoteBranch(LOCAL_BRANCH);
     }
@@ -350,10 +350,10 @@ public class PushToRemotePresenterTest extends BaseTest {
         final Array<String> names_branches = Collections.createArray();
         names_branches.add(LOCAL_BRANCH);
 
-        when(branchUtil.getLocalBranchesToDisplay((Array<Branch>)anyObject())).thenReturn(names_branches);
+        when(branchSearcher.getLocalBranchesToDisplay((Array<Branch>)anyObject())).thenReturn(names_branches);
 
         Array<String> array = Collections.createArray(remoteBranch.getDisplayName());
-        when(branchUtil.getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), (Array<Branch>)anyObject())).thenReturn(array);
+        when(branchSearcher.getRemoteBranchesToDisplay((BranchFilterByRemote)anyObject(), (Array<Branch>)anyObject())).thenReturn(array);
 
         presenter.showDialog();
 

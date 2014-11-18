@@ -20,7 +20,7 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.git.client.BaseTest;
-import com.codenvy.ide.ext.git.client.utils.BranchUtil;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -68,7 +68,7 @@ public class PullPresenterTest extends BaseTest {
     private EditorPartPresenter partPresenter;
     //TODO add to tests
     @Mock
-    private BranchUtil          branchUtil;
+    private BranchSearcher      branchSearcher;
 
     @InjectMocks
     private PullPresenter presenter;

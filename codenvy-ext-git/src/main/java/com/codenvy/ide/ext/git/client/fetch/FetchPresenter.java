@@ -17,7 +17,7 @@ import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
-import com.codenvy.ide.ext.git.client.utils.BranchUtil;
+import com.codenvy.ide.ext.git.client.BranchSearcher;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.Remote;
 import com.codenvy.ide.rest.AsyncRequestCallback;
@@ -50,7 +50,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     private final AppContext              appContext;
     private final GitLocalizationConstant constant;
     private final NotificationManager     notificationManager;
-    private final BranchUtil              branchUtil;
+    private final BranchSearcher          branchSearcher;
     private       CurrentProject          project;
 
     @Inject
@@ -60,10 +60,10 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                           GitLocalizationConstant constant,
                           NotificationManager notificationManager,
                           DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                          BranchUtil branchUtil) {
+                          BranchSearcher branchSearcher) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.branchUtil = branchUtil;
+        this.branchSearcher = branchSearcher;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;
@@ -121,10 +121,10 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
                                    if (LIST_REMOTE.equals(remoteMode)) {
-                                       view.setRemoteBranches(branchUtil.getRemoteBranchesToDisplay(view.getRepositoryName(), result));
+                                       view.setRemoteBranches(branchSearcher.getRemoteBranchesToDisplay(view.getRepositoryName(), result));
                                        getBranches(LIST_LOCAL);
                                    } else {
-                                       view.setLocalBranches(branchUtil.getLocalBranchesToDisplay(result));
+                                       view.setLocalBranches(branchSearcher.getLocalBranchesToDisplay(result));
                                        for (Branch branch : result.asIterable()) {
                                            if (branch.isActive()) {
                                                view.selectRemoteBranch(branch.getDisplayName());

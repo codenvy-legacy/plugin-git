@@ -8,25 +8,25 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.client.utils;
+package com.codenvy.ide.ext.git.client;
 
-import com.codenvy.ide.ext.git.shared.Branch;
+import com.google.gwt.i18n.client.DateTimeFormat;
+
+import java.util.Date;
 
 /**
+ * This class is used for formatting of date on the client side.
+ *
  * @author Sergii Leschenko
  */
-public class BranchFilterByRemote {
-    private final String refsForRemoteRepository;
+public class DateTimeFormatter {
+    DateTimeFormat formatter = DateTimeFormat.getFormat(DateTimeFormat.PredefinedFormat.DATE_TIME_MEDIUM);
 
-    public BranchFilterByRemote(String remoteName) {
-        this.refsForRemoteRepository = "refs/remotes/" + remoteName + "/";
+    public String getFormattedDate(long time) {
+        return getFormattedDate(new Date(time));
     }
 
-    public boolean isLinkedTo(Branch branch) {
-        return branch.getName().startsWith(refsForRemoteRepository);
-    }
-
-    public String getBranchNameWithoutRefs(Branch branch) {
-        return branch.getName().replaceFirst(refsForRemoteRepository, "");
+    public String getFormattedDate(Date date) {
+        return formatter.format(date);
     }
 }

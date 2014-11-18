@@ -17,7 +17,7 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import javax.annotation.Nonnull;
 
 /**
- * @author Serii Leschenko
+ * @author Sergii Leschenko
  */
 public class BranchSearcher {
 

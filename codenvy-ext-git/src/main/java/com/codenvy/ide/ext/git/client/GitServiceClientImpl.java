@@ -225,8 +225,9 @@ public class GitServiceClientImpl implements GitServiceClient {
     @Override
     public void config(@Nonnull ProjectDescriptor project, @Nullable List<String> entries, boolean all,
                        @Nonnull AsyncRequestCallback<Map<String, String>> callback) {
-        ConfigRequest configRequest =
-                dtoFactory.createDto(ConfigRequest.class).withGetAll(all).withConfigEntry(entries);
+        ConfigRequest configRequest = dtoFactory.createDto(ConfigRequest.class)
+                                                .withGetAll(all)
+                                                .withConfigEntry(entries);
         String url = baseHttpUrl + CONFIG + "?projectPath=" + project.getPath();
 
         asyncRequestFactory.createPostRequest(url, configRequest).loader(loader).send(callback);
@@ -319,7 +320,8 @@ public class GitServiceClientImpl implements GitServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void remove(@Nonnull ProjectDescriptor project, List<String> items, boolean cached, @Nonnull AsyncRequestCallback<String> callback) {
+    public void remove(@Nonnull ProjectDescriptor project, List<String> items, boolean cached,
+                       @Nonnull AsyncRequestCallback<String> callback) {
         RmRequest rmRequest = dtoFactory.createDto(RmRequest.class).withItems(items).withCached(cached).withRecursively(true);
         String url = baseHttpUrl + REMOVE + "?projectPath=" + project.getPath();
         asyncRequestFactory.createPostRequest(url, rmRequest).loader(loader).send(callback);

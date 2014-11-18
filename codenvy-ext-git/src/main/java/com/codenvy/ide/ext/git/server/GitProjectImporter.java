@@ -109,7 +109,6 @@ public class GitProjectImporter implements ProjectImporter {
             // Keep all info related to the vcs. In case of Git: ".git" directory and ".gitignore" file.
             // Delete vcs info if false.
             String branchMerge = null;
-            String pushDefault = null;
             boolean keepVcs = true;
             if (parameters != null) {
                 commitId = parameters.get("commitId");
@@ -118,7 +117,6 @@ public class GitProjectImporter implements ProjectImporter {
                 keepDirectory = parameters.get("keepDirectory");
                 keepVcs = parameters.containsKey("keepVcs") ? Boolean.parseBoolean(parameters.get("keepVcs")) : true;
                 branchMerge = parameters.get("branchMerge");
-                pushDefault = parameters.get("pushDefault");
             }
             final DtoFactory dtoFactory = DtoFactory.getInstance();
             temp = Files.createTempDirectory(null).toFile();
@@ -163,9 +161,6 @@ public class GitProjectImporter implements ProjectImporter {
                     }
                     if (branchMerge != null) {
                         git.getConfig().set("branch." + (branch == null ? "master" : branch) + ".merge", branchMerge);
-                    }
-                    if (pushDefault != null) {
-                        git.getConfig().set("push.default", pushDefault);
                     }
                     if (!keepVcs) {
                         cleanGit(temp);

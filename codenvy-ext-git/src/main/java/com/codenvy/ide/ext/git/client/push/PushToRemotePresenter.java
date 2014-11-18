@@ -88,7 +88,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * Get the list of remote repositories for local one.
      * If remote repositories are found, then get the list of branches (remote and local).
      */
-    /* used in tests */ void updateRemotes() {
+    void updateRemotes() {
         service.remoteList(project.getRootProject(), null, true,
                            new AsyncRequestCallback<Array<Remote>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Remote.class)) {
                                @Override
@@ -111,7 +111,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Update list of local and remote branches on view.
      */
-    /* used in tests */ void updateLocalBranches() {
+    void updateLocalBranches() {
         //getting local branches
         getBranchesForCurrentProject(LIST_LOCAL, new AsyncCallback<Array<Branch>>() {
             @Override
@@ -141,7 +141,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
     /**
      * Update list of remote branches on view.
      */
-    /* used in tests */ void updateRemoteBranches() {
+    void updateRemoteBranches() {
         getBranchesForCurrentProject(LIST_REMOTE, new AsyncCallback<Array<Branch>>() {
             @Override
             public void onSuccess(final Array<Branch> result) {
@@ -232,8 +232,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param remoteMode
      *         is a remote mode
      */
-    /* used in tests */ void getBranchesForCurrentProject(@Nonnull final String remoteMode,
-                                                          final AsyncCallback<Array<Branch>> asyncResult) {
+    void getBranchesForCurrentProject(@Nonnull final String remoteMode,
+                                      final AsyncCallback<Array<Branch>> asyncResult) {
         service.branchList(project.getRootProject(),
                            remoteMode,
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
@@ -301,7 +301,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      * @param throwable
      *         exception what happened
      */
-    /* used in tests */ void handleError(@Nonnull Throwable throwable) {
+    void handleError(@Nonnull Throwable throwable) {
         String errorMessage;
         if (throwable instanceof UnauthorizedException) {
             errorMessage = constant.messagesNotAuthorized();

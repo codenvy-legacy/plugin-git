@@ -340,9 +340,8 @@ public class PushToRemotePresenterTest extends BaseTest {
         verify(notificationManager).showNotification((Notification)anyObject());
     }
 
-    //TODO mb remote it
     @Test
-    public void testShowDialogWhenBranchListRequestIsSuccessful() throws Exception {
+    public void testShowDialogWhenAllRequestsAreSuccessful() throws Exception {
         final Array<Remote> remotes = Collections.createArray();
         remotes.add(mock(Remote.class));
         final Array<Branch> branches = Collections.createArray();

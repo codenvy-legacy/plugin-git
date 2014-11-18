@@ -183,8 +183,6 @@ public class FetchPresenterTest extends BaseTest {
             }
         }).when(service).remoteList((ProjectDescriptor)anyObject(), anyString(), anyBoolean(),
                                     (AsyncRequestCallback<Array<Remote>>)anyObject());
-        MessageDialog messageDialog = mock(MessageDialog.class);
-        when(dialogFactory.createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject())).thenReturn(messageDialog);
 
         presenter.showDialog();
 
@@ -192,7 +190,6 @@ public class FetchPresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
-        verify(dialogFactory).createMessageDialog(anyString(), anyString(), Matchers.<ConfirmCallback>anyObject());
         verify(view).setEnableFetchButton(eq(DISABLE_BUTTON));
     }
 

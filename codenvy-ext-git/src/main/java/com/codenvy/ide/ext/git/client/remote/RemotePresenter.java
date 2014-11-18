@@ -38,7 +38,6 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 @Singleton
 public class RemotePresenter implements RemoteView.ActionDelegate {
     private final DtoUnmarshallerFactory       dtoUnmarshallerFactory;
-    private       DialogFactory                dialogFactory;
     private       RemoteView                   view;
     private       GitServiceClient             service;
     private       AppContext                   appContext;
@@ -48,23 +47,12 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
     private       Remote                       selectedRemote;
     private       ProjectDescriptor            project;
 
-    /**
-     * Create presenter.
-     *
-     * @param view
-     * @param service
-     * @param appContext
-     * @param constant
-     * @param addRemoteRepositoryPresenter
-     * @param notificationManager
-     */
     @Inject
     public RemotePresenter(RemoteView view, GitServiceClient service, AppContext appContext, GitLocalizationConstant constant,
                            AddRemoteRepositoryPresenter addRemoteRepositoryPresenter, NotificationManager notificationManager,
-                           DtoUnmarshallerFactory dtoUnmarshallerFactory, DialogFactory dialogFactory) {
+                           DtoUnmarshallerFactory dtoUnmarshallerFactory) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
-        this.dialogFactory = dialogFactory;
         this.view.setDelegate(this);
         this.service = service;
         this.appContext = appContext;

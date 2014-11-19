@@ -10,9 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client;
 
-import com.codenvy.ide.api.action.ActionManager;
-import com.codenvy.ide.api.action.DefaultActionGroup;
-import com.codenvy.ide.api.action.IdeActions;
 import com.codenvy.ide.api.extension.Extension;
 import com.codenvy.ide.ext.ssh.client.SshKeyService;
 import com.google.inject.Inject;
@@ -30,11 +27,7 @@ public class GitHubExtension {
     public static final String GITHUB_HOST = "github.com";
 
     @Inject
-    public GitHubExtension(ActionManager actionManager,
-                           SshKeyService sshKeyService,
-                           GitHubSshKeyProvider gitHubSshKeyProvider) {
+    public GitHubExtension(SshKeyService sshKeyService, GitHubSshKeyProvider gitHubSshKeyProvider) {
         sshKeyService.registerSshKeyProvider(GITHUB_HOST, gitHubSshKeyProvider);
-
-        DefaultActionGroup importProjectGroup = (DefaultActionGroup)actionManager.getAction(IdeActions.GROUP_IMPORT_PROJECT);
     }
 }

@@ -46,6 +46,8 @@ import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 
+import java.util.Comparator;
+
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 
 /**
@@ -305,6 +307,13 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
                                         repository.getGitUrl());
                 projectsData.add(projectData);
             }
+
+            projectsData.sort(new Comparator<ProjectData>() {
+                @Override
+                public int compare(ProjectData o1, ProjectData o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
 
             view.setRepositories(projectsData);
             view.reset();

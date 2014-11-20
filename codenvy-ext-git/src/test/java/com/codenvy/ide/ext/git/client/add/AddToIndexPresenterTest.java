@@ -11,22 +11,22 @@
 package com.codenvy.ide.ext.git.client.add;
 
 import com.codenvy.api.project.shared.dto.ProjectDescriptor;
-import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.projecttree.generic.ProjectNode;
 import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.BaseTest;
+import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.gwt.safehtml.shared.SafeHtml;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -35,21 +35,28 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * Testing {@link AddToIndexPresenter} functionality.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 public class AddToIndexPresenterTest extends BaseTest {
     public static final boolean  NEED_UPDATING = true;
     public static final SafeHtml SAFE_HTML     = mock(SafeHtml.class);
     public static final String   MESSAGE       = "message";
+    public static final String   STATUS_TEXT   = "Changes not staged for commit";
+
+    @Captor
+    private ArgumentCaptor<RequestCallback<Void>>        requestCallbackAddToIndexCaptor;
+    @Captor
+    private ArgumentCaptor<AsyncRequestCallback<String>> asyncRequestCallbackStatusCaptor;
+
     @Mock
     private AddToIndexView      view;
     @Mock
@@ -63,6 +70,38 @@ public class AddToIndexPresenterTest extends BaseTest {
     }
 
     @Test
+    public void testDialogWillNotBeShownWhenStatusRequestIsFailed() throws Exception {
+        presenter.showDialog();
+
+        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
+        onFailure.invoke(callback, mock(Throwable.class));
+
+        verify(notificationManager).showError(anyString());
+        verify(view, never()).showDialog();
+        verify(constant).statusFailed();
+    }
+
+    @Test
+    public void testDialogWillNotBeShownWhenNothingAddToIndex() throws Exception {
+        presenter.showDialog();
+
+        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccess.invoke(callback, "working directory clean");
+
+        verify(notificationManager).showInfo(anyString());
+        verify(view, never()).showDialog();
+        verify(constant).nothingAddToIndex();
+    }
+
+    @Test
     public void testShowDialogWhenRootFolderIsSelected() throws Exception {
         Selection selection = mock(Selection.class);
         ProjectNode project = mock(ProjectNode.class);
@@ -72,6 +111,13 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(constant.addToIndexAllChanges()).thenReturn(MESSAGE);
 
         presenter.showDialog();
+
+        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccess.invoke(callback, STATUS_TEXT);
 
         verify(appContext).getCurrentProject();
         verify(constant).addToIndexAllChanges();
@@ -91,6 +137,13 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(constant.addToIndexFolder(anyString())).thenReturn(SAFE_HTML);
 
         presenter.showDialog();
+
+        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccess.invoke(callback, STATUS_TEXT);
 
         verify(appContext).getCurrentProject();
         verify(constant).addToIndexFolder(eq(PROJECT_NAME));
@@ -112,6 +165,13 @@ public class AddToIndexPresenterTest extends BaseTest {
 
         presenter.showDialog();
 
+        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccess.invoke(callback, STATUS_TEXT);
+
         verify(appContext).getCurrentProject();
         verify(constant).addToIndexFile(eq(PROJECT_NAME));
         verify(view).setMessage(eq(MESSAGE));
@@ -121,55 +181,46 @@ public class AddToIndexPresenterTest extends BaseTest {
 
     @Test
     public void testOnAddClickedWhenAddWSRequestIsSuccessful() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[3];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, (Void)null);
-                return callback;
-            }
-        }).when(service).add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
-                             (RequestCallback<Void>)anyObject());
-
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
         when(constant.addSuccess()).thenReturn(MESSAGE);
 
         presenter.showDialog();
         presenter.onAddClicked();
 
+        verify(service)
+                .add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(), requestCallbackAddToIndexCaptor.capture());
+        RequestCallback<Void> callback = requestCallbackAddToIndexCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccess.invoke(callback, (Void)null);
+
         verify(view).isUpdated();
         verify(view).close();
         verify(service).add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                             (RequestCallback<Void>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showInfo(anyString());
         verify(constant).addSuccess();
     }
 
     @Test
     public void testOnAddClickedWhenAddWSRequestIsFailed() throws Exception {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                RequestCallback<Void> callback = (RequestCallback<Void>)arguments[3];
-                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
-                onFailure.invoke(callback, mock(Throwable.class));
-                return callback;
-            }
-        }).when(service).add((ProjectDescriptor)anyObject(), anyBoolean(), (List<String>)anyObject(),
-                             (RequestCallback<Void>)anyObject());
         when(view.isUpdated()).thenReturn(NEED_UPDATING);
 
         presenter.showDialog();
         presenter.onAddClicked();
 
+        verify(service)
+                .add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(), requestCallbackAddToIndexCaptor.capture());
+        RequestCallback<Void> callback = requestCallbackAddToIndexCaptor.getValue();
+
+        //noinspection NonJREEmulationClassesInClientCode
+        Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
+        onFailure.invoke(callback, mock(Throwable.class));
+
         verify(view).isUpdated();
         verify(view).close();
-        verify(service).add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
-                            (RequestCallback<Void>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(constant).addFailed();
     }
 
@@ -188,7 +239,7 @@ public class AddToIndexPresenterTest extends BaseTest {
                 .add(eq(rootProjectDescriptor), eq(NEED_UPDATING), (List<String>)anyObject(),
                      (RequestCallback<Void>)anyObject());
         verify(view).close();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(constant).addFailed();
     }
 

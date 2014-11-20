@@ -12,7 +12,6 @@ package com.codenvy.ide.ext.git.client.add;
 
 import com.codenvy.ide.api.app.AppContext;
 import com.codenvy.ide.api.app.CurrentProject;
-import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.projecttree.generic.StorableNode;
@@ -20,6 +19,8 @@ import com.codenvy.ide.api.selection.Selection;
 import com.codenvy.ide.api.selection.SelectionAgent;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
+import com.codenvy.ide.rest.AsyncRequestCallback;
+import com.codenvy.ide.rest.StringUnmarshaller;
 import com.codenvy.ide.websocket.WebSocketException;
 import com.codenvy.ide.websocket.rest.RequestCallback;
 import com.google.inject.Inject;
@@ -29,9 +30,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
-import static com.codenvy.ide.api.notification.Notification.Type.INFO;
 
 /**
  * Presenter for add changes to Git index.
@@ -77,10 +75,29 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     /** Show dialog. */
     public void showDialog() {
         project = appContext.getCurrentProject();
-        final String workDir = project.getRootProject().getPath();
-        view.setMessage(formMessage(workDir));
-        view.setUpdated(false);
-        view.showDialog();
+        if (project == null) {
+            return;
+        }
+        service.statusText(project.getRootProject(), false,
+                           new AsyncRequestCallback<String>(new StringUnmarshaller()) {
+                               @Override
+                               protected void onSuccess(String result) {
+                                   if (haveChanges(result)) {
+                                       final String workDir = project.getRootProject().getPath();
+                                       view.setMessage(formMessage(workDir));
+                                       view.setUpdated(false);
+                                       view.showDialog();
+                                   } else {
+                                       notificationManager.showInfo(constant.nothingAddToIndex());
+                                   }
+                               }
+
+                               @Override
+                               protected void onFailure(Throwable exception) {
+                                   String errorMessage = exception.getMessage() != null ? exception.getMessage() : constant.statusFailed();
+                                   notificationManager.showError(errorMessage);
+                               }
+                           });
     }
 
     /**
@@ -123,8 +140,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
             service.add(project.getRootProject(), update, getFilePatterns(), new RequestCallback<Void>() {
                 @Override
                 protected void onSuccess(Void result) {
-                    Notification notification = new Notification(constant.addSuccess(), INFO);
-                    notificationManager.showNotification(notification);
+                    notificationManager.showInfo(constant.addSuccess());
                 }
 
                 @Override
@@ -170,13 +186,32 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      */
     private void handleError(@Nonnull Throwable e) {
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.addFailed();
-        Notification notification = new Notification(errorMessage, ERROR);
-        notificationManager.showNotification(notification);
+        notificationManager.showError(errorMessage);
     }
 
     /** {@inheritDoc} */
     @Override
     public void onCancelClicked() {
         view.close();
+    }
+
+    /**
+     * Returns <code>true</code> if the working tree has changes for add to index.
+     *
+     * @param statusText
+     *         the working tree status
+     * @return <code>true</code> if the working tree has changes for add to index, <code>false</code> otherwise
+     */
+    private boolean haveChanges(String statusText) {
+        if (statusText.contains("Changes not staged for commit")) {
+            return true;
+        }
+        if (statusText.contains("Untracked files")) {
+            return true;
+        }
+        if (statusText.contains("unmerged")) {
+            return true;
+        }
+        return false;
     }
 }

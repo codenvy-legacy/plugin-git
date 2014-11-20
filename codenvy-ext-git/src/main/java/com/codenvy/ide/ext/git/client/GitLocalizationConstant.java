@@ -73,6 +73,9 @@ public interface GitLocalizationConstant extends Messages {
     @Key("messages.add_success")
     String addSuccess();
 
+    @Key("messages.nothingAddToIndex")
+    String nothingAddToIndex();
+
     @Key("messages.add_failed")
     String addFailed();
 

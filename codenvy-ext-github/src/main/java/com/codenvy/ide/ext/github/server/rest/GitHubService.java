@@ -41,8 +41,9 @@ import java.util.Map;
  * REST service to get the list of repositories from GitHub (where sample projects are located).
  *
  * @author Oksana Vereshchaka
+ * @author Stéphane Daviet
  */
-@Path("github/{ws-id}")
+@Path("github")
 public class GitHubService {
     @Inject
     GitHub github;

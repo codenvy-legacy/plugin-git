@@ -30,6 +30,7 @@ import java.util.List;
  * Implementation for {@link GitHubClientService}.
  *
  * @author Oksana Vereshchaka
+ * @author Stéphane Daviet
  */
 @Singleton
 public class GitHubClientServiceImpl implements GitHubClientService {
@@ -52,10 +53,9 @@ public class GitHubClientServiceImpl implements GitHubClientService {
 
     @Inject
     protected GitHubClientServiceImpl(@Named("restContext") String baseUrl,
-                                      @Named("workspaceId") String workspaceId,
                                       AsyncRequestLoader loader,
                                       AsyncRequestFactory asyncRequestFactory) {
-        this.baseUrl = baseUrl + "/github/" + workspaceId;
+        this.baseUrl = baseUrl + "/github";
         this.loader = loader;
         this.asyncRequestFactory = asyncRequestFactory;
     }

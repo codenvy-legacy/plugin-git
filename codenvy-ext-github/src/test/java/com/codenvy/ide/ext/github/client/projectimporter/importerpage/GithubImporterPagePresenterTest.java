@@ -546,6 +546,18 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
+    public void correctProjectNameWithPointEnteredTest() {
+        String correctName = "Test.project..ForCodenvy";
+
+        presenter.projectNameChanged(correctName);
+
+        verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(correctName));
+        verify(view).hideNameError();
+        verify(view, never()).showNameError();
+        verify(updateDelegate).updateControls();
+    }
+
+    @Test
     public void emptyProjectNameEnteredTest() {
         String emptyName = "";
 

@@ -55,7 +55,7 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
  */
 public class GithubImporterPagePresenter implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, OAuthCallback {
 
-    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_\\-]*$");
+    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_\\-\\.]*$");
     // An alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
     private static final RegExp SCP_LIKE_SYNTAX = RegExp.compile("([A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-:]+)+:");
     // the transport protocol

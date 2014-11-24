@@ -76,62 +76,62 @@ public class GitExtension {
         DefaultActionGroup mainMenu = (DefaultActionGroup)actionManager.getAction(GROUP_MAIN_MENU);
 
         DefaultActionGroup git = new DefaultActionGroup(GIT_GROUP_MAIN_MENU, true, actionManager);
-        actionManager.registerAction(GIT_GROUP_MAIN_MENU, git);
+        actionManager.registerAction("git", git);
         Constraints beforeWindow = new Constraints(BEFORE, GROUP_WINDOW);
         mainMenu.add(git, beforeWindow);
 
         DefaultActionGroup commandGroup = new DefaultActionGroup(COMMAND_GROUP_MAIN_MENU, false, actionManager);
-        actionManager.registerAction(COMMAND_GROUP_MAIN_MENU, commandGroup);
+        actionManager.registerAction("gitCommandGroup", commandGroup);
         git.add(commandGroup);
         git.addSeparator();
 
         DefaultActionGroup historyGroup = new DefaultActionGroup(HISTORY_GROUP_MAIN_MENU, false, actionManager);
-        actionManager.registerAction(HISTORY_GROUP_MAIN_MENU, historyGroup);
+        actionManager.registerAction("gitHistoryGroup", historyGroup);
         git.add(historyGroup);
         git.addSeparator();
 
         DefaultActionGroup repositoryGroup = new DefaultActionGroup(REPOSITORY_GROUP_MAIN_MENU, false, actionManager);
-        actionManager.registerAction(REPOSITORY_GROUP_MAIN_MENU, repositoryGroup);
+        actionManager.registerAction("gitRepositoryGroup", repositoryGroup);
         git.add(repositoryGroup);
 
-        actionManager.registerAction("GitInitRepository", initAction);
+        actionManager.registerAction("gitInitRepository", initAction);
         repositoryGroup.add(initAction);
-        actionManager.registerAction("GitDeleteRepository", deleteAction);
+        actionManager.registerAction("gitDeleteRepository", deleteAction);
         repositoryGroup.add(deleteAction);
 
-        actionManager.registerAction("GitAddToIndex", addToIndexAction);
+        actionManager.registerAction("gitAddToIndex", addToIndexAction);
         commandGroup.add(addToIndexAction);
-        actionManager.registerAction("GitResetToCommit", resetToCommitAction);
+        actionManager.registerAction("gitResetToCommit", resetToCommitAction);
         commandGroup.add(resetToCommitAction);
-        actionManager.registerAction("GitRemoveFromIndexCommit", removeFromIndexAction);
+        actionManager.registerAction("gitRemoveFromIndexCommit", removeFromIndexAction);
         commandGroup.add(removeFromIndexAction);
-        actionManager.registerAction("GitCommit", commitAction);
+        actionManager.registerAction("gitCommit", commitAction);
         commandGroup.add(commitAction);
-        actionManager.registerAction("GitBranches", showBranchesAction);
+        actionManager.registerAction("gitBranches", showBranchesAction);
         commandGroup.add(showBranchesAction);
-        actionManager.registerAction("GitMerge", showMergeAction);
+        actionManager.registerAction("gitMerge", showMergeAction);
         commandGroup.add(showMergeAction);
         DefaultActionGroup remoteGroup = new DefaultActionGroup(constant.remotesControlTitle(), true, actionManager);
         remoteGroup.getTemplatePresentation().setSVGIcon(resources.remote());
-        actionManager.registerAction("GitRemoteGroup", remoteGroup);
+        actionManager.registerAction("gitRemoteGroup", remoteGroup);
         commandGroup.add(remoteGroup);
-        actionManager.registerAction("GitResetFiles", resetFilesAction);
+        actionManager.registerAction("gitResetFiles", resetFilesAction);
         commandGroup.add(resetFilesAction);
 
-        actionManager.registerAction("GitHistory", historyAction);
+        actionManager.registerAction("gitHistory", historyAction);
         historyGroup.add(historyAction);
-        actionManager.registerAction("GitStatus", showStatusAction);
+        actionManager.registerAction("gitStatus", showStatusAction);
         historyGroup.add(showStatusAction);
-        actionManager.registerAction("GitUrl", showGitUrlAction);
+        actionManager.registerAction("gitUrl", showGitUrlAction);
         historyGroup.add(showGitUrlAction);
 
-        actionManager.registerAction("GitPush", pushAction);
+        actionManager.registerAction("gitPush", pushAction);
         remoteGroup.add(pushAction);
-        actionManager.registerAction("GitFetch", fetchAction);
+        actionManager.registerAction("gitFetch", fetchAction);
         remoteGroup.add(fetchAction);
-        actionManager.registerAction("GitPull", pullAction);
+        actionManager.registerAction("gitPull", pullAction);
         remoteGroup.add(pullAction);
-        actionManager.registerAction("GitRemote", showRemoteAction);
+        actionManager.registerAction("gitRemote", showRemoteAction);
         remoteGroup.add(showRemoteAction);
     }
 }

@@ -29,6 +29,7 @@ import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.safehtml.shared.SafeHtml;
+import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
 import com.google.gwt.safehtml.shared.SafeHtmlUtils;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -144,22 +145,18 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
         Column<ProjectData, SafeHtml> repositoryColumn = new Column<ProjectData, SafeHtml>(new SafeHtmlCell()) {
             @Override
             public SafeHtml getValue(final ProjectData item) {
-                return new SafeHtml() {
-                    public String asString() {
-                        return item.getName();
-                    }
-                };
+                return SafeHtmlUtils.fromString(item.getName());
             }
         };
 
         Column<ProjectData, SafeHtml> descriptionColumn = new Column<ProjectData, SafeHtml>(new SafeHtmlCell()) {
             @Override
             public SafeHtml getValue(final ProjectData item) {
-                return new SafeHtml() {
-                    public String asString() {
-                        return "<span>" + item.getDescription() + "</span>";
-                    }
-                };
+                return new SafeHtmlBuilder()
+                        .appendHtmlConstant("<span>")
+                        .appendEscaped(item.getDescription())
+                        .appendHtmlConstant("</span>")
+                        .toSafeHtml();
             }
         };
 

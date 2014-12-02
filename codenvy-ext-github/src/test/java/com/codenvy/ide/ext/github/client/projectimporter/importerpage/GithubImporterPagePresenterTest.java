@@ -49,8 +49,6 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import java.lang.Iterable;
 import java.lang.reflect.Method;
@@ -59,7 +57,6 @@ import java.util.Iterator;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -161,7 +158,7 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void testGoWhenGetUserReposIsSuccessful() {
+    public void testGoWhenGetUserReposIsSuccessful() throws Exception {
         String importerDescription = "description";
         AcceptsOneWidget container = mock(AcceptsOneWidget.class);
         ProjectImporterDescriptor projectImporter = mock(ProjectImporterDescriptor.class);
@@ -179,19 +176,12 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         when(repositories.getKeys()).thenReturn(repo);
         when(repositories.containsKey(anyString())).thenReturn(true);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback =
-                        (AsyncRequestCallback<StringMap<Array<GitHubRepository>>>)arguments[0];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, repositories);
-                return callback;
-            }
-        }).when(gitHubClientService).getAllRepositories(Matchers.<AsyncRequestCallback<StringMap<Array<GitHubRepository>>>>anyObject());
-
         presenter.go(container);
+
+        verify(gitHubClientService).getAllRepositories(asyncRequestCallbackRepoListCaptor.capture());
+        AsyncRequestCallback<StringMap<Array<GitHubRepository>>> asyncRequestCallback = asyncRequestCallbackRepoListCaptor.getValue();
+        Method onSuccess = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onSuccess");
+        onSuccess.invoke(asyncRequestCallback, repositories);
 
         verify(view, times(2)).reset();
         verify(wizardContext).getData(eq(ImportProjectWizard.PROJECT_IMPORTER));
@@ -208,26 +198,19 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void testGoWhenGetUserReposIsFailed() {
+    public void testGoWhenGetUserReposIsFailed() throws Exception {
         String importerDescription = "description";
         AcceptsOneWidget container = mock(AcceptsOneWidget.class);
         ProjectImporterDescriptor projectImporter = mock(ProjectImporterDescriptor.class);
         when(wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER)).thenReturn(projectImporter);
         when(projectImporter.getDescription()).thenReturn(importerDescription);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback =
-                        (AsyncRequestCallback<StringMap<Array<GitHubRepository>>>)arguments[0];
-                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
-                onFailure.invoke(callback, mock(Throwable.class));
-                return callback;
-            }
-        }).when(gitHubClientService).getAllRepositories(Matchers.<AsyncRequestCallback<StringMap<Array<GitHubRepository>>>>anyObject());
-
         presenter.go(container);
+
+        verify(gitHubClientService).getAllRepositories(asyncRequestCallbackRepoListCaptor.capture());
+        AsyncRequestCallback<StringMap<Array<GitHubRepository>>> asyncRequestCallback = asyncRequestCallbackRepoListCaptor.getValue();
+        Method onFailure = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onFailure");
+        onFailure.invoke(asyncRequestCallback, mock(Throwable.class));
 
         verify(view).reset();
         verify(wizardContext).getData(eq(ImportProjectWizard.PROJECT_IMPORTER));
@@ -243,20 +226,13 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void onLoadRepoClickedWhenGetCurrentUserIsSuccessful() {
-        final UserDescriptor user = mock(UserDescriptor.class);
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<UserDescriptor> callback = (AsyncRequestCallback<UserDescriptor>)arguments[0];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, user);
-                return callback;
-            }
-        }).when(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
-
+    public void onLoadRepoClickedWhenGetCurrentUserIsSuccessful() throws Exception {
         presenter.onLoadRepoClicked();
+
+        verify(userServiceClient).getCurrentUser(asyncRequestCallbackUserDescriptorCaptor.capture());
+        AsyncRequestCallback<UserDescriptor> callback = asyncRequestCallbackUserDescriptorCaptor.getValue();
+        Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccess.invoke(callback, userDescriptor);
 
         verify(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
         verify(view, times(2)).setLoaderVisibility(eq(true));
@@ -266,19 +242,13 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void onLoadRepoClickedWhenGetCurrentUserIsFailed() {
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<UserDescriptor> callback = (AsyncRequestCallback<UserDescriptor>)arguments[0];
-                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
-                onFailure.invoke(callback, mock(Throwable.class));
-                return callback;
-            }
-        }).when(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
-
+    public void onLoadRepoClickedWhenGetCurrentUserIsFailed() throws Exception {
         presenter.onLoadRepoClicked();
+
+        verify(userServiceClient).getCurrentUser(asyncRequestCallbackUserDescriptorCaptor.capture());
+        AsyncRequestCallback<UserDescriptor> callback = asyncRequestCallbackUserDescriptorCaptor.getValue();
+        Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
+        onFailure.invoke(callback, mock(Throwable.class));
 
         verify(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
         verify(view).setLoaderVisibility(eq(true));
@@ -289,8 +259,7 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void onLoadRepoClickedWhenGetUserReposIsSuccessful() {
-        final UserDescriptor user = mock(UserDescriptor.class);
+    public void onLoadRepoClickedWhenGetUserReposIsSuccessful() throws Exception {
         final StringMap repositories = mock(StringMap.class);
         Array repo = mock(Array.class);
         Iterable iterable = mock(Iterable.class);
@@ -303,30 +272,17 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         when(view.getAccountName()).thenReturn("AccountName");
         when(repositories.containsKey(anyString())).thenReturn(true);
 
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<UserDescriptor> callback = (AsyncRequestCallback<UserDescriptor>)arguments[0];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, user);
-                return callback;
-            }
-        }).when(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
-
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback =
-                        (AsyncRequestCallback<StringMap<Array<GitHubRepository>>>)arguments[0];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, repositories);
-                return callback;
-            }
-        }).when(gitHubClientService).getAllRepositories(Matchers.<AsyncRequestCallback<StringMap<Array<GitHubRepository>>>>anyObject());
-
         presenter.onLoadRepoClicked();
+
+        verify(userServiceClient).getCurrentUser(asyncRequestCallbackUserDescriptorCaptor.capture());
+        AsyncRequestCallback<UserDescriptor> callback = asyncRequestCallbackUserDescriptorCaptor.getValue();
+        Method onSuccessUser = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccessUser.invoke(callback, userDescriptor);
+
+        verify(gitHubClientService).getAllRepositories(asyncRequestCallbackRepoListCaptor.capture());
+        AsyncRequestCallback<StringMap<Array<GitHubRepository>>> asyncRequestCallback = asyncRequestCallbackRepoListCaptor.getValue();
+        Method onSuccessRepo = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onSuccess");
+        onSuccessRepo.invoke(asyncRequestCallback, repositories);
 
         verify(notificationManager, never()).showNotification((Notification)anyObject());
         verify(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
@@ -339,34 +295,21 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void onLoadRepoClickedWhenGetUserReposIsFailed() {
-        final UserDescriptor user = mock(UserDescriptor.class);
+    public void onLoadRepoClickedWhenGetUserReposIsFailed() throws Exception {
         final Throwable exception = mock(Throwable.class);
         when(exception.getMessage()).thenReturn("");
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<UserDescriptor> callback = (AsyncRequestCallback<UserDescriptor>)arguments[0];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, user);
-                return callback;
-            }
-        }).when(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
-
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback =
-                        (AsyncRequestCallback<StringMap<Array<GitHubRepository>>>)arguments[0];
-                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
-                onFailure.invoke(callback, exception);
-                return callback;
-            }
-        }).when(gitHubClientService).getAllRepositories(Matchers.<AsyncRequestCallback<StringMap<Array<GitHubRepository>>>>anyObject());
 
         presenter.onLoadRepoClicked();
+
+        verify(userServiceClient).getCurrentUser(asyncRequestCallbackUserDescriptorCaptor.capture());
+        AsyncRequestCallback<UserDescriptor> callback = asyncRequestCallbackUserDescriptorCaptor.getValue();
+        Method onSuccessUser = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccessUser.invoke(callback, userDescriptor);
+
+        verify(gitHubClientService).getAllRepositories(asyncRequestCallbackRepoListCaptor.capture());
+        AsyncRequestCallback<StringMap<Array<GitHubRepository>>> asyncRequestCallback = asyncRequestCallbackRepoListCaptor.getValue();
+        Method onFailure = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onFailure");
+        onFailure.invoke(asyncRequestCallback, exception);
 
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(eventBus).fireEvent(Matchers.<ExceptionThrownEvent>anyObject());
@@ -380,41 +323,28 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     }
 
     @Test
-    public void onLoadRepoClickedWhenShouldShowAuthWindow() {
-        final UserDescriptor user = mock(UserDescriptor.class);
+    public void onLoadRepoClickedWhenShouldShowAuthWindow() throws Exception {
         final Throwable exception = mock(Throwable.class);
         ConfirmDialog confirmDialog = mock(ConfirmDialog.class);
         when(dialogFactory.createConfirmDialog(anyString(), anyString(), (ConfirmCallback)anyObject(), (CancelCallback)anyObject()))
                 .thenReturn(confirmDialog);
         when(exception.getMessage()).thenReturn("Bad credentials");
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<UserDescriptor> callback = (AsyncRequestCallback<UserDescriptor>)arguments[0];
-                Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-                onSuccess.invoke(callback, user);
-                return callback;
-            }
-        }).when(userServiceClient).getCurrentUser(Matchers.<AsyncRequestCallback<UserDescriptor>>anyObject());
-
-        doAnswer(new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] arguments = invocation.getArguments();
-                AsyncRequestCallback<StringMap<Array<GitHubRepository>>> callback =
-                        (AsyncRequestCallback<StringMap<Array<GitHubRepository>>>)arguments[0];
-                Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
-                onFailure.invoke(callback, exception);
-                return callback;
-            }
-        }).when(gitHubClientService).getAllRepositories(Matchers.<AsyncRequestCallback<StringMap<Array<GitHubRepository>>>>anyObject());
 
         presenter.onLoadRepoClicked();
 
+        verify(userServiceClient).getCurrentUser(asyncRequestCallbackUserDescriptorCaptor.capture());
+        AsyncRequestCallback<UserDescriptor> callback = asyncRequestCallbackUserDescriptorCaptor.getValue();
+        Method onSuccessUser = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
+        onSuccessUser.invoke(callback, userDescriptor);
+
+        verify(gitHubClientService).getAllRepositories(asyncRequestCallbackRepoListCaptor.capture());
+        AsyncRequestCallback<StringMap<Array<GitHubRepository>>> asyncRequestCallback = asyncRequestCallbackRepoListCaptor.getValue();
+        Method onFailure = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onFailure");
+        onFailure.invoke(asyncRequestCallback, exception);
+
         verify(dialogFactory).createConfirmDialog(anyString(), anyString(), confirmCallbackCaptor.capture(), (CancelCallback)anyObject());
-        ConfirmCallback callback = confirmCallbackCaptor.getValue();
-        callback.accepted();
+        ConfirmCallback confirmCallback = confirmCallbackCaptor.getValue();
+        confirmCallback.accepted();
 
         verify(view).showAuthWindow(anyString(), (OAuthCallback)anyObject());
         verify(notificationManager, never()).showNotification((Notification)anyObject());
@@ -457,6 +387,16 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     public void testUrlMatchScpLikeSyntax() {
         // test for url with an alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
         String correctUrl = "host.xz:path/to/repo.git";
+        when(view.getProjectName()).thenReturn("");
+
+        presenter.projectUrlChanged(correctUrl);
+
+        verifyInvocationsForCorrectUrl(correctUrl);
+    }
+
+    @Test
+    public void testUrlWithoutUsername() {
+        String correctUrl = "git@hostname.com:projectName.git";
         when(view.getProjectName()).thenReturn("");
 
         presenter.projectUrlChanged(correctUrl);

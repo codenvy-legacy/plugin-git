@@ -102,6 +102,16 @@ public class GitImporterPagePresenterTest {
     }
 
     @Test
+    public void testUrlWithoutUsername() {
+        String correctUrl = "git@hostname.com:projectName.git";
+        when(view.getProjectName()).thenReturn("");
+
+        presenter.projectUrlChanged(correctUrl);
+
+        verifyInvocationsForCorrectUrl(correctUrl);
+    }
+
+    @Test
     public void testSshUriWithHostBetweenDoubleSlashAndSlash() {
         //Check for type uri which start with ssh:// and has host between // and /
         String correctUrl = "ssh://host.com/some/path";

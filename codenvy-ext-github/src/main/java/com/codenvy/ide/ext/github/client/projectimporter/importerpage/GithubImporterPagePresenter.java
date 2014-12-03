@@ -322,11 +322,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         }
     }
 
-    /**
-     * Shown the state that the request is processing.
-     *
-     * @param inProgress
-     */
+    /** Shown the state that the request is processing. */
     private void showProcessing(boolean inProgress) {
         view.setLoaderVisibility(inProgress);
         view.setInputsEnableState(!inProgress);
@@ -334,17 +330,16 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
 
     /** Gets project name from uri. */
     private String parseUri(@Nonnull String uri) {
-        String result;
-        int indexStartProjectName = uri.lastIndexOf("/") + 1;
-        int indexFinishProjectName = uri.indexOf(".", indexStartProjectName);
-        if (indexStartProjectName != 0 && indexFinishProjectName != (-1)) {
-            result = uri.substring(indexStartProjectName, indexFinishProjectName);
-        } else if (indexStartProjectName != 0) {
-            result = uri.substring(indexStartProjectName);
-        } else {
-            result = "";
+        int indexFinishProjectName = uri.lastIndexOf(".");
+        int indexStartProjectName = uri.lastIndexOf("/") != -1 ? uri.lastIndexOf("/") + 1 : (uri.lastIndexOf(":") + 1);
+
+        if (indexStartProjectName != 0 && indexStartProjectName < indexFinishProjectName) {
+            return uri.substring(indexStartProjectName, indexFinishProjectName);
         }
-        return result;
+        if (indexStartProjectName != 0) {
+            return uri.substring(indexStartProjectName);
+        }
+        return "";
     }
 
     /**
@@ -359,15 +354,10 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
             view.showUrlError(locale.importProjectMessageStartWithWhiteSpace());
             return false;
         }
-
-        if (SCP_LIKE_SYNTAX.test(url) && REPO_NAME.test(url)) {
+        if (SCP_LIKE_SYNTAX.test(url)) {
             view.hideUrlError();
             return true;
-        } else if (SCP_LIKE_SYNTAX.test(url) && !REPO_NAME.test(url)) {
-            view.showUrlError(locale.importProjectMessageNameRepoIncorrect());
-            return false;
         }
-
         if (!PROTOCOL.test(url)) {
             view.showUrlError(locale.importProjectMessageProtocolIncorrect());
             return false;

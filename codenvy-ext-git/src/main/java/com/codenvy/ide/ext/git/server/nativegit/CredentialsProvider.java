@@ -11,15 +11,36 @@
 package com.codenvy.ide.ext.git.server.nativegit;
 
 import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.ext.git.shared.GitUser;
 
 /**
  * Provides credentials to use with git commands that need it
  *
  * @author Eugene Voevodin
+ * @author Sergii Kabashniuk
  */
 public interface CredentialsProvider {
-    public boolean get(String url, CredentialItem... items) throws GitException;
+    /**
+     * @return credentials for current user in this provider
+     * to execute git operation.
+     * @throws GitException
+     */
+    UserCredential getUserCredential() throws GitException;
 
-    /** Provides the information about authenticated user over the specified OAuth provider. */
-    public boolean getUser(String url, CredentialItem... items) throws GitException;
+    /**
+     * @return information about current user in this provider
+     * @throws GitException
+     */
+    GitUser getUser() throws GitException;
+
+    /**
+     * @return Provider id.
+     */
+    String getId();
+
+    /**
+     * @param url
+     * @return return true if current provider can provide credentials for the given url.
+     */
+    boolean canProvideCredentials(String url);
 }

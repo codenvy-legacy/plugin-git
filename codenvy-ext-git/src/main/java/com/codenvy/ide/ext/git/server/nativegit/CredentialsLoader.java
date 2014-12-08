@@ -10,21 +10,16 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-import com.codenvy.commons.lang.IoUtil;
-import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.ext.git.shared.GitUser;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -36,101 +31,58 @@ import java.util.Set;
 @Singleton
 public class CredentialsLoader {
 
-    private static final Logger LOG                          = LoggerFactory.getLogger(CredentialsLoader.class);
-    private static final String GIT_ASK_PASS_SCRIPT_TEMPLATE = "META-INF/NativeGitAskPassTemplate";
-    private static final String GIT_ASK_PASS_SCRIPT          = "ask_pass";
+    private static final Logger LOG = LoggerFactory.getLogger(CredentialsLoader.class);
 
-    private String                   gitAskPassTemplate;
-    private Set<CredentialsProvider> credentialsProviders;
+    private Map<String, CredentialsProvider> credentialsProviders;
 
     @Inject
     public CredentialsLoader(Set<CredentialsProvider> credentialsProviders) {
-        this.credentialsProviders = credentialsProviders;
+
+        this.credentialsProviders = new HashMap<>(credentialsProviders.size());
+        for (CredentialsProvider credentialsProvider : credentialsProviders) {
+            this.credentialsProviders.put(credentialsProvider.getId(), credentialsProvider);
+        }
     }
 
     /**
-     * Searches "GIT_ASKPASS" script.
-     *
-     * @param username
-     *         user name that will be stored
-     * @param password
-     *         password that will be stored
-     * @return stored script
-     */
-    public File createGitAskPassScript(CredentialItem.Username username, CredentialItem.Password password)
-            throws GitException {
-        File askScriptDirectory = new File(System.getProperty("java.io.tmpdir")
-                                           + "/" + EnvironmentContext.getCurrent().getUser().getName());
-        if (!askScriptDirectory.exists()) {
-            askScriptDirectory.mkdirs();
-        }
-        File gitAskPassScript = new File(askScriptDirectory, GIT_ASK_PASS_SCRIPT);
-        try (FileOutputStream fos = new FileOutputStream(gitAskPassScript)) {
-            String actualGitAskPassTemplate = gitAskPassTemplate.replace("$self", gitAskPassScript.getAbsolutePath())
-                                                                .replace("$password", password.toString())
-                                                                .replace("$username", username.getValue());
-            fos.write(actualGitAskPassTemplate.getBytes());
-        } catch (IOException e) {
-            LOG.error("It is not possible to store " + gitAskPassScript + " credentials", e);
-            throw new GitException("Can't store credentials");
-        }
-        if (!gitAskPassScript.setExecutable(true)) {
-            LOG.error("Can't make " + gitAskPassScript + " executable");
-            throw new GitException("Can't set permissions to credentials");
-        }
-        return gitAskPassScript;
-    }
-
-
-    /**
-     * Searches for CredentialsProvider instances and if needed instance exists, it stores
-     * given credentials
+     * Searches for CredentialsProvider instances and if needed instance exists, it return
+     * given credentials, else null;
      *
      * @param url
      *         given URL
-     * @return stored script
+     * @return credentials from provider
      * @throws GitException
      *         when it is not possible to store credentials
      */
-    public File findCredentialsAndCreateGitAskPassScript(String url) throws GitException {
-        CredentialItem.Username username = new CredentialItem.Username();
-        CredentialItem.Password password = new CredentialItem.Password();
-        boolean isCredentialsPresent = false;
-        for (CredentialsProvider cp : credentialsProviders) {
-            if (isCredentialsPresent = cp.get(url, username, password)) {
-                break;
+    public UserCredential getUserCredential(String url) throws GitException {
+
+        for (CredentialsProvider cp : credentialsProviders.values()) {
+            if (cp.canProvideCredentials(url)) {
+                UserCredential commandCredentials = cp.getUserCredential();
+                if (commandCredentials != null && !commandCredentials.getProviderId().equals(cp.getId())) {
+                    throw new GitException(
+                            "Provider " + cp.getId() + " returned credential with wrong id " + commandCredentials.getProviderId());
+                }
+                LOG.info("Url {} user {}", url, commandCredentials);
+                return commandCredentials;
             }
         }
-        //if not available tokenProvider exist
-        if (!isCredentialsPresent) {
-            username.setValue("");
-            password.setValue("");
-        }
-        return createGitAskPassScript(username, password);
+        return null;
     }
 
-    public void removeAskPassScript() {
-        File askScriptDirectory = new File(System.getProperty("java.io.tmpdir")
-                                           + "/" + EnvironmentContext.getCurrent().getUser().getName());
-        if (askScriptDirectory.exists()) {
-            if (!IoUtil.deleteRecursive(askScriptDirectory))
-                LOG.warn("Ask-pass script deletion failed.");
+    /**
+     * @param providerId
+     * @return user by provider id.
+     * @throws GitException
+     */
+    public GitUser getUser(String providerId) throws GitException {
+        CredentialsProvider provider = credentialsProviders.get(providerId);
+        if (provider == null) {
+            throw new GitException("Provider " + providerId + " are not found");
         }
+        GitUser user = provider.getUser();
+        LOG.info("Provider {} user {}", providerId, user);
+        return user;
     }
 
-    @PostConstruct
-    public void init() {
-        try (BufferedReader reader = new BufferedReader(
-                new InputStreamReader(Thread.currentThread().getContextClassLoader().getResourceAsStream(GIT_ASK_PASS_SCRIPT_TEMPLATE)))) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-            gitAskPassTemplate = sb.toString();
-        } catch (Exception e) {
-            LOG.error("Can't load template " + GIT_ASK_PASS_SCRIPT_TEMPLATE);
-        }
-    }
 }
-

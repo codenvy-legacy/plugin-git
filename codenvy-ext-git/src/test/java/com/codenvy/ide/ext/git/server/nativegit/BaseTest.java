@@ -14,6 +14,7 @@ import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
 import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.ext.git.server.nativegit.commands.EmptyGitCommand;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
 
@@ -40,9 +41,12 @@ import static org.testng.Assert.assertTrue;
  * @author Eugene Voevodin
  */
 public abstract class BaseTest {
+    protected final String CONTENT     = "git repository content\n";
+    protected final String DEFAULT_URI = "user@host.com:login/repo";
 
     private GitConnection connection;
     private Path          target;
+    private final DtoFactory dto = DtoFactory.getInstance();
 
     @BeforeMethod
     public void initRepository() throws Exception {
@@ -104,4 +108,14 @@ public abstract class BaseTest {
         final NativeGit git = new NativeGit(repository);
         git.createInitCommand().execute();
     }
+
+    protected int getCountOfCommitsInCurrentBranch(File repo) throws GitException {
+        EmptyGitCommand emptyGitCommand = new EmptyGitCommand(repo);
+        emptyGitCommand.setNextParameter("rev-list")
+                       .setNextParameter("HEAD")
+                       .setNextParameter("--count")
+                       .execute();
+        return Integer.parseInt(emptyGitCommand.getText());
+    }
+
 }

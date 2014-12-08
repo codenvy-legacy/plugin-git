@@ -61,6 +61,11 @@ public class CommandProcess {
             environment.put("GIT_ASKPASS", command.getAskPassScriptPath());
         }
 
+        //set up and override command specific environment variables
+        for (Map.Entry<String, String> entry : ((Map<String, String>)command.getCommandEnvironment()).entrySet()) {
+            environment.put(entry.getKey(), entry.getValue());
+        }
+
         pb.directory(command.getRepository());
 
 

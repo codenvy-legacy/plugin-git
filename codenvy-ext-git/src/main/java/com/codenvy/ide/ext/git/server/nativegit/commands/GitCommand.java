@@ -17,6 +17,8 @@ import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.CommandProcess;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Base class for all git commands
@@ -31,6 +33,7 @@ public abstract class GitCommand<T> extends ListLineConsumer {
     private String              SSHScriptPath;
     private String              askPassScriptPath;
     private LineConsumerFactory lineConsumerFactory;
+    private Map<String, String> commandEnvironment;
 
     protected CommandLine commandLine;
 
@@ -40,6 +43,7 @@ public abstract class GitCommand<T> extends ListLineConsumer {
      */
     public GitCommand(File repository) {
         this.repository = repository;
+        this.commandEnvironment = Collections.emptyMap();
         commandLine = new CommandLine("git");
         timeout = -1;
     }
@@ -104,6 +108,19 @@ public abstract class GitCommand<T> extends ListLineConsumer {
         commandLine.clear().add("git");
         clear();
         return this;
+    }
+
+    /**
+     * @return command additional environment variables;
+     */
+    public Map<String, String> getCommandEnvironment() {
+        return commandEnvironment != null ? commandEnvironment : Collections.<String, String>emptyMap();
+    }
+
+    /** command additional environment variables */
+
+    public void setCommandEnvironment(Map<String, String> commandEnvironment) {
+        this.commandEnvironment = commandEnvironment;
     }
 
     /**

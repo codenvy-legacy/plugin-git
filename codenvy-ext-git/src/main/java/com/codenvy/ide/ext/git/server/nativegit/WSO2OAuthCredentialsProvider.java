@@ -16,9 +16,9 @@ import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.commons.json.JsonHelper;
 import com.codenvy.commons.json.JsonParseException;
 import com.codenvy.commons.lang.IoUtil;
+import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitException;
-import com.codenvy.ide.security.oauth.server.OAuthAuthenticationException;
-import com.codenvy.ide.security.oauth.shared.User;
+import com.codenvy.ide.ext.git.shared.GitUser;
 
 import org.everrest.core.impl.provider.json.JsonValue;
 import org.slf4j.Logger;
@@ -58,97 +58,56 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
         this.WSO_2_URL_PATTERN = Pattern.compile(gitPattern);
     }
 
+
     @Override
-    public boolean get(String url, CredentialItem... items) throws GitException {
-        if (!WSO_2_URL_PATTERN.matcher(url).matches()) {
-            return false;
-        }
+    public UserCredential getUserCredential() throws GitException {
         OAuthToken token;
         try {
             token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getId());
+            if (token != null) {
+                return new UserCredential(token.getToken(), "x-oauth-basic", OAUTH_PROVIDER_NAME);
+            } else {
+                LOG.error("Token is null");
+
+            }
         } catch (IOException e) {
             LOG.error("Can't get token", e);
-            return false;
+            return null;
         }
-        if (token != null) {
-            for (CredentialItem item : items) {
-                if (item instanceof CredentialItem.Password) {
-                    ((CredentialItem.Password)item).setValue("x-oauth-basic");
-                    continue;
-                }
-                if (item instanceof CredentialItem.Username) {
-                    ((CredentialItem.Username)item).setValue(token.getToken());
-                }
-            }
-        } else {
-            LOG.error("Token is null");
-            return false;
-        }
-        return true;
+        return null;
     }
 
     @Override
-    public boolean getUser(String url, CredentialItem... items) throws GitException {
-        if (!WSO_2_URL_PATTERN.matcher(url).matches()) {
-            return false;
-        }
-
+    public GitUser getUser() throws GitException {
         OAuthToken token;
         try {
             token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getId());
-        } catch (IOException e) {
-            return false;
-        }
+            if (token != null) {
 
-        if (token == null) {
-            return false;
-        }
+                URL getUserUrL;
+                Map<String, String> params = new HashMap<>();
+                params.put("Authorization", "Bearer " + token.getToken());
+                getUserUrL = new URL(String.format("%s?schema=%s", userUri, SCOPE));
+                JsonValue userValue = doRequest(getUserUrL, params);
+                if (userValue != null) {
 
-        User user;
-        try {
-            user = getUser(token);
-        } catch (OAuthAuthenticationException e) {
-            throw new GitException(e);
-        }
-
-        if (user != null) {
-            for (CredentialItem item : items) {
-                if (item instanceof CredentialItem.AuthenticatedUserName) {
-                    ((CredentialItem.AuthenticatedUserName)item).setValue(user.getName());
-                    continue;
+                    return DtoFactory.getInstance().createDto(GitUser.class)
+                                     .withName(userValue.getElement("http://wso2.org/claims/fullname").getStringValue())
+                                     .withEmail(userValue.getElement("http://wso2.org/claims/emailaddress").getStringValue());
                 }
-                if (item instanceof CredentialItem.AuthenticatedUserEmail) {
-                    ((CredentialItem.AuthenticatedUserEmail)item).setValue(user.getEmail());
-                }
-            }
-        } else {
-            return false;
-        }
 
-        return true;
-    }
-
-    private User getUser(OAuthToken accessToken) throws OAuthAuthenticationException {
-        URL getUserUrL;
-        Map<String, String> params = new HashMap<>();
-        params.put("Authorization", "Bearer " + accessToken.getToken());
-        try {
-            getUserUrL = new URL(String.format("%s?schema=%s", userUri, SCOPE));
-            JsonValue userValue = doRequest(getUserUrL, params);
-            if (userValue != null) {
-                User user = new Wso2User();
-                user.setEmail(userValue.getElement("http://wso2.org/claims/emailaddress").getStringValue());
-                user.setName(userValue.getElement("http://wso2.org/claims/fullname").getStringValue());
-                LOG.info(" Name {} , email {}", user.getName(), user.getEmail());
-                return user;
-            } else {
-                return null;
             }
+
         } catch (JsonParseException | IOException e) {
-            LOG.error(e.getLocalizedMessage(), e);
-            throw new OAuthAuthenticationException(e.getMessage(), e);
+            LOG.warn(e.getLocalizedMessage());
+            LOG.debug(e.getLocalizedMessage(), e);
+            return null;
         }
+
+
+        return null;
     }
+
 
     private JsonValue doRequest(URL tokenInfoUrl, Map<String, String> params) throws IOException, JsonParseException {
         HttpURLConnection http = null;
@@ -179,49 +138,14 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
         }
     }
 
-    private class Wso2User implements User {
-        private String email;
-        private String name;
-
-        @Override
-        public final String getId() {
-            return email;
-        }
-
-        @Override
-        public final void setId(String id) {
-            // JSON response from Google API contains key 'id' but it has different purpose.
-            // Ignore calls of this method. Email address is used as user identifier.
-        }
-
-        @Override
-        public String getEmail() {
-            return email;
-        }
-
-        @Override
-        public void setEmail(String email) {
-            setId(email);
-            this.email = email;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return "Wso2User{" +
-                   "id='" + getId() + '\'' +
-                   ", email='" + email + '\'' +
-                   ", name='" + name + '\'' +
-                   '}';
-        }
+    @Override
+    public String getId() {
+        return OAUTH_PROVIDER_NAME;
     }
+
+    @Override
+    public boolean canProvideCredentials(String url) {
+        return WSO_2_URL_PATTERN.matcher(url).matches();
+    }
+
 }

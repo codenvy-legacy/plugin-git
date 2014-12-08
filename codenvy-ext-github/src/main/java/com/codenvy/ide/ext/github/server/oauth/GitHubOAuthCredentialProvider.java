@@ -15,13 +15,18 @@ import com.codenvy.api.auth.shared.dto.OAuthToken;
 import com.codenvy.commons.env.EnvironmentContext;
 import com.codenvy.commons.json.JsonHelper;
 import com.codenvy.commons.json.JsonParseException;
+import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitException;
-import com.codenvy.ide.ext.git.server.nativegit.CredentialItem;
+import com.codenvy.ide.ext.git.server.nativegit.UserCredential;
 import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
+import com.codenvy.ide.ext.git.shared.GitUser;
 import com.codenvy.ide.security.oauth.server.OAuthAuthenticationException;
 import com.codenvy.ide.security.oauth.shared.User;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -37,6 +42,8 @@ import java.net.URL;
 @Singleton
 public class GitHubOAuthCredentialProvider implements CredentialsProvider {
 
+    private static final Logger LOG = LoggerFactory.getLogger(GitHubOAuthCredentialProvider.class);
+
     private static String OAUTH_PROVIDER_NAME = "github";
     private OAuthTokenProvider tokenProvider;
 
@@ -46,73 +53,46 @@ public class GitHubOAuthCredentialProvider implements CredentialsProvider {
     }
 
     @Override
-    public boolean get(String url, CredentialItem... items) throws GitException {
-        if (!url.contains("github.com")) {
-            return false;
-        }
-
-        OAuthToken token;
+    public UserCredential getUserCredential() throws GitException {
+        //        OAuthToken token;
         try {
-            token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getId());
-        } catch (IOException e) {
-            return false;
-        }
-
-        if (token != null) {
-            for (CredentialItem item : items) {
-                if (item instanceof CredentialItem.Password) {
-                    ((CredentialItem.Password)item).setValue("x-oauth-basic");
-                    continue;
-                }
-                if (item instanceof CredentialItem.Username) {
-                    ((CredentialItem.Username)item).setValue(token.getToken());
-                }
+            OAuthToken token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getId());
+            if (token != null) {
+                return new UserCredential(token.getToken(), token.getToken(), OAUTH_PROVIDER_NAME);
             }
-        } else {
-            return false;
+        } catch (IOException e) {
+            LOG.warn(e.getLocalizedMessage());
         }
-
-        return true;
+        return null;
     }
 
     @Override
-    public boolean getUser(String url, CredentialItem... items) throws GitException {
-        if (!url.contains("github.com")) {
-            return false;
-        }
-
+    public GitUser getUser() throws GitException {
         OAuthToken token;
         try {
             token = tokenProvider.getToken(OAUTH_PROVIDER_NAME, EnvironmentContext.getCurrent().getUser().getId());
-        } catch (IOException e) {
-            return false;
-        }
-        if (token == null) {
-            return false;
-        }
+            if (token != null) {
+                User user = getUser(token);
+                return DtoFactory.getInstance().createDto(GitUser.class)
+                                 .withEmail(user.getEmail())
+                                 .withName(user.getName());
+            }
 
-        User user;
-        try {
-            user = getUser(token);
+        } catch (IOException e) {
         } catch (OAuthAuthenticationException e) {
             throw new GitException(e);
         }
+        return null;
+    }
 
-        if (user != null) {
-            for (CredentialItem item : items) {
-                if (item instanceof CredentialItem.AuthenticatedUserName) {
-                    ((CredentialItem.AuthenticatedUserName)item).setValue(user.getName());
-                    continue;
-                }
-                if (item instanceof CredentialItem.AuthenticatedUserEmail) {
-                    ((CredentialItem.AuthenticatedUserEmail)item).setValue(user.getEmail());
-                }
-            }
-        } else {
-            return false;
-        }
+    @Override
+    public String getId() {
+        return OAUTH_PROVIDER_NAME;
+    }
 
-        return true;
+    @Override
+    public boolean canProvideCredentials(String url) {
+        return url.contains("github.com");
     }
 
     private User getUser(OAuthToken accessToken) throws OAuthAuthenticationException {

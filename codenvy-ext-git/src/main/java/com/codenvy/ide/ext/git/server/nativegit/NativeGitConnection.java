@@ -86,6 +86,7 @@ public class NativeGitConnection implements GitConnection {
 
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
+    private final GitAskPassScript  gitAskPassScript;
     private       GitUser           user;
     private       SshKeysManager    keysManager;
 
@@ -114,7 +115,8 @@ public class NativeGitConnection implements GitConnection {
         this.user = user;
         this.keysManager = keysManager;
         this.credentialsLoader = credentialsLoader;
-        nativeGit = new NativeGit(repository);
+        this.nativeGit = new NativeGit(repository);
+        this.gitAskPassScript = new GitAskPassScript();
     }
 
     @Override
@@ -248,21 +250,47 @@ public class NativeGitConnection implements GitConnection {
             clone.setTimeout(request.getTimeout());
         }
         executeWithCredentials(clone, remoteUri);
+        UserCredential credentials = credentialsLoader.getUserCredential(remoteUri);
+        if (credentials != null) {
+            getConfig().set("codenvy.credentialsProvider", credentials.getProviderId());
+        }
         File repository = clone.getRepository();
         new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
                                            .setNewUrl(remoteUri)
                                            .execute();
-        nativeGit.createConfig().set("user.name", user.getName()).set("user.email", user.getEmail());
     }
 
     @Override
     public Revision commit(CommitRequest request) throws GitException {
         CommitCommand command = nativeGit.createCommitCommand();
-        command.setAuthor(user);
+        GitUser committer = user;
+
+
+        try {
+            String credentialsProvider = getConfig().get("codenvy.credentialsProvider");
+            GitUser providerUser = credentialsLoader.getUser(credentialsProvider);
+            if (providerUser != null) {
+                committer = providerUser;
+            }
+        } catch (GitException e) {
+            //ignore property not found.
+        }
+        command.setCommitter(committer);
+
+        try {
+            // overrider author from .gitconfig. We may set it in previous versions.
+            // We need to override it since committer can differ from the person who clone or init repository.
+            getConfig().get("user.name");
+            command.setAuthor(committer);
+        } catch (GitException e) {
+            //ignore property not found.
+        }
+
+
         command.setAll(request.isAll());
         command.setAmend(request.isAmend());
         command.setMessage(request.getMessage());
-        Revision revision = DtoFactory.getInstance().createDto(Revision.class);
+
         try {
             command.execute();
             LogCommand log = nativeGit.createLogCommand();
@@ -270,10 +298,12 @@ public class NativeGitConnection implements GitConnection {
             rev.setBranch(getCurrentBranch());
             return rev;
         } catch (Exception e) {
+            Revision revision = DtoFactory.getInstance().createDto(Revision.class);
             revision.setMessage(e.getMessage());
             revision.setFake(true);
+            return revision;
         }
-        return revision;
+
     }
 
     @Override
@@ -311,7 +341,6 @@ public class NativeGitConnection implements GitConnection {
         InitCommand initCommand = nativeGit.createInitCommand();
         initCommand.setBare(request.isBare());
         initCommand.execute();
-        nativeGit.createConfig().set("user.name", user.getName()).set("user.email", user.getEmail());
         //make initial commit.
         if (!request.isBare() && request.isInitCommit()) {
             try {
@@ -319,6 +348,7 @@ public class NativeGitConnection implements GitConnection {
                          .setFilePattern(new ArrayList<>(Arrays.asList(".")))
                          .execute();
                 nativeGit.createCommitCommand()
+                         .setCommitter(getUser())
                          .setMessage("init")
                          .execute();
             } catch (GitException ignored) {
@@ -338,18 +368,16 @@ public class NativeGitConnection implements GitConnection {
         if (request.isUseAuthorization()) {
             executeWithCredentials(command, request.getRemoteUrl());
         } else {
-            //create empty credentials
-            CredentialItem.Username username = new CredentialItem.Username();
-            username.setValue("");
-            CredentialItem.Password password = new CredentialItem.Password();
-            password.setValue("");
-            //set up empty credentials
-            command.setAskPassScriptPath(credentialsLoader.createGitAskPassScript(username, password).toString());
-            if (!nativeGit.getRepository().exists()) {
-                nativeGit.getRepository().mkdirs();
-            }
+            try {
+                command.setAskPassScriptPath(gitAskPassScript.build(UserCredential.EMPTY_CREDENTIALS).toString());
+                if (!nativeGit.getRepository().exists()) {
+                    nativeGit.getRepository().mkdirs();
+                }
 
-            command.execute();
+                command.execute();
+            } finally {
+                gitAskPassScript.remove();
+            }
         }
         return command.getRemoteReferences();
     }
@@ -568,13 +596,20 @@ public class NativeGitConnection implements GitConnection {
             try {
                 if (isOperationNeedAuth(e.getMessage())) {
                     //try to search available credentials and execute command with it
-                    command.setAskPassScriptPath(credentialsLoader.findCredentialsAndCreateGitAskPassScript(url).toString());
+                    UserCredential credentials = credentialsLoader.getUserCredential(url);
+                    if (credentials == null) {
+                        credentials = UserCredential.EMPTY_CREDENTIALS;
+                    }
+                    command.setAskPassScriptPath(gitAskPassScript.build(credentials).toString());
+
                     try {
                         //after failed clone, git will remove directory so we need to restore it
                         if (!nativeGit.getRepository().exists()) {
                             nativeGit.getRepository().mkdirs();
                         }
                         command.execute();
+
+
                     } catch (GitException inner) {
                         //if not authorized again make runtime exception
                         if (isOperationNeedAuth(inner.getMessage())) {
@@ -587,7 +622,7 @@ public class NativeGitConnection implements GitConnection {
                     throw e;
                 }
             } finally {
-                credentialsLoader.removeAskPassScript();
+                gitAskPassScript.remove();
             }
         }
     }

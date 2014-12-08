@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Commit changes
@@ -32,6 +34,7 @@ public class CommitCommand extends GitCommand<Void> {
 
     private String  message;
     private GitUser author;
+    private GitUser committer;
     private boolean amend;
     private boolean all;
 
@@ -66,9 +69,23 @@ public class CommitCommand extends GitCommand<Void> {
                 commandLine.add("-m", message);
             }
         }
+        if (committer != null) {
+            Map<String, String> environment = new HashMap<>();
+            environment.put("GIT_COMMITTER_NAME", committer.getName());
+            environment.put("GIT_COMMITTER_EMAIL", committer.getEmail());
+            setCommandEnvironment(environment);
+        } else {
+            throw new GitException("Committer can't be null");
+        }
+
+
         if (author != null) {
             commandLine.add(String.format("--author=%s \\<%s>", author.getName(), author.getEmail()));
+        } else {
+            commandLine.add(String.format("--author=%s \\<%s>", committer.getName(), committer.getEmail()));
         }
+
+
         start();
         if (commitMsgFile != null) {
             try {
@@ -117,6 +134,16 @@ public class CommitCommand extends GitCommand<Void> {
      */
     public CommitCommand setAuthor(GitUser author) {
         this.author = author;
+        return this;
+    }
+
+    /**
+     * @param committer
+     *         committer of commit
+     * @return CommitCommand with established committer
+     */
+    public CommitCommand setCommitter(GitUser committer) {
+        this.committer = committer;
         return this;
     }
 }

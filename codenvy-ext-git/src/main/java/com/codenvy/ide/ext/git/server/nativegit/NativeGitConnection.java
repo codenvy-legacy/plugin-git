@@ -255,7 +255,8 @@ public class NativeGitConnection implements GitConnection {
             getConfig().set("codenvy.credentialsProvider", credentials.getProviderId());
         }
         File repository = clone.getRepository();
-        new RemoteUpdateCommand(repository).setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
+        new RemoteUpdateCommand(repository).setRemoteName(
+                request.getRemoteName() == null ? "origin" : request.getRemoteName())
                                            .setNewUrl(remoteUri)
                                            .execute();
     }
@@ -263,7 +264,7 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public Revision commit(CommitRequest request) throws GitException {
         CommitCommand command = nativeGit.createCommitCommand();
-        GitUser committer = getCommitter();
+        GitUser committer = getLocalCommitter();
         command.setCommitter(committer);
 
         try {
@@ -376,7 +377,7 @@ public class NativeGitConnection implements GitConnection {
         if (getBranchRef(request.getCommit()) == null) {
             throw new GitException("Invalid reference to commit for merge " + request.getCommit());
         }
-        return nativeGit.createMergeCommand().setCommit(request.getCommit()).setCommitter(getCommitter()).execute();
+        return nativeGit.createMergeCommand().setCommit(request.getCommit()).setCommitter(getLocalCommitter()).execute();
     }
 
     @Override
@@ -407,7 +408,7 @@ public class NativeGitConnection implements GitConnection {
         }
         pullCommand.setRemote(remoteUri);
         pullCommand.setRefSpec(request.getRefSpec())
-                   .setCommitter(getCommitter())
+                   .setCommitter(getLocalCommitter())
                    .setTimeout(request.getTimeout());
 
         executeWithCredentials(pullCommand, remoteUri);
@@ -659,7 +660,7 @@ public class NativeGitConnection implements GitConnection {
         return branchRef.substring(remoteStartIndex, remoteEndIndex);
     }
 
-    private GitUser getCommitter() {
+    private GitUser getLocalCommitter() {
         GitUser committer = user;
         try {
             String credentialsProvider = getConfig().get("codenvy.credentialsProvider");

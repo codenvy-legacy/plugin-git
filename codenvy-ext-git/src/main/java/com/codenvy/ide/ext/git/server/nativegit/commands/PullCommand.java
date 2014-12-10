@@ -11,8 +11,11 @@
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
 import com.codenvy.ide.ext.git.server.GitException;
+import com.codenvy.ide.ext.git.shared.GitUser;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Fetch from and merge with another repository
@@ -23,6 +26,7 @@ public class PullCommand extends GitCommand<Void> {
 
     private String remote;
     private String refSpec;
+    private GitUser committer;
 
     public PullCommand(File repository) {
         super(repository);
@@ -39,6 +43,14 @@ public class PullCommand extends GitCommand<Void> {
         }
         if (refSpec != null) {
             commandLine.add(refSpec);
+        }
+        if (committer != null) {
+            Map<String, String> environment = new HashMap<>();
+            environment.put("GIT_COMMITTER_NAME", committer.getName());
+            environment.put("GIT_COMMITTER_EMAIL", committer.getEmail());
+            setCommandEnvironment(environment);
+        } else {
+            throw new GitException("Committer can't be null");
         }
         start();
         return null;
@@ -61,6 +73,16 @@ public class PullCommand extends GitCommand<Void> {
      */
     public PullCommand setRefSpec(String refSpec) {
         this.refSpec = refSpec;
+        return this;
+    }
+
+    /**
+     * @param committer
+     *         committer of commit
+     * @return CommitCommand with established committer
+     */
+    public PullCommand setCommitter(GitUser committer) {
+        this.committer = committer;
         return this;
     }
 }

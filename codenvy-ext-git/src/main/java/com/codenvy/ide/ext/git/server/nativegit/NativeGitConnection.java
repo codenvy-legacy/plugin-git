@@ -263,18 +263,7 @@ public class NativeGitConnection implements GitConnection {
     @Override
     public Revision commit(CommitRequest request) throws GitException {
         CommitCommand command = nativeGit.createCommitCommand();
-        GitUser committer = user;
-
-
-        try {
-            String credentialsProvider = getConfig().get("codenvy.credentialsProvider");
-            GitUser providerUser = credentialsLoader.getUser(credentialsProvider);
-            if (providerUser != null) {
-                committer = providerUser;
-            }
-        } catch (GitException e) {
-            //ignore property not found.
-        }
+        GitUser committer = getCommitter();
         command.setCommitter(committer);
 
         try {
@@ -387,7 +376,7 @@ public class NativeGitConnection implements GitConnection {
         if (getBranchRef(request.getCommit()) == null) {
             throw new GitException("Invalid reference to commit for merge " + request.getCommit());
         }
-        return nativeGit.createMergeCommand().setCommit(request.getCommit()).execute();
+        return nativeGit.createMergeCommand().setCommit(request.getCommit()).setCommitter(getCommitter()).execute();
     }
 
     @Override
@@ -418,7 +407,9 @@ public class NativeGitConnection implements GitConnection {
         }
         pullCommand.setRemote(remoteUri);
         pullCommand.setRefSpec(request.getRefSpec())
+                   .setCommitter(getCommitter())
                    .setTimeout(request.getTimeout());
+
         executeWithCredentials(pullCommand, remoteUri);
         if (pullCommand.getText().toLowerCase().contains("already up-to-date")) {
             throw new AlreadyUpToDateException("Already up-to-date");
@@ -666,6 +657,20 @@ public class NativeGitConnection implements GitConnection {
         int remoteStartIndex = "refs/remotes/".length();
         int remoteEndIndex = branchRef.indexOf("/", remoteStartIndex);
         return branchRef.substring(remoteStartIndex, remoteEndIndex);
+    }
+
+    private GitUser getCommitter() {
+        GitUser committer = user;
+        try {
+            String credentialsProvider = getConfig().get("codenvy.credentialsProvider");
+            GitUser providerUser = credentialsLoader.getUser(credentialsProvider);
+            if (providerUser != null) {
+                committer = providerUser;
+            }
+        } catch (GitException e) {
+            //ignore property not found.
+        }
+        return committer;
     }
 
     @Override

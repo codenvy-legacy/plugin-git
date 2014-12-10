@@ -12,13 +12,16 @@ package com.codenvy.ide.ext.git.server.nativegit.commands;
 
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitMergeResult;
+import com.codenvy.ide.ext.git.shared.GitUser;
 import com.codenvy.ide.ext.git.shared.MergeResult;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Join two development histories together
@@ -27,7 +30,8 @@ import java.util.List;
  */
 public class MergeCommand extends GitCommand<MergeResult> {
 
-    private String commit;
+    private String  commit;
+    private GitUser committer;
 
     public MergeCommand(File repository) {
         super(repository);
@@ -48,6 +52,16 @@ public class MergeCommand extends GitCommand<MergeResult> {
         mergedCommits.add(new LogCommand(getRepository()).setCount(1).execute().get(0).getId());
         mergedCommits.add(new LogCommand(getRepository()).setBranch(commit).setCount(1).execute().get(0).getId());
         mergeResult.setMergedCommits(mergedCommits);
+
+        if (committer != null) {
+            Map<String, String> environment = new HashMap<>();
+            environment.put("GIT_COMMITTER_NAME", committer.getName());
+            environment.put("GIT_COMMITTER_EMAIL", committer.getEmail());
+            setCommandEnvironment(environment);
+        } else {
+            throw new GitException("Committer can't be null");
+        }
+
         try {
             start();
             // if not failed and not conflict
@@ -105,6 +119,16 @@ public class MergeCommand extends GitCommand<MergeResult> {
      */
     public MergeCommand setCommit(String commit) {
         this.commit = commit;
+        return this;
+    }
+
+    /**
+     * @param committer
+     *         committer of commit
+     * @return CommitCommand with established committer
+     */
+    public MergeCommand setCommitter(GitUser committer) {
+        this.committer = committer;
         return this;
     }
 }

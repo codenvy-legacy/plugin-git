@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.client.projectimporter.importerpage;
+package com.codenvy.ide.ext.git.client.importer.page;
 
 import com.codenvy.api.project.shared.dto.ProjectImporterDescriptor;
 import com.codenvy.ide.api.projecttype.wizard.ImportProjectWizard;
@@ -16,8 +16,8 @@ import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
 import com.codenvy.ide.api.wizard.Wizard;
 import com.codenvy.ide.api.wizard.WizardContext;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.ext.git.client.projectImporter.importerpage.GitImporterPagePresenter;
-import com.codenvy.ide.ext.git.client.projectImporter.importerpage.GitImporterPageView;
+import com.codenvy.ide.ext.git.client.importer.page.GitImporterPagePresenter;
+import com.codenvy.ide.ext.git.client.importer.page.GitImporterPageView;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import org.junit.Before;

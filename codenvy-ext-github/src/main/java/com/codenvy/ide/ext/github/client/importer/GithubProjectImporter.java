@@ -8,10 +8,10 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.github.client.projectimporter;
+package com.codenvy.ide.ext.github.client.importer;
 
 import com.codenvy.api.project.gwt.client.ProjectServiceClient;
-import com.codenvy.ide.ext.git.client.projectImporter.GitProjectImporter;
+import com.codenvy.ide.ext.git.client.importer.GitProjectImporter;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.google.inject.Inject;
 

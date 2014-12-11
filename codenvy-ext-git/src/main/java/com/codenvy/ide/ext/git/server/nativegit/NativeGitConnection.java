@@ -408,7 +408,7 @@ public class NativeGitConnection implements GitConnection {
         }
         pullCommand.setRemote(remoteUri);
         pullCommand.setRefSpec(request.getRefSpec())
-                   .setCommitter(getLocalCommitter())
+                   .setAuthor(getLocalCommitter())
                    .setTimeout(request.getTimeout());
 
         executeWithCredentials(pullCommand, remoteUri);

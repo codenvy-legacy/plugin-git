@@ -15,7 +15,7 @@
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
     <ui:with field='locale' type='com.codenvy.ide.ext.github.client.GitHubLocalizationConstant'/>
     <ui:with field='resources' type='com.codenvy.ide.ext.github.client.GitHubResources'/>
-    <ui:with field="style" type="com.codenvy.ide.ext.github.client.projectimporter.importerpage.GithubImporterPageViewImpl.GithubStyle"/>
+    <ui:with field="style" type="com.codenvy.ide.ext.github.client.importer.page.GithubImporterPageViewImpl.GithubStyle"/>
     <g:DockLayoutPanel unit="PX" addStyleNames="{style.mainPanel}">
         <g:north size="240">
             <g:FlowPanel ui:field="importerPanel">

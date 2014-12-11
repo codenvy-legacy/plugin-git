@@ -8,7 +8,7 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.github.client.projectimporter.importerpage;
+package com.codenvy.ide.ext.github.client.importer.page;
 
 import com.codenvy.ide.Resources;
 import com.codenvy.ide.collections.Array;

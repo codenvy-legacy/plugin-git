@@ -13,7 +13,7 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
              xmlns:g='urn:import:com.google.gwt.user.client.ui'>
     <ui:with field='locale' type='com.codenvy.ide.ext.git.client.GitLocalizationConstant'/>
-    <ui:with field="style" type="com.codenvy.ide.ext.git.client.projectImporter.importerpage.GitImporterPageViewImpl.Style"/>
+    <ui:with field="style" type="com.codenvy.ide.ext.git.client.importer.page.GitImporterPageViewImpl.Style"/>
     <g:DockLayoutPanel unit="PX" addStyleNames="{style.mainPanel}">
         <g:north size="240">
             <g:FlowPanel ui:field="importerPanel">

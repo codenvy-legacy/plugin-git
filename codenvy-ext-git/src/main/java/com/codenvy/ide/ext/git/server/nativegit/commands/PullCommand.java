@@ -24,9 +24,9 @@ import java.util.Map;
  */
 public class PullCommand extends GitCommand<Void> {
 
-    private String remote;
-    private String refSpec;
-    private GitUser committer;
+    private String  remote;
+    private String  refSpec;
+    private GitUser author;
 
     public PullCommand(File repository) {
         super(repository);
@@ -44,13 +44,11 @@ public class PullCommand extends GitCommand<Void> {
         if (refSpec != null) {
             commandLine.add(refSpec);
         }
-        if (committer != null) {
+        if (author != null) {
             Map<String, String> environment = new HashMap<>();
-            environment.put("GIT_COMMITTER_NAME", committer.getName());
-            environment.put("GIT_COMMITTER_EMAIL", committer.getEmail());
+            environment.put("GIT_AUTHOR_NAME", author.getName());
+            environment.put("GIT_AUTHOR_EMAIL", author.getEmail());
             setCommandEnvironment(environment);
-        } else {
-            throw new GitException("Committer can't be null");
         }
         start();
         return null;
@@ -77,12 +75,12 @@ public class PullCommand extends GitCommand<Void> {
     }
 
     /**
-     * @param committer
-     *         committer of commit
-     * @return CommitCommand with established committer
+     * @param author
+     *         author of command
+     * @return PullCommand with established author
      */
-    public PullCommand setCommitter(GitUser committer) {
-        this.committer = committer;
+    public PullCommand setAuthor(GitUser author) {
+        this.author = author;
         return this;
     }
 }

@@ -48,6 +48,8 @@ public class PullCommand extends GitCommand<Void> {
             Map<String, String> environment = new HashMap<>();
             environment.put("GIT_AUTHOR_NAME", author.getName());
             environment.put("GIT_AUTHOR_EMAIL", author.getEmail());
+            environment.put("GIT_COMMITTER_NAME", author.getName());
+            environment.put("GIT_COMMITTER_EMAIL", author.getEmail());
             setCommandEnvironment(environment);
         }
         start();

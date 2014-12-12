@@ -20,7 +20,7 @@
     </parent>
     <groupId>com.codenvy.ide</groupId>
     <artifactId>codenvy-plugin-git-parent</artifactId>
-    <version>1.6.1</version>
+    <version>1.6.2-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Codenvy :: Plugin Git Parent</name>
     <modules>
@@ -33,7 +33,7 @@
     <scm>
         <connection>scm:git:git@github.com:codenvy/plugin-git.git</connection>
         <developerConnection>scm:git:git@github.com:codenvy/plugin-git.git</developerConnection>
-        <tag>1.6.1</tag>
+        <tag>1.6.0</tag>
     </scm>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>

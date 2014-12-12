@@ -168,46 +168,38 @@ public class NativeGitConnection implements GitConnection {
 
     @Override
     public void branchDelete(BranchDeleteRequest request) throws GitException, UnauthorizedException {
-        String remoteName = null;
         String branchName = getBranchRef(request.getName());
+        String remoteName = null;
+        BranchDeleteCommand branchDeleteCommand = null;
 
         if (branchName.startsWith("refs/remotes/")) {
             remoteName = parseRemoteName(branchName);
-        }
 
-        //convert ref name to displayed name
-        if (branchName.startsWith("refs/")) {
-            branchName = parseBranchName(branchName);
+            String remoteUri;
+            try {
+                remoteUri = nativeGit.createRemoteListCommand()
+                        .setRemoteName(remoteName)
+                        .execute()
+                        .get(0)
+                        .getUrl();
+            } catch (GitException ignored) {
+                remoteUri = remoteName;
+            }
+            if (Util.isSSH(remoteUri)) {
+                branchDeleteCommand = nativeGit.createBranchDeleteCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
+            }
         }
+        branchName = parseBranchName(branchName);
 
-        String remoteUri;
-        try {
-            remoteUri = nativeGit.createRemoteListCommand()
-                                 .setRemoteName(remoteName)
-                                 .execute()
-                                 .get(0)
-                                 .getUrl();
-        } catch (GitException ignored) {
-            remoteUri = remoteName;
-        }
-        BranchDeleteCommand branchDeleteCommand;
-        if (Util.isSSH(remoteUri)) {
-            branchDeleteCommand = nativeGit.createBranchDeleteCommand(keysManager.writeKeyFile(remoteUri).getAbsolutePath());
-        } else {
+        if (branchDeleteCommand == null) {
             branchDeleteCommand = nativeGit.createBranchDeleteCommand();
         }
 
-        branchDeleteCommand.setBranchName(branchName)
-                           .setRemote(remoteName)
-                           .setDeleteFullyMerged(request.isForce());
+        branchDeleteCommand.setBranchName(branchName);
+        branchDeleteCommand.setRemote(remoteName);
+        branchDeleteCommand.setDeleteFullyMerged(request.isForce());
 
-        if (remoteName != null) {
-            //remove remote branch
-            executeWithCredentials(branchDeleteCommand, remoteName);
-        } else {
-            //remove local branch
-            branchDeleteCommand.execute();
-        }
+        executeWithCredentials(branchDeleteCommand, remoteName);
     }
 
     @Override
@@ -634,7 +626,7 @@ public class NativeGitConnection implements GitConnection {
      *         when it is not possible to get branchName ref
      */
     private String getBranchRef(String branchName) throws GitException {
-        EmptyGitCommand command = new EmptyGitCommand(nativeGit.getRepository());
+        EmptyGitCommand command = nativeGit.createEmptyGitCommand();
         command.setNextParameter("show-ref").setNextParameter(branchName).execute();
         final String output = command.getText();
         if (output.length() > 0) {

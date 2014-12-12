@@ -22,6 +22,7 @@ import com.codenvy.ide.ext.git.server.nativegit.commands.BranchRenameCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.CloneCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.CommitCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.DiffCommand;
+import com.codenvy.ide.ext.git.server.nativegit.commands.EmptyGitCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.FetchCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.InitCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.ListFilesCommand;
@@ -94,6 +95,11 @@ public class NativeGit {
      */
     public NativeGit(File repository) {
         this.repository = repository;
+    }
+
+    /** @return empty git command */
+    public EmptyGitCommand createEmptyGitCommand() {
+        return new EmptyGitCommand(repository);
     }
 
     /**

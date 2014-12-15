@@ -20,7 +20,7 @@
     </parent>
     <artifactId>codenvy-ext-github</artifactId>
     <packaging>jar</packaging>
-    <name>Codenvy Extension :: GitHub</name>
+    <name>Codenvy :: Plugin Git :: Github</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>

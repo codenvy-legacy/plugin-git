@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.github.client.importer.page;
 import com.codenvy.ide.api.mvp.View;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.github.client.load.ProjectData;
-import com.codenvy.ide.security.oauth.OAuthCallback;
+import com.codenvy.security.oauth.OAuthCallback;
 import com.google.inject.ImplementedBy;
 
 import javax.annotation.Nonnull;

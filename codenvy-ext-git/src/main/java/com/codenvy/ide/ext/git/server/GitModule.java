@@ -13,9 +13,7 @@ package com.codenvy.ide.ext.git.server;
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.ide.ext.git.server.commons.GitRepositoryPrivacyChecker;
-import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
-import com.codenvy.ide.ext.git.server.nativegit.WSO2OAuthCredentialsProvider;
 import com.codenvy.ide.ext.git.server.rest.BranchListWriter;
 import com.codenvy.ide.ext.git.server.rest.CommitMessageWriter;
 import com.codenvy.ide.ext.git.server.rest.GitService;
@@ -38,7 +36,6 @@ public class GitModule extends AbstractModule {
     /** {@inheritDoc} */
     @Override
     protected void configure() {
-        Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(WSO2OAuthCredentialsProvider.class);
         Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
         bind(GitConfigurationChecker.class).asEagerSingleton();

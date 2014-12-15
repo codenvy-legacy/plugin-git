@@ -15,19 +15,20 @@ import com.codenvy.ide.api.notification.NotificationManager;
 import com.codenvy.ide.commons.exception.UnauthorizedException;
 import com.codenvy.ide.ext.ssh.client.SshKeyProvider;
 import com.codenvy.ide.rest.AsyncRequestCallback;
-import com.codenvy.ide.security.oauth.JsOAuthWindow;
-import com.codenvy.ide.security.oauth.OAuthCallback;
-import com.codenvy.ide.security.oauth.OAuthStatus;
+
 import com.codenvy.ide.ui.dialogs.ConfirmCallback;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.Config;
+import com.codenvy.security.oauth.JsOAuthWindow;
+import com.codenvy.security.oauth.OAuthCallback;
+import com.codenvy.security.oauth.OAuthStatus;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import static com.codenvy.ide.security.oauth.OAuthStatus.LOGGED_IN;
+import static com.codenvy.security.oauth.OAuthStatus.LOGGED_IN;
 
 /**
  * Provides SSH keys for github.com and deploys it.

@@ -15,9 +15,10 @@ import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.ext.github.client.GitHubLocalizationConstant;
 import com.codenvy.ide.ext.github.client.GitHubResources;
 import com.codenvy.ide.ext.github.client.load.ProjectData;
-import com.codenvy.ide.security.oauth.JsOAuthWindow;
-import com.codenvy.ide.security.oauth.OAuthCallback;
+
 import com.codenvy.ide.ui.Styles;
+import com.codenvy.security.oauth.JsOAuthWindow;
+import com.codenvy.security.oauth.OAuthCallback;
 import com.google.gwt.cell.client.ImageResourceCell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.dom.client.Style;
@@ -66,31 +67,31 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     private ActionDelegate delegate;
 
     @UiField(provided = true)
-    GithubStyle style;
+    GithubStyle            style;
     @UiField
-    Label                   labelUrlError;
+    Label                  labelUrlError;
     @UiField
-    HTMLPanel               descriptionArea;
+    HTMLPanel              descriptionArea;
     @UiField
-    TextBox                 projectName;
+    TextBox                projectName;
     @UiField
-    TextArea                projectDescription;
+    TextArea               projectDescription;
     @UiField
-    RadioButton             projectPrivate;
+    RadioButton            projectPrivate;
     @UiField
-    RadioButton             projectPublic;
+    RadioButton            projectPublic;
     @UiField
-    TextBox                 projectUrl;
+    TextBox                projectUrl;
     @UiField
-    FlowPanel               bottomPanel;
+    FlowPanel              bottomPanel;
     @UiField
-    DockLayoutPanel         githubPanel;
+    DockLayoutPanel        githubPanel;
     @UiField
-    Button                  loadRepo;
+    Button                 loadRepo;
     @UiField
-    ListBox                 accountName;
+    ListBox                accountName;
     @UiField(provided = true)
-    CellTable<ProjectData>  repositories;
+    CellTable<ProjectData> repositories;
     @UiField(provided = true)
     final GitHubResources            resources;
     @UiField(provided = true)

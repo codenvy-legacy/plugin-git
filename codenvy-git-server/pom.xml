@@ -20,7 +20,7 @@
     </parent>
     <artifactId>codenvy-git-server</artifactId>
     <packaging>war</packaging>
-    <name>Codenvy :: GIT Server</name>
+    <name>Codenvy :: Plugin Git :: Git server</name>
     <dependencies>
         <dependency>
             <groupId>com.codenvy.platform-api</groupId>

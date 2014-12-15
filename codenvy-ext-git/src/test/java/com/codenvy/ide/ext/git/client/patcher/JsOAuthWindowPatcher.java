@@ -10,7 +10,8 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.patcher;
 
-import com.codenvy.ide.security.oauth.JsOAuthWindow;
+
+import com.codenvy.security.oauth.JsOAuthWindow;
 import com.googlecode.gwt.test.patchers.PatchClass;
 import com.googlecode.gwt.test.patchers.PatchMethod;
 

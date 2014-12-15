@@ -20,7 +20,7 @@
     </parent>
     <artifactId>codenvy-ext-git</artifactId>
     <packaging>jar</packaging>
-    <name>Codenvy Extension :: Git</name>
+    <name>Codenvy :: Plugin Git :: Extension</name>
     <properties>
         <dto-generator-out-directory>${project.build.directory}/generated-sources/dto/</dto-generator-out-directory>
     </properties>
@@ -65,11 +65,6 @@
                     <groupId>javassist</groupId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.ide</groupId>
-            <artifactId>codenvy-ide-security</artifactId>
-            <version>${codenvy.ide.version}</version>
         </dependency>
         <dependency>
             <groupId>com.codenvy.ide</groupId>
@@ -127,6 +122,11 @@
                     <groupId>javassist</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.security</groupId>
+            <artifactId>codenvy-security-oauth2-gwt-client</artifactId>
+            <version>${codenvy.security.version}</version>
         </dependency>
         <dependency>
             <groupId>com.codenvy.vfs</groupId>

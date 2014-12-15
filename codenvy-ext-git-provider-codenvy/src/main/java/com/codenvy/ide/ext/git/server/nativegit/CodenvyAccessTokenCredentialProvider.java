@@ -17,12 +17,11 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
 import com.codenvy.api.core.rest.HttpJsonHelper;
 import com.codenvy.api.core.rest.shared.dto.Link;
-import com.codenvy.api.user.server.dao.Profile;
+import com.codenvy.api.user.shared.dto.ProfileDescriptor;
 import com.codenvy.commons.env.EnvironmentContext;
+import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitException;
-import com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider;
-import com.codenvy.ide.ext.git.server.nativegit.UserCredential;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
 import org.slf4j.Logger;
@@ -66,20 +65,31 @@ public class CodenvyAccessTokenCredentialProvider implements CredentialsProvider
     @Override
     public GitUser getUser() throws GitException {
         try {
-            Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("GET")
-                                  .withHref(UriBuilder.fromUri(apiEndpoint).path("profile").build().toString());
-            final Profile profile = HttpJsonHelper.request(Profile.class, link);
+
+            User user = EnvironmentContext.getCurrent().getUser();
+            if (user.isTemporary()) {
+                return DtoFactory.getInstance().createDto(GitUser.class)
+                                 .withEmail("anonymous@noemail.com")
+                                 .withName("Anonymous");
+            } else {
+
+                Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("GET")
+                                      .withHref(UriBuilder.fromUri(apiEndpoint).path("profile").build().toString());
+                final ProfileDescriptor profile = HttpJsonHelper.request(ProfileDescriptor.class, link);
 
 
-            String name = profile.getAttributes().get("firstName");
-            String lastName = profile.getAttributes().get("lastName");
+                String name = profile.getAttributes().get("firstName");
+                String lastName = profile.getAttributes().get("lastName");
+                String email = profile.getAttributes().get("email");
 
-            if (null != lastName) {
-                name = null != name ? name + " " + lastName : lastName;
+                if (null != lastName) {
+                    name = name + " " + lastName;
+                }
+
+                return DtoFactory.getInstance().createDto(GitUser.class)
+                                 .withEmail(email != null ? email : "anonymous@noemail.com")
+                                 .withName(name != null ? name : "Anonymous");
             }
-            return DtoFactory.getInstance().createDto(GitUser.class)
-                             .withEmail(profile.getAttributes().get("email"))
-                             .withName(name);
 
         } catch (IOException | ServerException | UnauthorizedException | ForbiddenException | NotFoundException | ConflictException e) {
             LOG.warn(e.getLocalizedMessage());

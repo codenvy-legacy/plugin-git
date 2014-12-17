@@ -201,6 +201,22 @@ public class GitHub {
         return gitHubRepositoryList;
     }
 
+    /**
+     * Get the list of forks for a given repository.
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepositoryList} list of GitHub repositories
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
     public GitHubRepositoryList getForks(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
@@ -212,6 +228,22 @@ public class GitHub {
         return gitHubRepositoryList;
     }
 
+    /**
+     * Fork a given repository.
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepository} GitHub repository to be created by forking
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
     public GitHubRepository fork(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;

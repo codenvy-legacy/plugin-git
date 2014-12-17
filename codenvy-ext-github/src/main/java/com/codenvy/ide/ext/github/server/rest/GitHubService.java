@@ -95,6 +95,22 @@ public class GitHubService {
         return github.listCurrentUserRepositories();
     }
 
+    /**
+     * Get list of forks for given repository
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepository} GitHub repository to be created by forking
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
     @Path("forks/{user}/{repository}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -103,6 +119,22 @@ public class GitHubService {
         return github.getForks(user, repository);
     }
 
+    /**
+     * Fork a given repository.
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepository} GitHub repository to be created by forking
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
     @Path("createfork/{user}/{repository}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

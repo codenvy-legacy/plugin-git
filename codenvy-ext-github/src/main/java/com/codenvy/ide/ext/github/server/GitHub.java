@@ -201,6 +201,26 @@ public class GitHub {
         return gitHubRepositoryList;
     }
 
+    public GitHubRepositoryList getForks(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
+        final String oauthToken = getToken(getUserId());
+        final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
+        final String method = "GET";
+        GitHubRepositoryList gitHubRepositoryList = DtoFactory.getInstance().createDto(GitHubRepositoryList.class);
+        final String response = doJsonRequest(url, method, 200, gitHubRepositoryList);
+        GitHubRepository[] repositories = parseJsonResponse(response, GitHubRepository[].class, null);
+        gitHubRepositoryList.setRepositories(Arrays.asList(repositories));
+        return gitHubRepositoryList;
+    }
+
+    public GitHubRepository fork(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
+        final String oauthToken = getToken(getUserId());
+        final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
+        final String method = "POST";
+        final String response = doJsonRequest(url, method, 202, null, null);
+        GitHubRepository forkedRepository = parseJsonResponse(response, GitHubRepository.class, null);
+        return forkedRepository;
+    }
+
     /**
      * Get the Map which contains available repositories in format Map<Organization name, List<Available repositories>>.
      *

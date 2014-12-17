@@ -36,6 +36,26 @@ public interface GitHubClientService {
     public abstract void getRepositoriesList(@Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
 
     /**
+     * Get the list of forks for given repository
+     *
+     * @param user
+     * @param repository
+     * @param callback
+     */
+    public abstract void getForks(@Nonnull String user, @Nonnull String repository,
+                                  @Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
+
+    /**
+     * Get the list of forks for given repository
+     *
+     * @param user
+     * @param repository
+     * @param callback
+     */
+    public abstract void fork(@Nonnull String user, @Nonnull String repository,
+                                  @Nonnull AsyncRequestCallback<GitHubRepository> callback);
+
+    /**
      * Get the list of available public repositories from GitHub user.
      *
      * @param userName

@@ -45,6 +45,8 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     private static final String TOKEN         = "/token";
     private static final String USER          = "/user";
     private static final String SSH_GEN       = "/ssh/generate";
+    private static final String FORKS         = "/forks";
+    private static final String CREATE_FORK   = "/createfork";
     /** REST service context. */
     private final String              baseUrl;
     /** Loader to be displayed. */
@@ -64,6 +66,20 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     @Override
     public void getRepositoriesList(AsyncRequestCallback<GitHubRepositoryList> callback) {
         String url = baseUrl + LIST;
+        asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void getForks(@Nonnull String user, @Nonnull String repository,
+                                  @Nonnull AsyncRequestCallback<GitHubRepositoryList> callback) {
+        String url = baseUrl + FORKS + "/" + user + "/" + repository;
+        asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
+    }
+
+    @Override
+    public void fork(@Nonnull String user, @Nonnull String repository, @Nonnull AsyncRequestCallback<GitHubRepository> callback) {
+        String url = baseUrl + CREATE_FORK + "/" + user + "/" + repository;
         asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
     }
 

@@ -18,7 +18,7 @@ import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.projecttree.generic.FileNode;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.commons.exception.ExceptionThrownEvent;
@@ -198,7 +198,7 @@ public class MergePresenter implements MergeView.ActionDelegate {
     private void refreshProject(final List<EditorPartPresenter> openedEditors) {
         eventBus.fireEvent(new RefreshProjectTreeEvent());
         for (EditorPartPresenter partPresenter : openedEditors) {
-            final FileNode file = partPresenter.getEditorInput().getFile();
+            final VirtualFile file = partPresenter.getEditorInput().getFile();
             eventBus.fireEvent(new FileEvent(file, FileEvent.FileOperation.CLOSE));
         }
     }

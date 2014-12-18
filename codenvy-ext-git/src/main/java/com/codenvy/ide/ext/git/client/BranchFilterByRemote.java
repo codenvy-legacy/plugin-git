@@ -40,6 +40,7 @@ public class BranchFilterByRemote {
      * @return simple name of branch
      */
     public String getBranchNameWithoutRefs(Branch branch) {
-        return branch.getName().replaceFirst(refsForRemoteRepository, "");
+        return branch.getName().replaceFirst(refsForRemoteRepository, "")
+                     .replaceFirst("refs/heads/", "");
     }
 }

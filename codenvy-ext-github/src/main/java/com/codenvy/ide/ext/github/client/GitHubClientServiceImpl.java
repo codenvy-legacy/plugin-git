@@ -49,7 +49,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     private static final String       SSH_GEN             = "/ssh/generate";
     private static final String       FORKS               = "/forks";
     private static final String       CREATE_FORK         = "/createfork";
-    private static final String       CREATE_PULL_REQUEST = "/createpullrequest";
+    private static final String       PULL_REQUEST = "/pullrequest";
     /** REST service context. */
     private final String              baseUrl;
     /** Loader to be displayed. */
@@ -91,7 +91,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     @Override
     public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestInput input,
                                   @Nonnull AsyncRequestCallback<GitHubPullRequest> callback) {
-        String url = baseUrl + CREATE_PULL_REQUEST + "/" + user + "/" + repository;
+        String url = baseUrl + PULL_REQUEST + "/" + user + "/" + repository;
         asyncRequestFactory.createPostRequest(url, input).loader(loader).send(callback);
     }
 

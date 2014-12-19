@@ -113,7 +113,7 @@ public class GitHubService {
         return github.fork(user, repository);
     }
 
-    @Path("createpullrequest/{user}/{repository}")
+    @Path("pullrequest/{user}/{repository}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public GitHubPullRequest createPullRequest(@PathParam("user") String user, @PathParam("repository") String repository, GitHubPullRequestInput input)

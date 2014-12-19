@@ -248,7 +248,7 @@ public class GitHub {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
         final String method = "POST";
-        final String response = doJsonRequest(url, method, 202, null, null);
+        final String response = doJsonRequest(url, method, 202);
         GitHubRepository forkedRepository = parseJsonResponse(response, GitHubRepository.class, null);
         return forkedRepository;
     }

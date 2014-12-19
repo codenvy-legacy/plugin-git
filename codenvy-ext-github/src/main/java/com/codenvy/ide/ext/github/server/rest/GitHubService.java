@@ -17,6 +17,8 @@ import com.codenvy.ide.ext.github.server.GitHub;
 import com.codenvy.ide.ext.github.server.GitHubException;
 import com.codenvy.ide.ext.github.server.GitHubKeyUploader;
 import com.codenvy.ide.ext.github.shared.Collaborators;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -109,6 +111,14 @@ public class GitHubService {
     public GitHubRepository fork(@PathParam("user") String user, @PathParam("repository") String repository)
             throws IOException, GitHubException, ParsingResponseException {
         return github.fork(user, repository);
+    }
+
+    @Path("createpullrequest/{user}/{repository}")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public GitHubPullRequest createPullRequest(@PathParam("user") String user, @PathParam("repository") String repository, GitHubPullRequestInput input)
+            throws IOException, GitHubException, ParsingResponseException {
+        return github.createPullRequest(user, repository, input);
     }
 
     @Path("list/available")

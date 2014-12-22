@@ -18,6 +18,7 @@ import com.codenvy.ide.api.event.FileEvent;
 import com.codenvy.ide.api.event.RefreshProjectTreeEvent;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
+import com.codenvy.ide.api.projecttree.VirtualFile;
 import com.codenvy.ide.api.projecttree.generic.FileNode;
 import com.codenvy.ide.api.projecttree.generic.FolderNode;
 import com.codenvy.ide.api.projecttree.generic.StorableNode;
@@ -158,7 +159,7 @@ public class RemoveFromIndexPresenter implements RemoveFromIndexView.ActionDeleg
         if (selection.getFirstElement() instanceof FileNode) {
             FileNode selectFile = ((FileNode)selection.getFirstElement());
             for (EditorPartPresenter partPresenter : openedEditors) {
-                FileNode openFile = partPresenter.getEditorInput().getFile();
+                VirtualFile openFile = partPresenter.getEditorInput().getFile();
                 //to close selected file if it open
                 if (selectFile.getPath().equals(openFile.getPath())) {
                     eventBus.fireEvent(new FileEvent(openFile, FileEvent.FileOperation.CLOSE));

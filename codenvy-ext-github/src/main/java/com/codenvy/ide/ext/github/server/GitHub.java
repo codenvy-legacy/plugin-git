@@ -19,6 +19,8 @@ import com.codenvy.commons.json.JsonParseException;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.commons.ParsingResponseException;
 import com.codenvy.ide.ext.github.shared.Collaborators;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -201,6 +203,22 @@ public class GitHub {
         return gitHubRepositoryList;
     }
 
+    /**
+     * Get the list of forks for a given repository.
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepositoryList} list of GitHub repositories
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
     public GitHubRepositoryList getForks(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
@@ -212,13 +230,54 @@ public class GitHub {
         return gitHubRepositoryList;
     }
 
+    /**
+     * Fork a given repository.
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepository} GitHub repository to be created by forking
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
     public GitHubRepository fork(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
         final String method = "POST";
-        final String response = doJsonRequest(url, method, 202, null, null);
+        final String response = doJsonRequest(url, method, 202);
         GitHubRepository forkedRepository = parseJsonResponse(response, GitHubRepository.class, null);
         return forkedRepository;
+    }
+
+    /**
+     * Create a pull request on given repository.
+     *
+     * @param user
+     *         name of owner
+     * @param repository
+     *         name of repository
+     *
+     * @return {@link GitHubRepository} GitHub repository to be created by forking
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
+    public GitHubPullRequest createPullRequest(String user, String repository, GitHubPullRequestInput input) throws IOException, GitHubException, ParsingResponseException {
+        final String oauthToken = getToken(getUserId());
+        final String url = "https://api.github.com/repos/" + user + '/' + repository + "/pulls?access_token=" + oauthToken;
+        final String method = "POST";
+        final String response = doJsonRequest(url, method, 201, DtoFactory.getInstance().toJson(input));
+        GitHubPullRequest pr = parseJsonResponse(response, GitHubPullRequest.class, null);
+        return pr;
     }
 
     /**

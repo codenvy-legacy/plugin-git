@@ -13,6 +13,8 @@ package com.codenvy.ide.ext.github.client;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.github.shared.Collaborators;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -34,19 +36,20 @@ import java.util.List;
  */
 @Singleton
 public class GitHubClientServiceImpl implements GitHubClientService {
-    private static final String LIST          = "/list";
-    private static final String LIST_ACCOUNT  = "/list/account";
-    private static final String LIST_ORG      = "/list/org";
-    private static final String LIST_USER     = "/list/user";
-    private static final String LIST_ALL      = "/list/available";
-    private static final String COLLABORATORS = "/collaborators";
-    private static final String ORGANIZATIONS = "/orgs";
-    private static final String PAGE          = "/page";
-    private static final String TOKEN         = "/token";
-    private static final String USER          = "/user";
-    private static final String SSH_GEN       = "/ssh/generate";
-    private static final String FORKS         = "/forks";
-    private static final String CREATE_FORK   = "/createfork";
+    private static final String       LIST                = "/list";
+    private static final String       LIST_ACCOUNT        = "/list/account";
+    private static final String       LIST_ORG            = "/list/org";
+    private static final String       LIST_USER           = "/list/user";
+    private static final String       LIST_ALL            = "/list/available";
+    private static final String       COLLABORATORS       = "/collaborators";
+    private static final String       ORGANIZATIONS       = "/orgs";
+    private static final String       PAGE                = "/page";
+    private static final String       TOKEN               = "/token";
+    private static final String       USER                = "/user";
+    private static final String       SSH_GEN             = "/ssh/generate";
+    private static final String       FORKS               = "/forks";
+    private static final String       CREATE_FORK         = "/createfork";
+    private static final String       PULL_REQUEST = "/pullrequest";
     /** REST service context. */
     private final String              baseUrl;
     /** Loader to be displayed. */
@@ -77,10 +80,19 @@ public class GitHubClientServiceImpl implements GitHubClientService {
         asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
     }
 
+    /** {@inheritDoc} */
     @Override
     public void fork(@Nonnull String user, @Nonnull String repository, @Nonnull AsyncRequestCallback<GitHubRepository> callback) {
         String url = baseUrl + CREATE_FORK + "/" + user + "/" + repository;
         asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestInput input,
+                                  @Nonnull AsyncRequestCallback<GitHubPullRequest> callback) {
+        String url = baseUrl + PULL_REQUEST + "/" + user + "/" + repository;
+        asyncRequestFactory.createPostRequest(url, input).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */

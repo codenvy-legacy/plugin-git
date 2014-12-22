@@ -13,12 +13,15 @@ package com.codenvy.ide.ext.github.client;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.github.shared.Collaborators;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 
 import javax.annotation.Nonnull;
+
 import java.util.List;
 
 /**
@@ -54,6 +57,22 @@ public interface GitHubClientService {
      */
     public abstract void fork(@Nonnull String user, @Nonnull String repository,
                                   @Nonnull AsyncRequestCallback<GitHubRepository> callback);
+
+    /**
+     * Create a pull request on origin repository
+     *
+     * @param owner
+     * @param repository
+     * @param title
+     * @param head
+     * @param base
+     * @param body
+     * @param callback
+     */
+    public abstract void createPullRequest(@Nonnull String user,
+                                           @Nonnull String repository,
+                                           @Nonnull GitHubPullRequestInput input,
+                                           @Nonnull AsyncRequestCallback<GitHubPullRequest> callback);
 
     /**
      * Get the list of available public repositories from GitHub user.

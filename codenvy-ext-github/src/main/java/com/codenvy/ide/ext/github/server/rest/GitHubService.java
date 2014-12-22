@@ -95,6 +95,21 @@ public class GitHubService {
         return github.listCurrentUserRepositories();
     }
 
+    @Path("forks/{user}/{repository}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public GitHubRepositoryList forks(@PathParam("user") String user, @PathParam("repository") String repository)
+            throws IOException, GitHubException, ParsingResponseException {
+        return github.getForks(user, repository);
+    }
+
+    @Path("createfork/{user}/{repository}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public GitHubRepository fork(@PathParam("user") String user, @PathParam("repository") String repository)
+            throws IOException, GitHubException, ParsingResponseException {
+        return github.fork(user, repository);
+    }
 
     @Path("list/available")
     @GET

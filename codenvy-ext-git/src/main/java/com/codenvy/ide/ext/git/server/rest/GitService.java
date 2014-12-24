@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.rest;
 
+import com.codenvy.api.core.ApiException;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
@@ -107,7 +108,7 @@ public class GitService {
     @Path("add")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void add(AddRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void add(AddRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.add(request);
@@ -119,7 +120,7 @@ public class GitService {
     @Path("branch-checkout")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void branchCheckout(BranchCheckoutRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void branchCheckout(BranchCheckoutRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.branchCheckout(request);
@@ -132,7 +133,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Branch branchCreate(BranchCreateRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public Branch branchCreate(BranchCreateRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return gitConnection.branchCreate(request);
@@ -145,7 +146,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public void branchDelete(BranchDeleteRequest request)
-            throws NotFoundException, ForbiddenException, ServerException, UnauthorizedException {
+            throws ApiException, UnauthorizedException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.branchDelete(request);
@@ -157,7 +158,7 @@ public class GitService {
     @Path("branch-rename")
     @POST
     public void branchRename(@QueryParam("oldName") String oldName,
-                             @QueryParam("newName") String newName) throws NotFoundException, ForbiddenException, ServerException {
+                             @QueryParam("newName") String newName) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.branchRename(oldName, newName);
@@ -170,7 +171,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public GenericEntity<List<Branch>> branchList(BranchListRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public GenericEntity<List<Branch>> branchList(BranchListRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return new GenericEntity<List<Branch>>(gitConnection.branchList(request)) {
@@ -185,7 +186,7 @@ public class GitService {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public RepoInfo clone(final CloneRequest request)
-            throws URISyntaxException, UnauthorizedException, NotFoundException, ForbiddenException, ServerException {
+            throws URISyntaxException, UnauthorizedException, ApiException {
         long start = System.currentTimeMillis();
         // On-the-fly resolving of repository's working directory.
         request.setWorkingDir(resolveLocalPathByPath(request.getWorkingDir()));
@@ -207,7 +208,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public Revision commit(CommitRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public Revision commit(CommitRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         Revision revision = gitConnection.commit(request);
         try {
@@ -232,7 +233,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.TEXT_PLAIN)
-    public InfoPage diff(DiffRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public InfoPage diff(DiffRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return gitConnection.diff(request);
@@ -244,7 +245,7 @@ public class GitService {
     @Path("fetch")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void fetch(FetchRequest request) throws NotFoundException, ForbiddenException, UnauthorizedException, ServerException {
+    public void fetch(FetchRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.fetch(request);
@@ -256,7 +257,7 @@ public class GitService {
     @Path("init")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void init(final InitRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void init(final InitRequest request) throws ApiException {
         request.setWorkingDir(resolveLocalPathByPath(projectPath));
         GitConnection gitConnection = getGitConnection();
         try {
@@ -270,7 +271,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public LogPage log(LogRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public LogPage log(LogRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return gitConnection.log(request);
@@ -283,7 +284,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public MergeResult merge(MergeRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public MergeResult merge(MergeRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return gitConnection.merge(request);
@@ -295,7 +296,7 @@ public class GitService {
     @Path("mv")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void mv(MoveRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void mv(MoveRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.mv(request);
@@ -307,7 +308,7 @@ public class GitService {
     @Path("pull")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void pull(PullRequest request) throws NotFoundException, ForbiddenException, UnauthorizedException, ServerException {
+    public void pull(PullRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.pull(request);
@@ -319,7 +320,7 @@ public class GitService {
     @Path("push")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void push(PushRequest request) throws NotFoundException, ForbiddenException, UnauthorizedException, ServerException {
+    public void push(PushRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.push(request);
@@ -331,7 +332,7 @@ public class GitService {
     @Path("remote-add")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void remoteAdd(RemoteAddRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void remoteAdd(RemoteAddRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.remoteAdd(request);
@@ -342,7 +343,7 @@ public class GitService {
 
     @Path("remote-delete/{name}")
     @POST
-    public void remoteDelete(@PathParam("name") String name) throws NotFoundException, ForbiddenException, ServerException {
+    public void remoteDelete(@PathParam("name") String name) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.remoteDelete(name);
@@ -355,7 +356,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public GenericEntity<List<Remote>> remoteList(RemoteListRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public GenericEntity<List<Remote>> remoteList(RemoteListRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return new GenericEntity<List<Remote>>(gitConnection.remoteList(request)) {
@@ -368,7 +369,7 @@ public class GitService {
     @Path("remote-update")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void remoteUpdate(RemoteUpdateRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void remoteUpdate(RemoteUpdateRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.remoteUpdate(request);
@@ -380,7 +381,7 @@ public class GitService {
     @Path("reset")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void reset(ResetRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void reset(ResetRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.reset(request);
@@ -392,7 +393,7 @@ public class GitService {
     @Path("rm")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void rm(RmRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void rm(RmRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.rm(request);
@@ -404,7 +405,7 @@ public class GitService {
     @Path("status")
     @POST
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public Status status(@QueryParam("short") boolean shortFormat) throws NotFoundException, ForbiddenException, ServerException {
+    public Status status(@QueryParam("short") boolean shortFormat) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return gitConnection.status(shortFormat);
@@ -417,7 +418,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Tag tagCreate(TagCreateRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public Tag tagCreate(TagCreateRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return gitConnection.tagCreate(request);
@@ -429,7 +430,7 @@ public class GitService {
     @Path("tag-delete")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void tagDelete(TagDeleteRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public void tagDelete(TagDeleteRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             gitConnection.tagDelete(request);
@@ -443,7 +444,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<String, String> getConfig(ConfigRequest request) throws ServerException, NotFoundException, ForbiddenException {
+    public Map<String, String> getConfig(ConfigRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         Map<String, String> result = new HashMap<>();
         try {
@@ -473,7 +474,7 @@ public class GitService {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public GenericEntity<List<Tag>> tagList(TagListRequest request) throws NotFoundException, ForbiddenException, ServerException {
+    public GenericEntity<List<Tag>> tagList(TagListRequest request) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return new GenericEntity<List<Tag>>(gitConnection.tagList(request)) {
@@ -486,7 +487,7 @@ public class GitService {
     @Path("read-only-url")
     @Produces(MediaType.TEXT_PLAIN)
     @GET
-    public String readOnlyGitUrlTextPlain(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
+    public String readOnlyGitUrlTextPlain(@Context UriInfo uriInfo) throws ApiException {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
         if (virtualFile.getChild(".git") != null) {
             return gitUrlResolver.resolve(uriInfo.getBaseUri(), (com.codenvy.vfs.impl.fs.VirtualFileImpl)virtualFile);
@@ -498,7 +499,7 @@ public class GitService {
     @Path("import-source-descriptor")
     @Produces(MediaType.APPLICATION_JSON)
     @GET
-    public ImportSourceDescriptor importDescriptor(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
+    public ImportSourceDescriptor importDescriptor(@Context UriInfo uriInfo) throws ApiException {
         final VirtualFile virtualFile = vfsRegistry.getProvider(vfsId).getMountPoint(true).getVirtualFile(projectPath);
         if (virtualFile.getChild(".git") != null) {
 
@@ -523,7 +524,7 @@ public class GitService {
 
     @GET
     @Path("commiters")
-    public Commiters getCommiters(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
+    public Commiters getCommiters(@Context UriInfo uriInfo) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
             return DtoFactory.getInstance().createDto(Commiters.class).withCommiters(gitConnection.getCommiters());
@@ -534,7 +535,7 @@ public class GitService {
 
     @GET
     @Path("delete-repository")
-    public void deleteRepository(@Context UriInfo uriInfo) throws NotFoundException, ForbiddenException, ServerException {
+    public void deleteRepository(@Context UriInfo uriInfo) throws ApiException {
         final VirtualFileSystem vfs = vfsRegistry.getProvider(vfsId).newInstance(null);
         final Item project = getGitProjectByPath(vfs, projectPath);
         final String path2gitFolder = project.getPath() + "/.git";
@@ -544,14 +545,14 @@ public class GitService {
 
     // TODO: this is temporary method
     private Item getGitProjectByPath(VirtualFileSystem vfs, String projectPath)
-            throws NotFoundException, ForbiddenException, ServerException {
+            throws ApiException {
         final Item project = vfs.getItemByPath(projectPath, null, false, PropertyFilter.ALL_FILTER);
         return project;
     }
 
 
     // TODO: this is temporary method
-    protected String resolveLocalPathByPath(String folderPath) throws NotFoundException, ForbiddenException, ServerException {
+    protected String resolveLocalPathByPath(String folderPath) throws ApiException {
         VirtualFileSystem vfs = vfsRegistry.getProvider(vfsId).newInstance(null);
         Item gitProject = getGitProjectByPath(vfs, folderPath);
         final MountPoint mountPoint = vfs.getMountPoint();
@@ -559,7 +560,7 @@ public class GitService {
         return localPathResolver.resolve((com.codenvy.vfs.impl.fs.VirtualFileImpl)virtualFile);
     }
 
-    protected GitConnection getGitConnection() throws NotFoundException, ForbiddenException, ServerException {
+    protected GitConnection getGitConnection() throws ApiException {
         return gitConnectionFactory.getConnection(resolveLocalPathByPath(projectPath));
     }
 }

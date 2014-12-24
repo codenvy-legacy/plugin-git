@@ -87,8 +87,8 @@ public class NativeGitConnection implements GitConnection {
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
     private final GitAskPassScript  gitAskPassScript;
-    private       GitUser           user;
-    private       SshKeysManager    keysManager;
+    private final GitUser           user;
+    private final SshKeysManager    keysManager;
 
     private static final Pattern authErrorPattern =
             Pattern.compile(
@@ -112,11 +112,33 @@ public class NativeGitConnection implements GitConnection {
      */
     public NativeGitConnection(File repository, GitUser user, SshKeysManager keysManager, CredentialsLoader credentialsLoader)
             throws GitException {
+        this(new NativeGit(repository), user, keysManager, credentialsLoader, new GitAskPassScript());
+    }
+
+    /**
+     * @param nativeGit
+     *         native git client
+     * @param user
+     *         git user
+     * @param keysManager
+     *         manager for ssh keys. If it is null default ssh will be used;
+     * @param credentialsLoader
+     *         loader for credentials
+     * @throws GitException
+     *         when some error occurs
+     */
+    public NativeGitConnection(NativeGit nativeGit,
+                               GitUser user,
+                               SshKeysManager keysManager,
+                               CredentialsLoader credentialsLoader,
+                               GitAskPassScript gitAskPassScript
+                              )
+            throws GitException {
         this.user = user;
         this.keysManager = keysManager;
         this.credentialsLoader = credentialsLoader;
-        this.nativeGit = new NativeGit(repository);
-        this.gitAskPassScript = new GitAskPassScript();
+        this.nativeGit = nativeGit;
+        this.gitAskPassScript = gitAskPassScript;
     }
 
     @Override
@@ -178,10 +200,10 @@ public class NativeGitConnection implements GitConnection {
             String remoteUri;
             try {
                 remoteUri = nativeGit.createRemoteListCommand()
-                        .setRemoteName(remoteName)
-                        .execute()
-                        .get(0)
-                        .getUrl();
+                                     .setRemoteName(remoteName)
+                                     .execute()
+                                     .get(0)
+                                     .getUrl();
             } catch (GitException ignored) {
                 remoteUri = remoteName;
             }

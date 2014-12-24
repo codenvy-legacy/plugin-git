@@ -70,10 +70,8 @@ public class NativeGitConnectionTest {
     @BeforeMethod
     public void setUp() throws Exception {
 
-        connection = new NativeGitConnection(new File("/tmp"), user, keysManager, credentialsLoader);
-        Field field = NativeGitConnection.class.getDeclaredField("nativeGit");
-        field.setAccessible(true);
-        field.set(connection, nativeGit);
+        connection = new NativeGitConnection(nativeGit, user, keysManager, credentialsLoader, new GitAskPassScript());
+
         when(nativeGit.createEmptyGitCommand()).thenReturn(emptyGitCommand);
         when(nativeGit.createCommitCommand()).thenReturn(commitCommand);
         when(nativeGit.createBranchDeleteCommand()).thenReturn(branchDeleteCommand);
@@ -154,7 +152,7 @@ public class NativeGitConnectionTest {
     public void shouldDeleteLocalBranch()
             throws GitException, UnauthorizedException, InterruptedException, IOException {
         BranchDeleteRequest branchDeleteRequest = DtoFactory.getInstance().createDto(BranchDeleteRequest.class)
-                .withName("refs/heads/localBranch").withForce(true);
+                                                            .withName("refs/heads/localBranch").withForce(true);
         when(emptyGitCommand.setNextParameter(anyString())).thenReturn(emptyGitCommand);
         when(emptyGitCommand.getText()).thenReturn("f5d9ef24292f7e432b2b13762e112c380323f869 refs/heads/localBranch");
 
@@ -172,7 +170,7 @@ public class NativeGitConnectionTest {
         final String REMOTE_URI = "git@github.com:gitaccount/repository.git";
         File keyfile = mock(File.class);
         BranchDeleteRequest branchDeleteRequest = DtoFactory.getInstance().createDto(BranchDeleteRequest.class)
-                .withName("refs/remotes/origin/remoteBranch").withForce(true);
+                                                            .withName("refs/remotes/origin/remoteBranch").withForce(true);
 
         when(emptyGitCommand.setNextParameter(anyString())).thenReturn(emptyGitCommand);
         when(emptyGitCommand.getText())

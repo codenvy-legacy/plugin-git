@@ -10,30 +10,21 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-import static com.codenvy.commons.lang.IoUtil.deleteRecursive;
-import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 import static org.testng.Assert.*;
 
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.commons.lang.IoUtil;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.*;
 import com.codenvy.ide.ext.git.shared.*;
 import com.google.common.collect.ImmutableList;
-import com.google.common.io.Files;
 
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.mockito.testng.MockitoTestNGListener;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -41,8 +32,6 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.URISyntaxException;
-import java.util.List;
 
 @Listeners(MockitoTestNGListener.class)
 public class NativeGitConnectionTest {

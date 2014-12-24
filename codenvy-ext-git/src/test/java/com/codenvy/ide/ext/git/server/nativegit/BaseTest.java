@@ -10,23 +10,35 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
+import com.codenvy.commons.env.EnvironmentContext;
+import com.codenvy.commons.user.UserImpl;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.server.nativegit.commands.EmptyGitCommand;
+import com.codenvy.ide.ext.git.server.nativegit.commands.ListFilesCommand;
+import com.codenvy.ide.ext.git.shared.AddRequest;
+import com.codenvy.ide.ext.git.shared.Branch;
+import com.codenvy.ide.ext.git.shared.CommitRequest;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
-
+import org.mockito.Mock;
+import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Listeners;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static com.codenvy.api.core.util.LineConsumerFactory.NULL;
 import static com.codenvy.commons.lang.IoUtil.deleteRecursive;
@@ -36,17 +48,24 @@ import static java.nio.file.Files.exists;
 import static java.nio.file.Files.write;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 /**
  * @author Eugene Voevodin
  */
+@Listeners(MockitoTestNGListener.class)
 public abstract class BaseTest {
-    protected final String CONTENT     = "git repository content\n";
-    protected final String DEFAULT_URI = "user@host.com:login/repo";
+    protected final String CONTENT      = "git repository content\n";
+    protected final String DEFAULT_URI  = "user@host.com:login/repo";
+    protected final List<File> forClean = new ArrayList<>();
+    protected GitConnectionFactory connectionFactory;
 
-    private GitConnection connection;
-    private Path          target;
-    private final DtoFactory dto = DtoFactory.getInstance();
+    private GitUser              user;
+    private GitConnection        connection;
+    private Path                 target;
+
+    @Mock
+    private CredentialsLoader loader;
 
     @BeforeMethod
     public void initRepository() throws Exception {
@@ -56,16 +75,23 @@ public abstract class BaseTest {
         }
         init(repository);
         //setup connection
-        final GitConnectionFactory factory = new NativeGitConnectionFactory(null, null, null);
-        connection = factory.getConnection(repository,
-                                           newDTO(GitUser.class).withName("test_name")
-                                                                .withEmail("test@email"),
-                                           NULL);
+        user = newDTO(GitUser.class).withName("test_name").withEmail("test@email");
+        connectionFactory = new NativeGitConnectionFactory(null, loader, null);
+        connection = connectionFactory.getConnection(repository, user, NULL);
+        addFile(repository.toPath(), "README.txt", CONTENT);
+        connection.add(newDTO(AddRequest.class).withFilepattern(Arrays.asList("README.txt")));
+        connection.commit(newDTO(CommitRequest.class).withMessage("Initial commit"));
+        forClean.add(connection.getWorkingDir());
+        EnvironmentContext.getCurrent().setUser(
+                new UserImpl("codenvy", "codenvy", null, Arrays.asList("workspace/developer"), false));
     }
 
     @AfterMethod
     public void removeRepository() throws IOException {
-        deleteRecursive(connection.getWorkingDir());
+        for (File file : forClean) {
+            deleteRecursive(file);
+        }
+        forClean.clear();
     }
 
     protected Path getTarget() throws URISyntaxException {
@@ -75,6 +101,10 @@ public abstract class BaseTest {
             target = Paths.get(targetParent.toURI()).getParent();
         }
         return target;
+    }
+
+    protected GitUser getUser() {
+        return user;
     }
 
     protected Path getRepository() {
@@ -89,11 +119,28 @@ public abstract class BaseTest {
         delete(getRepository().resolve(name));
     }
 
-    protected void addFile(Path parent, String name, String content) throws IOException {
+    protected File addFile(Path parent, String name, String content) throws IOException {
         if (!exists(parent)) {
             createDirectories(parent);
         }
-        write(parent.resolve(name), content.getBytes());
+        return write(parent.resolve(name), content.getBytes()).toFile();
+    }
+
+    protected String readFile(File file) throws IOException {
+        if (file.isDirectory())
+            throw new IllegalArgumentException("Can't read content from directory " + file.getAbsolutePath());
+        FileReader reader = null;
+        StringBuilder content = new StringBuilder();
+        try {
+            reader = new FileReader(file);
+            int ch = -1;
+            while ((ch = reader.read()) != -1)
+                content.append((char) ch);
+        } finally {
+            if (reader != null)
+                reader.close();
+        }
+        return content.toString();
     }
 
     protected GitConnection getConnection() {
@@ -118,4 +165,38 @@ public abstract class BaseTest {
         return Integer.parseInt(emptyGitCommand.getText());
     }
 
+    protected void validateBranchList(List<Branch> toValidate, List<Branch> pattern) {
+        l1:
+        for (Branch tb : toValidate) {
+            for (Branch pb : pattern) {
+                if (tb.getName().equals(pb.getName()) //
+                        && tb.getDisplayName().equals(pb.getDisplayName()) //
+                        && tb.isActive() == pb.isActive())
+                    continue l1;
+            }
+            fail("List of branches is not matches to expected. Branch " + tb + " is not expected in result. ");
+        }
+    }
+
+    protected void checkNotCached(File repository, String... fileNames) throws GitException {
+        ListFilesCommand lf = new ListFilesCommand(repository);
+        lf.setCached(true).execute();
+        List<String> output = lf.getLines();
+        for (String fName : fileNames) {
+            if (output.contains(fName)) {
+                fail("Cache contains " + fName);
+            }
+        }
+    }
+
+    protected void checkCached(File repository, String... fileNames) throws GitException {
+        ListFilesCommand lf = new ListFilesCommand(repository);
+        lf.setCached(true).execute();
+        List<String> output = lf.getLines();
+        for (String fName : fileNames) {
+            if (!output.contains(fName)) {
+                fail("Cache not contains " + fName);
+            }
+        }
+    }
 }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
-
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
@@ -25,14 +24,12 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class AddTest extends BaseTest {
 
     @Test
     public void testSimpleAdd() throws GitException, IOException {
-
-
         addFile(getRepository(), "testAdd", CONTENT);
         getConnection().add(newDTO(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
         //check added files

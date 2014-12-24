@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 import java.io.IOException;
 
 /**
- * @author <a href="mailto:evoevodin@codenvy.com">Eugene Voevodin</a>
+ * @author Eugene Voevodin
  */
 public class CommitTest extends BaseTest {
 
@@ -33,7 +33,8 @@ public class CommitTest extends BaseTest {
         addFile(getRepository(), "DONTREADME", "secret");
         //add changes
         getConnection().add(newDTO(AddRequest.class).withFilepattern(AddRequest.DEFAULT_PATTERN));
-        CommitRequest commitRequest = newDTO(CommitRequest.class).withMessage("Commit message").withAmend(false).withAll(false);
+        CommitRequest commitRequest = newDTO(CommitRequest.class)
+                .withMessage("Commit message").withAmend(false).withAll(false);
         Revision revision = getConnection().commit(commitRequest);
         assertEquals(revision.getMessage(), commitRequest.getMessage());
     }
@@ -48,7 +49,8 @@ public class CommitTest extends BaseTest {
         //change existing README
         addFile(getRepository(), "README.txt", "not secret");
         //then
-        CommitRequest commitRequest = newDTO(CommitRequest.class).withMessage("Other commit message").withAmend(false).withAll(true);
+        CommitRequest commitRequest = newDTO(CommitRequest.class)
+                .withMessage("Other commit message").withAmend(false).withAll(true);
         Revision revision = getConnection().commit(commitRequest);
         assertEquals(revision.getMessage(), commitRequest.getMessage());
     }
@@ -64,7 +66,8 @@ public class CommitTest extends BaseTest {
 
         //change existing README
         addFile(getRepository(), "README.txt", "some new content");
-        CommitRequest commitRequest = newDTO(CommitRequest.class).withMessage("Amend commit").withAmend(true).withAll(true);
+        CommitRequest commitRequest = newDTO(CommitRequest.class)
+                .withMessage("Amend commit").withAmend(true).withAll(true);
 
         //then
         Revision revision = getConnection().commit(commitRequest);

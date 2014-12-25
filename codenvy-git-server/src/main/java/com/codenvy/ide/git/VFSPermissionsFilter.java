@@ -103,6 +103,10 @@ public class VFSPermissionsFilter implements Filter {
                         token = userName;
                     } else {
                         token = getToken(userName, password);
+                        if (token == null) {
+                            ((HttpServletResponse)response).sendError(HttpServletResponse.SC_FORBIDDEN);
+                            return;
+                        }
                         needLogout = true;
                     }
                     user = getUserBySSO(token);
@@ -123,10 +127,10 @@ public class VFSPermissionsFilter implements Filter {
                     }
                 }
             } finally {
-                EnvironmentContext.reset();
                 if (needLogout) {
-                    logout(token);
+                    logout();
                 }
+                EnvironmentContext.reset();
             }
         }
         chain.doFilter(req, response);
@@ -188,10 +192,9 @@ public class VFSPermissionsFilter implements Filter {
         }
     }
 
-    private void logout(String token) {
+    private void logout() {
         try {
-            HttpJsonHelper.requestString(apiEndPoint + "/auth/logout/",
-                                         "GET", null, Pair.of("token", token));
+            HttpJsonHelper.requestString(apiEndPoint + "/auth/logout/","GET", null);
         } catch (ForbiddenException | UnauthorizedException un) {
             // OK already logout
         } catch (ConflictException | ServerException | NotFoundException | IOException e) {

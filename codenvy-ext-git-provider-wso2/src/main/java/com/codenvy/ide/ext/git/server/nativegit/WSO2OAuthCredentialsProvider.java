@@ -55,7 +55,7 @@ public class WSO2OAuthCredentialsProvider implements CredentialsProvider {
         try {
             OAuthToken token = authAuthenticator.getToken(EnvironmentContext.getCurrent().getUser().getId());
             if (token != null) {
-                return new UserCredential(token.getToken(), token.getToken(), OAUTH_PROVIDER_NAME);
+                return new UserCredential(token.getToken(), "x-oauth-basic", OAUTH_PROVIDER_NAME);
             }
         } catch (IOException e) {
             LOG.warn(e.getLocalizedMessage());

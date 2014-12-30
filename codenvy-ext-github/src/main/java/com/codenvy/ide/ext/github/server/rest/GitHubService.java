@@ -17,6 +17,8 @@ import com.codenvy.ide.ext.github.server.GitHub;
 import com.codenvy.ide.ext.github.server.GitHubException;
 import com.codenvy.ide.ext.github.server.GitHubKeyUploader;
 import com.codenvy.ide.ext.github.shared.Collaborators;
+import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
+import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
@@ -111,6 +113,16 @@ public class GitHubService {
     public GitHubRepository fork(@PathParam("user") String user, @PathParam("repository") String repository)
             throws IOException, GitHubException, ParsingResponseException {
         return github.fork(user, repository);
+    }
+
+    @Path("issuecomments/{user}/{repository}/{issue}")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    public GitHubIssueComment commentIssue(@PathParam("user") String user,
+                                           @PathParam("repository") String repository,
+                                           @PathParam("issue") String issue,
+                                           GitHubIssueCommentInput input) throws IOException, GitHubException, ParsingResponseException {
+        return github.commentIssue(user, repository, issue, input);
     }
 
     @Path("pullrequest/{user}/{repository}")

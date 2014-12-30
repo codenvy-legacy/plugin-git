@@ -13,6 +13,8 @@ package com.codenvy.ide.ext.github.client;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.StringMap;
 import com.codenvy.ide.ext.github.shared.Collaborators;
+import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
+import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
@@ -57,6 +59,21 @@ public interface GitHubClientService {
      */
     public abstract void fork(@Nonnull String user, @Nonnull String repository,
                                   @Nonnull AsyncRequestCallback<GitHubRepository> callback);
+
+    /**
+     * Comment an issue on given repository
+     *
+     * @param owner
+     * @param repository
+     * @param issue
+     * @param input
+     * @param callback
+     */
+    public abstract void commentIssue(@Nonnull String user,
+                                      @Nonnull String repository,
+                                      @Nonnull String issue,
+                                      @Nonnull GitHubIssueCommentInput input,
+                                      @Nonnull AsyncRequestCallback<GitHubIssueComment> callback);
 
     /**
      * Create a pull request on origin repository

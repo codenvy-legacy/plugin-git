@@ -43,7 +43,7 @@ public class LsRemoteTest extends BaseTest {
     public void testShouldThrowGitExceptionIfUserTryGetInfoAboutPrivateRepoAndUserIsUnauthorized() throws GitException, UnauthorizedException {
         GitConnection connection = connectionFactory.getConnection("/tmp", getUser());
         connection.lsRemote(newDTO(LsRemoteRequest.class)
-                .withRemoteUrl("https://github.com/codenvy/cloud-ide.git")
+                .withRemoteUrl("https://bitbucket.org/exoinvitemain/privater.git")
                 .withUseAuthorization(false));
     }
 }

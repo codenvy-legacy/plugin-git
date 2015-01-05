@@ -37,6 +37,17 @@ public interface GitHubPullRequest {
     GitHubPullRequest withUrl(String url);
 
     /**
+     * Get pull request html URL.
+     *
+     * @return {@link String} html_url
+     */
+    String getHtmlUrl();
+
+    void setHtmlUrl(String htmlUrl);
+
+    GitHubPullRequest withHtmlUrl(String htmlUrl);
+
+    /**
      * Get pull request number.
      *
      * @return {@link String} number

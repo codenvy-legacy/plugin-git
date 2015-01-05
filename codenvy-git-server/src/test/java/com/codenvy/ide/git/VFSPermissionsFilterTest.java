@@ -78,6 +78,10 @@ public class VFSPermissionsFilterTest {
         api.setAccessible(true);
         api.set(filter, ENDPOINT);
 
+        Field path = VFSPermissionsFilter.class.getDeclaredField("vfsRoot");
+        path.setAccessible(true);
+        path.set(filter, "/");
+
         when((request).getRequestURL())
                 .thenReturn(new StringBuffer("http://host.com/git/").append(WORKSPACE).append("/testProject"));
     }

@@ -55,6 +55,11 @@ public class VFSPermissionsFilter implements Filter {
     @Named("api.endpoint")
     String apiEndPoint;
 
+    @Inject
+    @Named("vfs.local.fs_root_dir")
+    String vfsRoot;
+
+
     private static final Logger LOG = LoggerFactory.getLogger(VFSPermissionsFilter.class);
 
     @Override
@@ -65,7 +70,6 @@ public class VFSPermissionsFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest)request;
-        String fsRootPath = System.getProperty("com.codenvy.vfs.rootdir");
         int tokenPlace;
         String lastTokenBeforePath = "/git/";
         if ((tokenPlace = req.getRequestURL().indexOf(lastTokenBeforePath)) != -1) {
@@ -76,7 +80,7 @@ public class VFSPermissionsFilter implements Filter {
             //adaptation to fs
             url = url.replaceAll("/", File.separator);
             //search for dotVFS directory
-            File projectDirectory = Paths.get(fsRootPath, url).toFile();
+            File projectDirectory = Paths.get(vfsRoot, url).toFile();
             String auth;
             String userName = "";
             String password = "";

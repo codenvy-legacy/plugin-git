@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.git.deploy;
 
+import com.codenvy.ide.git.CodenvyGitServlet;
 import com.codenvy.ide.git.VFSPermissionsFilter;
 import com.codenvy.inject.DynaModule;
 import com.google.inject.servlet.ServletModule;
@@ -26,9 +27,7 @@ public class GitServletModule extends ServletModule {
     protected void configureServlets() {
         Map<String, String> initParams = new HashMap<>();
         initParams.put("export-all", "1");
-        initParams.put("base-path", System.getProperty("com.codenvy.vfs.rootdir") + "/");
-        bind(org.eclipse.jgit.http.server.GitServlet.class).asEagerSingleton();
-        serve("/*").with(org.eclipse.jgit.http.server.GitServlet.class, initParams);
+        serve("/*").with(CodenvyGitServlet.class, initParams);
         filter("/*").through(VFSPermissionsFilter.class);
     }
 }

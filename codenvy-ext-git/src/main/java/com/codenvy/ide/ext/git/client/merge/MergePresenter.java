@@ -28,6 +28,7 @@ import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.MergeResult;
 import com.codenvy.ide.rest.AsyncRequestCallback;
 import com.codenvy.ide.rest.DtoUnmarshallerFactory;
+import com.codenvy.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
@@ -220,23 +221,25 @@ public class MergePresenter implements MergeView.ActionDelegate {
         List<String> conflicts = mergeResult.getConflicts();
         if (conflicts != null && conflicts.size() > 0) {
             for (String conflict : conflicts) {
-                conflictMessage.append("- ").append(conflict).append("<br>");
+                conflictMessage.append("- ").append(conflict);
             }
         }
         StringBuilder commitsMessage = new StringBuilder();
         List<String> commits = mergeResult.getMergedCommits();
         if (commits != null && commits.size() > 0) {
             for (String commit : commits) {
-                commitsMessage.append("- ").append(commit).append("<br>");
+                commitsMessage.append("- ").append(commit);
             }
         }
 
-        String message = "<b>" + mergeResult.getMergeStatus().getValue() + "</b><br/>";
+        String message = "<b>" + mergeResult.getMergeStatus().getValue() + "</b>";
         String conflictText = conflictMessage.toString();
         message += (!conflictText.isEmpty()) ? constant.mergedConflicts(conflictText) : "";
+
+
         String commitText = commitsMessage.toString();
-        message += (!commitText.isEmpty()) ? constant.mergedCommits(commitText) : "";
-        message += (mergeResult.getNewHead() != null) ? constant.mergedNewHead(mergeResult.getNewHead()) : "";
+        message += (!commitText.isEmpty()) ? " " +constant.mergedCommits(commitText) : "";
+        message += (mergeResult.getNewHead() != null) ? " " + constant.mergedNewHead(mergeResult.getNewHead()) : "";
         return message;
     }
 

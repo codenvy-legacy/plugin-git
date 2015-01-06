@@ -46,7 +46,7 @@ public class GitConfigurationChecker {
     private final Path DEFAULT_GITIGNORE_FILE_PATH;
 
     public GitConfigurationChecker() {
-        GLOBAL_GITCONFIG_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitconfig");
+        GLOBAL_GITCONFIG_FILE_PATH = Paths.get(System.getProperty("user.home").replace("\\", "/") + "/.gitconfig");
         DEFAULT_GITIGNORE_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitignore_codenvy");
 
         DEPRECATED_GITIGNORE_PATTERNS.add(".codenvy/");

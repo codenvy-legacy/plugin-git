@@ -194,7 +194,6 @@ public class GitProjectImporterTest {
         FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("branch", "new_branch");
-        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         List<Branch> branches = targetGit.branchList(dtoFactory.createDto(BranchListRequest.class));
@@ -226,7 +225,6 @@ public class GitProjectImporterTest {
         FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("commitId", commit.getId());
-        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));
@@ -264,7 +262,6 @@ public class GitProjectImporterTest {
         folder.createFolder(".codenvy");
         Map<String, String> parameters = new HashMap<>(2);
         parameters.put("commitId", commit.getId());
-        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         GitConnection targetGit = gitFactory.getConnection(((VirtualFileImpl)folder.getVirtualFile()).getIoFile());
         final LogPage targetLog = targetGit.log(dtoFactory.createDto(LogRequest.class));
@@ -296,11 +293,22 @@ public class GitProjectImporterTest {
     public void testImportKeepVcs() throws Exception {
         FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
         Map<String, String> parameters = new HashMap<>(2);
-        parameters.put("keepVcs", "true");
         gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
         Assert.assertNotNull(folder.getChild("src"));
         Assert.assertNotNull(folder.getChild("src/hello.c"));
         Assert.assertNotNull(folder.getChild("README"));
-        Assert.assertNotNull(folder.getChild(".git")); // git must not be removed
+        Assert.assertNotNull(folder.getChild(".git"));
+    }
+
+    @Test
+    public void testImportRemoveVcs() throws Exception {
+        FolderEntry folder = new FolderEntry("my-vfs", vfs.getMountPoint().getRoot().createFolder("project"));
+        Map<String, String> parameters = new HashMap<>(2);
+        parameters.put("keepVcs", "false");
+        gitProjectImporter.importSources(folder, gitRepo.getAbsolutePath(), parameters, new SystemOutLineConsumerFactory());
+        Assert.assertNotNull(folder.getChild("src"));
+        Assert.assertNotNull(folder.getChild("src/hello.c"));
+        Assert.assertNotNull(folder.getChild("README"));
+        Assert.assertNull(folder.getChild(".git")); // git must not be removed
     }
 }

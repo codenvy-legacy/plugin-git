@@ -16,7 +16,7 @@ import com.codenvy.ide.ext.github.shared.Collaborators;
 import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
-import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -98,7 +98,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
 
     /** {@inheritDoc} */
     @Override
-    public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestInput input,
+    public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestCreationInput input,
                                   @Nonnull AsyncRequestCallback<GitHubPullRequest> callback) {
         String url = baseUrl + PULL_REQUEST + "/" + user + "/" + repository;
         asyncRequestFactory.createPostRequest(url, input).loader(loader).send(callback);

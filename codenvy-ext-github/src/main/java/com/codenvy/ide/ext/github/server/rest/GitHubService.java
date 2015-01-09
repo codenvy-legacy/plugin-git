@@ -20,7 +20,7 @@ import com.codenvy.ide.ext.github.shared.Collaborators;
 import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
-import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -128,7 +128,7 @@ public class GitHubService {
     @Path("pullrequest/{user}/{repository}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public GitHubPullRequest createPullRequest(@PathParam("user") String user, @PathParam("repository") String repository, GitHubPullRequestInput input)
+    public GitHubPullRequest createPullRequest(@PathParam("user") String user, @PathParam("repository") String repository, GitHubPullRequestCreationInput input)
             throws IOException, GitHubException, ParsingResponseException {
         return github.createPullRequest(user, repository, input);
     }

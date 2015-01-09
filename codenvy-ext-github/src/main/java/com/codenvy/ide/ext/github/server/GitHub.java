@@ -22,7 +22,7 @@ import com.codenvy.ide.ext.github.shared.Collaborators;
 import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
-import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -300,7 +300,7 @@ public class GitHub {
      * @throws ParsingResponseException
      *         if any error occurs when parse response body
      */
-    public GitHubPullRequest createPullRequest(String user, String repository, GitHubPullRequestInput input) throws IOException, GitHubException, ParsingResponseException {
+    public GitHubPullRequest createPullRequest(String user, String repository, GitHubPullRequestCreationInput input) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/pulls?access_token=" + oauthToken;
         final String method = "POST";

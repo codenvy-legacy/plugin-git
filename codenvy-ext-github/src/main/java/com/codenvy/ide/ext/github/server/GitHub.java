@@ -23,6 +23,7 @@ import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestList;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -285,6 +286,32 @@ public class GitHub {
     }
 
     /**
+     * Get the list of pull requests for given user:repository
+     *
+     * @param user
+     *         name of user
+     * @param repository
+     *         name of repository
+     * @return {@link GitHubPullRequestList} list of GitHub pull requests
+     * @throws IOException
+     *         if any i/o errors occurs
+     * @throws GitHubException
+     *         if GitHub server return unexpected or error status for request
+     * @throws ParsingResponseException
+     *         if any error occurs when parse response body
+     */
+    public GitHubPullRequestList listPullRequestsByRepository(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
+        final String oauthToken = getToken(getUserId());
+        final String url = "https://api.github.com/repos/" + user + '/' + repository + "/pulls?access_token=" + oauthToken;
+        final String method = "GET";
+        GitHubPullRequestList gitHubPullRequestList = DtoFactory.getInstance().createDto(GitHubPullRequestList.class);
+        String response = doJsonRequest(url, method, 200, gitHubPullRequestList);
+        GitHubPullRequest[] pullRequests = parseJsonResponse(response, GitHubPullRequest[].class, null);
+        gitHubPullRequestList.setPullRequests(Arrays.asList(pullRequests));
+        return gitHubPullRequestList;
+    }
+
+    /**
      * Create a pull request on given repository.
      *
      * @param user
@@ -456,6 +483,34 @@ public class GitHub {
         return doJsonRequest(url, method, success, null, gitHubRepositoryList);
     }
 
+    private String doJsonRequest(String url, String method, int success, GitHubPullRequestList gitHubPullRequestList) throws IOException,
+                                                                                                                    GitHubException {
+        HttpURLConnection http = null;
+        try {
+            http = (HttpURLConnection)new URL(url).openConnection();
+            http.setInstanceFollowRedirects(false);
+            http.setRequestMethod(method);
+            http.setRequestProperty("Accept", "application/json");
+
+            if (http.getResponseCode() != success) {
+                throw fault(http);
+            }
+
+            String result;
+            try (InputStream input = http.getInputStream()) {
+                result = readBody(input, http.getContentLength());
+                if (gitHubPullRequestList != null) {
+                    parseLinkHeader(gitHubPullRequestList, http.getHeaderField(HEADER_LINK));
+                }
+            }
+            return result;
+        } finally {
+            if (http != null) {
+                http.disconnect();
+            }
+        }
+    }
+
     /**
      * @param url
      *         the request url
@@ -593,11 +648,52 @@ public class GitHub {
         }
     }
 
+    private void parseLinkHeader(GitHubPullRequestList pullRequestList, String linkHeader) {
+        if (linkHeader == null || linkHeader.isEmpty()) {
+            return;
+        }
+        resetPages(pullRequestList);
+
+        String[] links = linkHeader.split(DELIM_LINKS);
+        for (String link : links) {
+            Matcher matcher = linkPattern.matcher(link.trim());
+            if (matcher.matches() && matcher.groupCount() >= 2) {
+                // First group is the page's location:
+                String value = matcher.group(1);
+                // Remove the value of access_token parameter if exists, not to be send to client:
+                value = value.replaceFirst("access_token=\\w+&?", "");
+                // Second group is page's type
+                String rel = matcher.group(2);
+                switch (rel) {
+                    case META_FIRST:
+                        pullRequestList.setFirstPage(value);
+                        break;
+                    case META_LAST:
+                        pullRequestList.setLastPage(value);
+                        break;
+                    case META_NEXT:
+                        pullRequestList.setNextPage(value);
+                        break;
+                    case META_PREV:
+                        pullRequestList.setPrevPage(value);
+                        break;
+                }
+            }
+        }
+    }
+
     private void resetPages(GitHubRepositoryList repositoryList) {
         repositoryList.setFirstPage(null);
         repositoryList.setLastPage(null);
         repositoryList.setNextPage(null);
         repositoryList.setPrevPage(null);
+    }
+
+    private void resetPages(GitHubPullRequestList pullRequestList) {
+        pullRequestList.setFirstPage(null);
+        pullRequestList.setLastPage(null);
+        pullRequestList.setNextPage(null);
+        pullRequestList.setPrevPage(null);
     }
 
     private GitHubException fault(HttpURLConnection http) throws IOException {

@@ -17,6 +17,7 @@ import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestList;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -52,6 +53,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     private static final String       FORKS          = "/forks";
     private static final String       CREATE_FORK    = "/createfork";
     private static final String       PULL_REQUEST   = "/pullrequest";
+    private static final String       PULL_REQUESTS  = "/pullrequests";
     private static final String       ISSUE_COMMENTS = "/issuecomments";
     /** REST service context. */
     private final String              baseUrl;
@@ -94,6 +96,12 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     public void commentIssue(String user, String repository, String issue, GitHubIssueCommentInput input, AsyncRequestCallback<GitHubIssueComment> callback) {
         String url = baseUrl + ISSUE_COMMENTS + "/" + user + "/" + repository + "/" + issue;
         asyncRequestFactory.createPostRequest(url, input).loader(loader).send(callback);
+    }
+
+    @Override
+    public void getPullRequests(String owner, String repository, AsyncRequestCallback<GitHubPullRequestList> callback) {
+        String url = baseUrl + PULL_REQUESTS + "/" + owner + "/" + repository;
+        asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
     }
 
     /** {@inheritDoc} */

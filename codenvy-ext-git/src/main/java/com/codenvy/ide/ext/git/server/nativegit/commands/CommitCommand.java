@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit.commands;
 
+import com.codenvy.api.core.util.SystemInfo;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.GitUser;
 
@@ -57,9 +58,7 @@ public class CommitCommand extends GitCommand<Void> {
             commandLine.add("-a");
         }
         Path commitMsgFile = null;
-        if (!message.contains("\n")) {
-            commandLine.add("-m", message);
-        } else {
+        if (message.contains("\n")) {
             try {
                 commitMsgFile = Files.createTempFile("git-commit-message-", null);
                 Files.write(commitMsgFile, message.getBytes());
@@ -68,7 +67,12 @@ public class CommitCommand extends GitCommand<Void> {
                 // allow to commit but message will be in 'one-line' format
                 commandLine.add("-m", message);
             }
+        } else if (SystemInfo.isWindows()) {
+            commandLine.add(String.format("-m \"%s\"", message));
+        } else {
+            commandLine.add("-m", message);
         }
+
         if (committer != null) {
             Map<String, String> environment = new HashMap<>();
             environment.put("GIT_COMMITTER_NAME", committer.getName());
@@ -78,11 +82,20 @@ public class CommitCommand extends GitCommand<Void> {
             throw new GitException("Committer can't be null");
         }
 
-
+        String name;
+        String email;
         if (author != null) {
-            commandLine.add(String.format("--author=%s \\<%s>", author.getName(), author.getEmail()));
+            name = author.getName();
+            email = author.getEmail();
         } else {
-            commandLine.add(String.format("--author=%s \\<%s>", committer.getName(), committer.getEmail()));
+            name = committer.getName();
+            email = committer.getEmail();
+        }
+
+        if (SystemInfo.isWindows()) {
+            commandLine.add(String.format("--author=\"%s <%s>\"", name, email));
+        } else {
+            commandLine.add(String.format("--author=%s \\<%s>", name, email));
         }
 
 

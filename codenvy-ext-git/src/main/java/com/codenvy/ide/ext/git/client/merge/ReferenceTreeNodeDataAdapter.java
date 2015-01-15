@@ -90,9 +90,4 @@ public class ReferenceTreeNodeDataAdapter implements NodeDataAdapter<Reference> 
         return null;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public Reference getNodeByPath(Reference root, Array<String> relativeNodePath) {
-        return null;
-    }
 }

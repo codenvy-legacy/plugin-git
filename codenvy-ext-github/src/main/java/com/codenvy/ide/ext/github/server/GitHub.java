@@ -112,12 +112,8 @@ public class GitHub {
             throw new IllegalArgumentException("User's name must not be null.");
         }
         final String url = "https://api.github.com/users/" + user + "/repos";
-        final String method = "GET";
         GitHubRepositoryList gitHubRepositoryList = DtoFactory.getInstance().createDto(GitHubRepositoryList.class);
-        String response = doJsonRequest(url, method, 200, gitHubRepositoryList);
-        GitHubRepository[] repositories = parseJsonResponse(response, GitHubRepository[].class, null);
-        gitHubRepositoryList.setRepositories(Arrays.asList(repositories));
-        return gitHubRepositoryList;
+        return getRepositories(url, gitHubRepositoryList);
     }
 
     /**
@@ -156,6 +152,22 @@ public class GitHub {
             getRepositories(nextPageUrl, gitHubRepositoryList);
         }
         return gitHubRepositoryList;
+    }
+
+    private GitHubPullRequestList getPullRequests(String url, GitHubPullRequestList gitHubPullRequestList)
+            throws IOException, GitHubException, ParsingResponseException {
+        final String method = "GET";
+        String response = doJsonRequest(url, method, 200, gitHubPullRequestList);
+        GitHubPullRequest[] pullRequests = parseJsonResponse(response, GitHubPullRequest[].class, null);
+        gitHubPullRequestList.getPullRequests().addAll(Arrays.asList(pullRequests));
+
+        String nextPage = gitHubPullRequestList.getNextPage();
+        if (nextPage != null) {
+            String oauthToken = getToken(getUserId());
+            String nextPageUrl = nextPage + "&access_token=" + oauthToken;
+            getPullRequests(nextPageUrl, gitHubPullRequestList);
+        }
+        return gitHubPullRequestList;
     }
 
     /**
@@ -198,12 +210,8 @@ public class GitHub {
     public GitHubRepositoryList listCurrentUserRepositories() throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/user/repos?access_token=" + oauthToken;
-        final String method = "GET";
         GitHubRepositoryList gitHubRepositoryList = DtoFactory.getInstance().createDto(GitHubRepositoryList.class);
-        final String response = doJsonRequest(url, method, 200, gitHubRepositoryList);
-        GitHubRepository[] repositories = parseJsonResponse(response, GitHubRepository[].class, null);
-        gitHubRepositoryList.setRepositories(Arrays.asList(repositories));
-        return gitHubRepositoryList;
+        return getRepositories(url, gitHubRepositoryList);
     }
 
     /**
@@ -225,12 +233,8 @@ public class GitHub {
     public GitHubRepositoryList getForks(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/forks?access_token=" + oauthToken;
-        final String method = "GET";
         GitHubRepositoryList gitHubRepositoryList = DtoFactory.getInstance().createDto(GitHubRepositoryList.class);
-        final String response = doJsonRequest(url, method, 200, gitHubRepositoryList);
-        GitHubRepository[] repositories = parseJsonResponse(response, GitHubRepository[].class, null);
-        gitHubRepositoryList.setRepositories(Arrays.asList(repositories));
-        return gitHubRepositoryList;
+        return getRepositories(url, gitHubRepositoryList);
     }
 
     /**
@@ -303,12 +307,8 @@ public class GitHub {
     public GitHubPullRequestList listPullRequestsByRepository(String user, String repository) throws IOException, GitHubException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/pulls?access_token=" + oauthToken;
-        final String method = "GET";
         GitHubPullRequestList gitHubPullRequestList = DtoFactory.getInstance().createDto(GitHubPullRequestList.class);
-        String response = doJsonRequest(url, method, 200, gitHubPullRequestList);
-        GitHubPullRequest[] pullRequests = parseJsonResponse(response, GitHubPullRequest[].class, null);
-        gitHubPullRequestList.setPullRequests(Arrays.asList(pullRequests));
-        return gitHubPullRequestList;
+        return getPullRequests(url, gitHubPullRequestList);
     }
 
     /**

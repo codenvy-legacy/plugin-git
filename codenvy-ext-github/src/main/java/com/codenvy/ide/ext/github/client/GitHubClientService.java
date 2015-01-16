@@ -16,7 +16,8 @@ import com.codenvy.ide.ext.github.shared.Collaborators;
 import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
-import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestList;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -76,6 +77,16 @@ public interface GitHubClientService {
                                       @Nonnull AsyncRequestCallback<GitHubIssueComment> callback);
 
     /**
+     * Get pull requests for given owner:repository
+     *
+     * @param owner
+     * @param repository
+     * @param filter
+     * @param callback
+     */
+    public abstract void getPullRequests(String owner, String repository, AsyncRequestCallback<GitHubPullRequestList> callback);
+
+    /**
      * Create a pull request on origin repository
      *
      * @param owner
@@ -88,7 +99,7 @@ public interface GitHubClientService {
      */
     public abstract void createPullRequest(@Nonnull String user,
                                            @Nonnull String repository,
-                                           @Nonnull GitHubPullRequestInput input,
+                                           @Nonnull GitHubPullRequestCreationInput input,
                                            @Nonnull AsyncRequestCallback<GitHubPullRequest> callback);
 
     /**

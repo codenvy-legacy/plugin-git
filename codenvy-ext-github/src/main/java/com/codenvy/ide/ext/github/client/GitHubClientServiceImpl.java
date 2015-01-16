@@ -16,7 +16,8 @@ import com.codenvy.ide.ext.github.shared.Collaborators;
 import com.codenvy.ide.ext.github.shared.GitHubIssueComment;
 import com.codenvy.ide.ext.github.shared.GitHubIssueCommentInput;
 import com.codenvy.ide.ext.github.shared.GitHubPullRequest;
-import com.codenvy.ide.ext.github.shared.GitHubPullRequestInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestCreationInput;
+import com.codenvy.ide.ext.github.shared.GitHubPullRequestList;
 import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
@@ -52,6 +53,7 @@ public class GitHubClientServiceImpl implements GitHubClientService {
     private static final String       FORKS          = "/forks";
     private static final String       CREATE_FORK    = "/createfork";
     private static final String       PULL_REQUEST   = "/pullrequest";
+    private static final String       PULL_REQUESTS  = "/pullrequests";
     private static final String       ISSUE_COMMENTS = "/issuecomments";
     /** REST service context. */
     private final String              baseUrl;
@@ -96,9 +98,15 @@ public class GitHubClientServiceImpl implements GitHubClientService {
         asyncRequestFactory.createPostRequest(url, input).loader(loader).send(callback);
     }
 
+    @Override
+    public void getPullRequests(String owner, String repository, AsyncRequestCallback<GitHubPullRequestList> callback) {
+        String url = baseUrl + PULL_REQUESTS + "/" + owner + "/" + repository;
+        asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
+    }
+
     /** {@inheritDoc} */
     @Override
-    public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestInput input,
+    public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestCreationInput input,
                                   @Nonnull AsyncRequestCallback<GitHubPullRequest> callback) {
         String url = baseUrl + PULL_REQUEST + "/" + user + "/" + repository;
         asyncRequestFactory.createPostRequest(url, input).loader(loader).send(callback);

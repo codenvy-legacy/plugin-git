@@ -68,4 +68,15 @@ public interface GitHubPullRequest {
     void setState(String state);
 
     GitHubPullRequest withState(String state);
+
+    /**
+     * Get pull request head.
+     *
+     * @return {@link GitHubPullRequestHead} head
+     */
+    GitHubPullRequestHead getHead();
+
+    void setHead(GitHubPullRequestHead head);
+
+    GitHubPullRequest withHead(GitHubPullRequestHead head);
 }

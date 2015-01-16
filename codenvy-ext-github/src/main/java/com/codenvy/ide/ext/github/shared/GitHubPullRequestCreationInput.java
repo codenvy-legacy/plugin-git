@@ -13,7 +13,7 @@ package com.codenvy.ide.ext.github.shared;
 import com.codenvy.dto.shared.DTO;
 
 @DTO
-public interface GitHubPullRequestInput {
+public interface GitHubPullRequestCreationInput {
     /**
      * Get pull request title.
      *
@@ -23,7 +23,7 @@ public interface GitHubPullRequestInput {
 
     void setTitle(String title);
 
-    GitHubPullRequestInput withTitle(String title);
+    GitHubPullRequestCreationInput withTitle(String title);
 
     /**
      * Get pull request head branch.
@@ -34,7 +34,7 @@ public interface GitHubPullRequestInput {
 
     void setHead(String head);
 
-    GitHubPullRequestInput withHead(String head);
+    GitHubPullRequestCreationInput withHead(String head);
 
     /**
      * Get pull request base branch.
@@ -45,7 +45,7 @@ public interface GitHubPullRequestInput {
 
     void setBase(String base);
 
-    GitHubPullRequestInput withBase(String base);
+    GitHubPullRequestCreationInput withBase(String base);
 
     /**
      * Get pull request body.
@@ -56,5 +56,5 @@ public interface GitHubPullRequestInput {
 
     void setBody(String body);
 
-    GitHubPullRequestInput withBody(String body);
+    GitHubPullRequestCreationInput withBody(String body);
 }

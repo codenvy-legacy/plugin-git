@@ -61,36 +61,33 @@ public class AddToIndexViewImpl extends Window implements AddToIndexView {
     protected AddToIndexViewImpl(GitResources resources, GitLocalizationConstant locale) {
         this.res = resources;
         this.locale = locale;
-        this.ensureDebugId("git-addToIndex-window");
 
-        Widget widget = ourUiBinder.createAndBindUi(this);
+        ensureDebugId("git-addToIndex-window");
+        setTitle(locale.addToIndexTitle());
+        setWidget(ourUiBinder.createAndBindUi(this));
 
-        this.setTitle(locale.addToIndexTitle());
-        this.setWidget(widget);
-        
+        btnAdd = createButton(locale.buttonAdd(), "git-addToIndex-btnAdd", new ClickHandler() {
+            @Override
+            public void onClick(ClickEvent event) {
+                delegate.onAddClicked();
+            }
+        });
+        btnAdd.addStyleName(Window.resources.centerPanelCss().blueButton());
+        getFooter().add(btnAdd);
+
         btnCancel = createButton(locale.buttonCancel(), "git-addToIndex-btnCancel", new ClickHandler() {
-
             @Override
             public void onClick(ClickEvent event) {
                 delegate.onCancelClicked();
             }
         });
         getFooter().add(btnCancel);
-
-        btnAdd = createButton(locale.buttonAdd(), "git-addToIndex-btnAdd", new ClickHandler() {
-
-            @Override
-            public void onClick(ClickEvent event) {
-                delegate.onAddClicked();
-            }
-        });
-        getFooter().add(btnAdd);
     }
 
     /** {@inheritDoc} */
     @Override
     public void setMessage(@Nonnull String message) {
-        this.message.getElement().setInnerHTML(message);
+        this.message.getElement().setInnerHTML("<p>" + message + "</p>");
     }
 
     /** {@inheritDoc} */

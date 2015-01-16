@@ -124,6 +124,11 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
             return constant.addToIndexAllChanges();
         }
 
+        // Do not display file name longer 50 characters
+        if (pattern.length() > 50) {
+            pattern = pattern.substring(0, 50) + "...";
+        }
+
         if (selection.getFirstElement() instanceof FolderNode) {
             return constant.addToIndexFolder(pattern).asString();
         } else {

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.server.nativegit;
 
+import static java.util.Arrays.asList;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -22,10 +23,7 @@ import com.codenvy.ide.ext.git.server.nativegit.commands.*;
 import com.codenvy.ide.ext.git.shared.*;
 import com.google.common.collect.ImmutableList;
 
-import org.eclipse.jdt.internal.core.NameLookup;
 import org.mockito.ArgumentCaptor;
-import org.mockito.BDDMockito;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
@@ -214,7 +212,7 @@ public class NativeGitConnectionTest {
     public void shouldInvokeSshManagerRemoveKeyMethodAfterPush() throws Exception {
         when(keysManager.writeKeyFile("git@host.com:codenvy")).thenReturn(mock(File.class));
 
-        //force connection push to use remote from push request
+        //force connection to use remote from push request
         final RemoteListCommand rlc = mock(RemoteListCommand.class, RETURNS_DEEP_STUBS);
         when(rlc.setRemoteName(anyString())).thenReturn(rlc);
         when(rlc.execute()).thenThrow(new GitException("test"));
@@ -237,7 +235,7 @@ public class NativeGitConnectionTest {
         when(keysManager.writeKeyFile("git@host.com:codenvy")).thenReturn(mock(File.class));
         when(keysManager.writeKeyFile("git@host.com:codenvy")).thenReturn(mock(File.class));
 
-        //force connection pull to use remote from pull request
+        //force connection to use remote from pull request
         final RemoteListCommand rlc = mock(RemoteListCommand.class);
         when(rlc.setRemoteName(anyString())).thenReturn(rlc);
         when(rlc.execute()).thenThrow(new GitException("test"));
@@ -259,7 +257,7 @@ public class NativeGitConnectionTest {
     public void shouldInvokeSshManagerRemoveKeyMethodAfterFetch() throws Exception {
         when(keysManager.writeKeyFile("git@host.com:codenvy")).thenReturn(mock(File.class));
 
-        //force connection fetch to use remote from fetch request
+        //force connection to use remote from fetch request
         final RemoteListCommand rlc = mock(RemoteListCommand.class);
         when(rlc.setRemoteName(anyString())).thenReturn(rlc);
         when(rlc.execute()).thenThrow(new GitException("test"));
@@ -273,6 +271,32 @@ public class NativeGitConnectionTest {
         connection.fetch(DtoFactory.getInstance()
                                    .createDto(FetchRequest.class)
                                    .withRemote("git@host.com:codenvy"));
+
+        verify(keysManager).removeKey("git@host.com:codenvy");
+    }
+
+    @Test
+    public void shouldInvokeSshManagerRemoveKeyMethodAfterDeleteBranch() throws Exception {
+        when(keysManager.writeKeyFile("git@host.com:codenvy")).thenReturn(mock(File.class));
+
+        //preparing branch
+        when(emptyGitCommand.setNextParameter(anyString())).thenReturn(emptyGitCommand);
+        when(emptyGitCommand.getText()).thenReturn("f5d9ef24292f7e432b2b13762e112c380323f869 refs/remotes/branch/");
+
+        //prepare remote uri
+        final RemoteListCommand rlc = mock(RemoteListCommand.class);
+        when(rlc.setRemoteName(anyString())).thenReturn(rlc);
+        when(nativeGit.createRemoteListCommand()).thenReturn(rlc);
+
+        final Remote remote = mock(Remote.class);
+        when(rlc.execute()).thenReturn(asList(remote));
+        when(remote.getUrl()).thenReturn("git@host.com:codenvy");
+
+        //preparing branch delete command
+        final BranchDeleteCommand bdc = mock(BranchDeleteCommand.class);
+        when(nativeGit.createBranchDeleteCommand(anyString())).thenReturn(bdc);
+
+        connection.branchDelete(DtoFactory.getInstance().createDto(BranchDeleteRequest.class));
 
         verify(keysManager).removeKey("git@host.com:codenvy");
     }

@@ -35,7 +35,6 @@ import com.codenvy.ide.ext.git.server.nativegit.commands.LsRemoteCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.PullCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.PushCommand;
 import com.codenvy.ide.ext.git.server.nativegit.commands.RemoteListCommand;
-import com.codenvy.ide.ext.git.server.nativegit.commands.RemoteUpdateCommand;
 import com.codenvy.ide.ext.git.shared.AddRequest;
 import com.codenvy.ide.ext.git.shared.Branch;
 import com.codenvy.ide.ext.git.shared.BranchCheckoutRequest;
@@ -69,6 +68,9 @@ import com.codenvy.ide.ext.git.shared.TagCreateRequest;
 import com.codenvy.ide.ext.git.shared.TagDeleteRequest;
 import com.codenvy.ide.ext.git.shared.TagListRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -83,6 +85,8 @@ import java.util.regex.Pattern;
  * @author Eugene Voevodin
  */
 public class NativeGitConnection implements GitConnection {
+
+    private static final Logger LOG = LoggerFactory.getLogger(NativeGitConnection.class);
 
     private final NativeGit         nativeGit;
     private final CredentialsLoader credentialsLoader;
@@ -192,12 +196,12 @@ public class NativeGitConnection implements GitConnection {
     public void branchDelete(BranchDeleteRequest request) throws GitException, UnauthorizedException {
         String branchName = getBranchRef(request.getName());
         String remoteName = null;
+        String remoteUri = null;
         BranchDeleteCommand branchDeleteCommand = null;
 
         if (branchName.startsWith("refs/remotes/")) {
             remoteName = parseRemoteName(branchName);
 
-            String remoteUri;
             try {
                 remoteUri = nativeGit.createRemoteListCommand()
                                      .setRemoteName(remoteName)
@@ -221,7 +225,7 @@ public class NativeGitConnection implements GitConnection {
         branchDeleteCommand.setRemote(remoteName);
         branchDeleteCommand.setDeleteFullyMerged(request.isForce());
 
-        executeWithCredentials(branchDeleteCommand, remoteName);
+        executeRemoteCommand(branchDeleteCommand, remoteUri);
     }
 
     @Override
@@ -263,16 +267,17 @@ public class NativeGitConnection implements GitConnection {
         if (clone.getTimeout() > 0) {
             clone.setTimeout(request.getTimeout());
         }
-        executeWithCredentials(clone, remoteUri);
+
+        executeRemoteCommand(clone, remoteUri);
+
         UserCredential credentials = credentialsLoader.getUserCredential(remoteUri);
         if (credentials != null) {
             getConfig().set("codenvy.credentialsProvider", credentials.getProviderId());
         }
-        File repository = clone.getRepository();
-        new RemoteUpdateCommand(repository).setRemoteName(
-                request.getRemoteName() == null ? "origin" : request.getRemoteName())
-                                           .setNewUrl(remoteUri)
-                                           .execute();
+        nativeGit.createRemoteUpdateCommand()
+                 .setRemoteName(request.getRemoteName() == null ? "origin" : request.getRemoteName())
+                 .setNewUrl(remoteUri)
+                 .execute();
     }
 
     @Override
@@ -337,7 +342,7 @@ public class NativeGitConnection implements GitConnection {
                     .setPrune(request.isRemoveDeletedRefs())
                     .setRefSpec(request.getRefSpec())
                     .setTimeout(request.getTimeout());
-        executeWithCredentials(fetchCommand, remoteUri);
+        executeRemoteCommand(fetchCommand, remoteUri);
     }
 
     @Override
@@ -370,13 +375,12 @@ public class NativeGitConnection implements GitConnection {
     public List<RemoteReference> lsRemote(LsRemoteRequest request) throws GitException, UnauthorizedException {
         LsRemoteCommand command = nativeGit.createLsRemoteCommand().setRemoteUrl(request.getRemoteUrl());
         if (request.isUseAuthorization()) {
-            executeWithCredentials(command, request.getRemoteUrl());
+            executeRemoteCommand(command, request.getRemoteUrl());
         } else {
             try {
                 command.setAskPassScriptPath(gitAskPassScript.build(UserCredential.EMPTY_CREDENTIALS).toString());
-                if (!nativeGit.getRepository().exists()) {
-                    nativeGit.getRepository().mkdirs();
-                }
+
+                restoreGitRepoDir();
 
                 command.execute();
             } finally {
@@ -420,12 +424,13 @@ public class NativeGitConnection implements GitConnection {
         } else {
             pullCommand = nativeGit.createPullCommand();
         }
-        pullCommand.setRemote(remoteUri);
-        pullCommand.setRefSpec(request.getRefSpec())
+        pullCommand.setRemote(remoteUri)
+                   .setRefSpec(request.getRefSpec())
                    .setAuthor(getLocalCommitter())
                    .setTimeout(request.getTimeout());
 
-        executeWithCredentials(pullCommand, remoteUri);
+        executeRemoteCommand(pullCommand, remoteUri);
+
         if (pullCommand.getText().toLowerCase().contains("already up-to-date")) {
             throw new AlreadyUpToDateException("Already up-to-date");
         }
@@ -450,10 +455,13 @@ public class NativeGitConnection implements GitConnection {
             pushCommand = nativeGit.createPushCommand();
         }
 
-        pushCommand.setRemote(request.getRemote()).setForce(request.isForce())
+        pushCommand.setRemote(request.getRemote())
+                   .setForce(request.isForce())
                    .setRefSpec(request.getRefSpec())
                    .setTimeout(request.getTimeout());
-        executeWithCredentials(pushCommand, remoteUri);
+
+        executeRemoteCommand(pushCommand, remoteUri);
+
         if (pushCommand.getText().toLowerCase().contains("everything up-to-date")) {
             throw new AlreadyUpToDateException("Everything up-to-date");
         }
@@ -584,52 +592,70 @@ public class NativeGitConnection implements GitConnection {
     }
 
     /**
-     * Executes git command with credentials.
+     * Executes remote command.
+     * <p/>
+     * First time executes command without of credentials, then if operation needs
+     * authorization searches for credentials and executes command again with found credentials
+     * or with {@link UserCredential#EMPTY_CREDENTIALS} when credentials were not found.
+     * <p/>
+     * Removes stored <i>ssh key</i> and <i>git askpass script</i>
+     * if any of it was used while remote command was executed
+     * <p/>
+     * Note: <i>'need for authorization'</i> check based on command execution fail message, so this
+     * check can fail when i.e. git version updated, for more information see {@link #isOperationNeedAuth(String)}
      *
      * @param command
-     *         command that will be executed
+     *         remote command which should be executed
      * @param url
-     *         given URL
+     *         remote url which used to find credentials, manage ssh keys and askpass scripts
      * @throws GitException
-     *         when it is not possible to store credentials or
-     *         authentication failed or command execution failed
+     *         when error occurs while {@code command} execution is going except of unauthorized error
+     * @throws UnauthorizedException
+     *         when it is not possible to execute {@code command} with existing credentials
      */
-    public void executeWithCredentials(GitCommand command, String url) throws GitException, UnauthorizedException {
+    private void executeRemoteCommand(GitCommand<?> command, String url) throws GitException, UnauthorizedException {
+        //first time execute without of credentials
         try {
-            // execute without any credentials
             command.execute();
-        } catch (GitException e) {
+        } catch (GitException gitEx) {
+            if (!isOperationNeedAuth(gitEx.getMessage())) {
+                throw gitEx;
+            }
+            //restoring git repository directory if it was removed after first command execution
+            restoreGitRepoDir();
+            //try to execute command with credentials
             try {
-                if (isOperationNeedAuth(e.getMessage())) {
-                    //try to search available credentials and execute command with it
-                    UserCredential credentials = credentialsLoader.getUserCredential(url);
-                    if (credentials == null) {
-                        credentials = UserCredential.EMPTY_CREDENTIALS;
-                    }
-                    command.setAskPassScriptPath(gitAskPassScript.build(credentials).toString());
-
-                    try {
-                        //after failed clone, git will remove directory so we need to restore it
-                        if (!nativeGit.getRepository().exists()) {
-                            nativeGit.getRepository().mkdirs();
-                        }
-                        command.execute();
-
-
-                    } catch (GitException inner) {
-                        //if not authorized again make runtime exception
-                        if (isOperationNeedAuth(inner.getMessage())) {
-                            throw new UnauthorizedException("Not authorized");
-                        } else {
-                            throw inner;
-                        }
-                    }
-                } else {
-                    throw e;
+                withCredentials(command, url).execute();
+            } catch (GitException gitEx2) {
+                if (!isOperationNeedAuth(gitEx2.getMessage())) {
+                    throw gitEx2;
                 }
+                throw new UnauthorizedException("Not authorized");
             } finally {
                 gitAskPassScript.remove();
             }
+        } finally {
+            if (url != null && Util.isSSH(url)) {
+                keysManager.removeKey(url);
+            }
+        }
+    }
+
+    /** Prepares credentials for git command */
+    private GitCommand withCredentials(GitCommand<?> command, String url) throws GitException {
+        UserCredential credentials = credentialsLoader.getUserCredential(url);
+        if (credentials == null) {
+            credentials = UserCredential.EMPTY_CREDENTIALS;
+        }
+        command.setAskPassScriptPath(gitAskPassScript.build(credentials).toString());
+        return command;
+    }
+
+    /** Restores associated with {@link #nativeGit} repository directory */
+    private void restoreGitRepoDir() throws GitException {
+        final File repo = nativeGit.getRepository();
+        if (!repo.exists() && !repo.mkdirs()) {
+            LOG.error("Could not restore git repository directory " + repo);
         }
     }
 

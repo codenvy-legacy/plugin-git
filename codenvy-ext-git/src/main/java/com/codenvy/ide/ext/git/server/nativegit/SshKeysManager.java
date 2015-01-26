@@ -27,6 +27,9 @@ import javax.inject.Singleton;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -43,7 +46,8 @@ public class SshKeysManager {
     private static final String DEFAULT_KEY_DIRECTORY_PATH = System.getProperty("java.io.tmpdir");
     private static final String DEFAULT_KEY_NAME           = "identity";
 
-    private static String keyDirectoryPath; // TODO(GUICE): initialize
+    //used in tests
+    static String keyDirectoryPath; // TODO(GUICE): initialize
 
     private final SshKeyStore         sshKeyStore;
     private final Set<SshKeyUploader> sshKeyUploaders;
@@ -54,7 +58,7 @@ public class SshKeysManager {
         this.sshKeyUploaders = sshKeyUploaders;
     }
 
-    public static String getKeyDirectoryPath() throws GitException {
+    public static String getKeyDirectoryPath() {
         return (keyDirectoryPath == null ? DEFAULT_KEY_DIRECTORY_PATH : keyDirectoryPath) + '/'
                + EnvironmentContext.getCurrent().getUser().getName();
     }
@@ -147,5 +151,40 @@ public class SshKeysManager {
         }
 
         return keyFile;
+    }
+
+    /**
+     *
+     * /home/jumper/code/plugin-git/codenvy-ext-git/target/ssh-keys/host.com/codenvy/identity
+     * /home/jumper/code/plugin-git/codenvy-ext-git/target/ssh-keys/codenvy/host.com/identity
+     *
+     * Removes ssh key from file system.
+     * If ssh key doesn't exist - nothing will be done.
+     * <p/>
+     * This method should be used with remote git commands
+     * to clean up ssh keys from filesystem after it executions
+     *
+     * @param url
+     *         url which is used to fetch host from it
+     * @throws IllegalArgumentException
+     *         when it is not possible to fetch host from {@code url}
+     * @see Util#getHost(String)
+     */
+    public void removeKey(String url) {
+        final String host = Util.getHost(url);
+        if (host == null) {
+            throw new IllegalArgumentException(String.format("Unable get host name from %s. Probably isn't a SSH URL", url));
+        }
+        final Path key = Paths.get(getKeyDirectoryPath())
+                              .resolve(host)
+                              .resolve(DEFAULT_KEY_NAME);
+
+        if (!Files.exists(key)) return;
+
+        try {
+            Files.delete(key);
+        } catch (IOException e) {
+            LOG.error("It is not possible to remove ssh key {}", key);
+        }
     }
 }

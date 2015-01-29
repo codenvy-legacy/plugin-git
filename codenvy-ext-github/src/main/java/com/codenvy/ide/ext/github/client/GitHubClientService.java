@@ -31,18 +31,31 @@ import java.util.List;
  * Client service for Samples.
  *
  * @author Oksana Vereshchaka
+ * @author Kevin Pollet
  */
 public interface GitHubClientService {
     /**
-     * Get the list of available public and private repositories of the authorized user.
+     * Get given repository information.
      *
+     * @param user
+     *         the owner of the repository.
+     * @param repository
+     *         the repository name.
      * @param callback
-     *         the callback client has to implement
+     *         callback called when operation is done.
      */
-    public abstract void getRepositoriesList(@Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
+    void getRepository(@Nonnull String user, @Nonnull String repository, @Nonnull AsyncRequestCallback<GitHubRepository> callback);
 
     /**
-     * Get the list of forks for given repository
+     * Get list of available public and private repositories of the authorized user.
+     *
+     * @param callback
+     *         callback called when operation is done.
+     */
+    void getRepositoriesList(@Nonnull AsyncRequestCallback<GitHubRepositoryList> callback);
+
+    /**
+     * Get list of forks for given repository
      *
      * @param user
      * @param repository

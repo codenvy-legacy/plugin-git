@@ -93,6 +93,24 @@ public class GitHub {
     }
 
     /**
+     * Get the given user repository.
+     *
+     * @param user
+     *         name of the user.
+     * @param repository
+     *         name of repository.
+     * @return the given user repository
+     */
+    public GitHubRepository getUserRepository(String user, String repository)
+            throws IOException, GitHubException, ParsingResponseException {
+        final String method = "GET";
+        final String url = "https://api.github.com/repos/" + user + "/" + repository;
+        final String response = doJsonRequest(url, method, 200);
+
+        return parseJsonResponse(response, GitHubRepository.class, null);
+    }
+
+    /**
      * Get the list of public repositories by user's name.
      *
      * @param user

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.server.rest;
 
-import com.codenvy.api.auth.oauth.OAuthTokenProvider;
 import com.codenvy.ide.commons.ParsingResponseException;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.github.server.GitHub;
@@ -26,7 +25,6 @@ import com.codenvy.ide.ext.github.shared.GitHubRepository;
 import com.codenvy.ide.ext.github.shared.GitHubRepositoryList;
 import com.codenvy.ide.ext.github.shared.GitHubUser;
 import com.codenvy.ide.ext.ssh.server.SshKey;
-import com.codenvy.ide.ext.ssh.server.SshKeyPair;
 import com.codenvy.ide.ext.ssh.server.SshKeyStore;
 import com.codenvy.ide.ext.ssh.server.SshKeyStoreException;
 
@@ -47,6 +45,7 @@ import java.util.Map;
  *
  * @author Oksana Vereshchaka
  * @author Stéphane Daviet
+ * @author Kevin Pollet
  */
 @Path("github")
 public class GitHubService {
@@ -58,6 +57,14 @@ public class GitHubService {
 
     @Inject
     SshKeyStore sshKeyStore;
+
+    @Path("repositories/{user}/{repository}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public GitHubRepository getUserRepository(@PathParam("user") String user, @PathParam("repository") String repository)
+            throws ParsingResponseException, IOException, GitHubException {
+        return github.getUserRepository(user, repository);
+    }
 
     @Path("list/user")
     @GET

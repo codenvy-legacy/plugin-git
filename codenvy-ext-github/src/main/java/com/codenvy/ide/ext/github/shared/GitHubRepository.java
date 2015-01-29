@@ -25,7 +25,7 @@ public interface GitHubRepository {
      * @return {@link String} name
      */
     String getName();
-    
+
     void setName(String name);
 
     /**
@@ -34,7 +34,7 @@ public interface GitHubRepository {
      * @return {@link String} url
      */
     String getUrl();
-    
+
     void setUrl(String url);
 
     /**
@@ -43,7 +43,7 @@ public interface GitHubRepository {
      * @return {@link String} home page
      */
     String getHomepage();
-    
+
     void setHomepage(String homePage);
 
     /**
@@ -52,7 +52,7 @@ public interface GitHubRepository {
      * @return forks
      */
     int getForks();
-    
+
     void setForks(int forks);
 
     /**
@@ -61,7 +61,7 @@ public interface GitHubRepository {
      * @return {@link String} language
      */
     String getLanguage();
-    
+
     void setLanguage(String language);
 
     /**
@@ -70,8 +70,17 @@ public interface GitHubRepository {
      * @return {@link Boolean} <code>true</code> id forked
      */
     boolean isFork();
-    
+
     void setFork(boolean isFork);
+
+    /**
+     * Get the repository parent.
+     *
+     * @return the parent repository.
+     */
+    GitHubRepository getParent();
+
+    void setParent(GitHubRepository parent);
 
     /**
      * Get the number of repository's watchers.
@@ -79,7 +88,7 @@ public interface GitHubRepository {
      * @return {@link Integer} the number of watchers
      */
     int getWatchers();
-    
+
     void setWatchers(int watchers);
 
     /**
@@ -88,7 +97,7 @@ public interface GitHubRepository {
      * @return {@link Boolean} private state of the repository
      */
     boolean isPrivateRepo();
-    
+
     void setPrivateRepo(boolean isPrivateRepo);
 
     /**
@@ -97,16 +106,16 @@ public interface GitHubRepository {
      * @return {@link Integer} size
      */
     int getSize();
-    
+
     void setSize(int size);
-    
+
     /**
      * Get repository's description.
      *
      * @return {@link String} description
      */
     String getDescription();
-    
+
     void setDescription(String description);
 
     /**
@@ -115,7 +124,7 @@ public interface GitHubRepository {
      * @return {@link String} SSH URL
      */
     String getSshUrl();
-    
+
     void setSshUrl(String sshUrl);
 
     /**
@@ -124,7 +133,7 @@ public interface GitHubRepository {
      * @return {@link String} HTML URL
      */
     String getHtmlUrl();
-    
+
     void setHtmlUrl(String htmlUrl);
 
     /**
@@ -133,7 +142,7 @@ public interface GitHubRepository {
      * @return {@link String}
      */
     String getUpdatedAt();
-    
+
     void setUpdatedAt(String updatedAt);
 
     /**
@@ -142,7 +151,7 @@ public interface GitHubRepository {
      * @return {@link String} Git URL
      */
     String getGitUrl();
-    
+
     void setGitUrl(String gitUrl);
 
     /**
@@ -151,7 +160,7 @@ public interface GitHubRepository {
      * @return {@link Boolean} <code> true</code> - has wiki
      */
     boolean isHasWiki();
-    
+
     void setHasWiki(boolean isHasWiki);
 
     /**
@@ -162,14 +171,14 @@ public interface GitHubRepository {
     String getCloneUrl();
 
     void setCloneUrl(String cloneUrl);
-    
+
     /**
      * Get SVN URL.
      *
      * @return {@link String} SVN URL
      */
     String getSvnUrl();
-    
+
     void setSvnUrl(String svnUrl);
 
     /**
@@ -178,7 +187,7 @@ public interface GitHubRepository {
      * @return {@link Integer} number of opened issues
      */
     int getOpenedIssues();
-    
+
     void setOpenedIssues(int openedIssues);
 
     /**
@@ -187,7 +196,7 @@ public interface GitHubRepository {
      * @return {@link String} created date
      */
     String getCreatedAt();
-    
+
     void setCreatedAt(String createdAt);
 
     /**
@@ -196,7 +205,7 @@ public interface GitHubRepository {
      * @return {@link String} pushed date
      */
     String getPushedAt();
-    
+
     void setPushedAt(String pushedAt);
 
     /**
@@ -205,7 +214,7 @@ public interface GitHubRepository {
      * @return {@link Boolean} <code> true</code> - has downloads
      */
     boolean isHasDownloads();
-    
+
     void setHasDownloads(boolean isHasDownloads);
 
     /**
@@ -214,6 +223,6 @@ public interface GitHubRepository {
      * @return {@link Boolean} <code> true</code> - has issues
      */
     boolean isHasIssues();
-    
+
     void setHasIssues(boolean isHasIssues);
 }

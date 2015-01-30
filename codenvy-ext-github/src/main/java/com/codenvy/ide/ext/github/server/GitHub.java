@@ -60,8 +60,7 @@ public class GitHub {
 
     private final static Logger LOG = LoggerFactory.getLogger(GitHub.class);
 
-    /** Predefined name of GitHub user. Use it to make possible for users to clone repositories with samples. */
-    private final String             myGitHubUser;
+
     private final OAuthTokenProvider oauthTokenProvider;
 
     /** Pattern to parse Link header from GitHub response. */
@@ -86,9 +85,7 @@ public class GitHub {
     private static final String META_NEXT = "next";
 
     @Inject
-    public GitHub(@Named("github.user") String myGitHubUser,
-                  OAuthTokenProvider oauthTokenProvider) {
-        this.myGitHubUser = myGitHubUser;
+    public GitHub(OAuthTokenProvider oauthTokenProvider) {
         this.oauthTokenProvider = oauthTokenProvider;
     }
 
@@ -124,7 +121,6 @@ public class GitHub {
      *         if any error occurs when parse response body
      */
     public GitHubRepositoryList listUserPublicRepositories(String user) throws IOException, GitHubException, ParsingResponseException {
-        user = (user == null || user.isEmpty()) ? myGitHubUser : user;
         if (user == null) {
             LOG.error("Git user is not set.");
             throw new IllegalArgumentException("User's name must not be null.");

@@ -124,7 +124,8 @@ public class CommandProcess {
     private static String searchErrorMessage(List<String> output) {
         //check if troubles with ssh keys
         int i = 0;
-        for (int length = output.size(); i < length && !output.get(i).contains("fatal:"); i++) ;
+        for (int length = output.size(); i < length && !output.get(i).contains("fatal:"); i++) {
+        }
         StringBuilder builder = new StringBuilder();
         if (i == output.size()) {
             for (String line : output) {

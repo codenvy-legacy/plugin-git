@@ -203,7 +203,7 @@ public class FetchViewImpl extends Window implements FetchView {
     
     @UiHandler("remoteBranch")
     public void onValueChanged(ChangeEvent event) {
-        delegate.onRemoteBranchChanged();;
+        delegate.onRemoteBranchChanged();
     }
 
     /** {@inheritDoc} */

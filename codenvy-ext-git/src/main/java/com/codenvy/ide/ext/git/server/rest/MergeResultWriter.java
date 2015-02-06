@@ -95,6 +95,8 @@ public final class MergeResultWriter implements MessageBodyWriter<MergeResult> {
                 writer.write("Operation not supported");
                 writer.write('\n');
                 break;
+            default:
+                break;
         }
         writer.flush();
     }

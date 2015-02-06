@@ -43,7 +43,7 @@ public abstract class GitAction extends ProjectAction {
 
         if (getActiveProject() != null) {
             ProjectDescriptor rootProjectDescriptor = getActiveProject().getRootProject();
-            List<String> listVcsProvider = rootProjectDescriptor.getAttributes().get("vcs.provider.name");;
+            List<String> listVcsProvider = rootProjectDescriptor.getAttributes().get("vcs.provider.name");
 
             if (listVcsProvider != null && (!listVcsProvider.isEmpty()) && listVcsProvider.contains("git")) {
                 isGitRepository = true;

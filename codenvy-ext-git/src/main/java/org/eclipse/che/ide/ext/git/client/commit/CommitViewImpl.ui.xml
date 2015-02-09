@@ -20,6 +20,11 @@
             margin-bottom: 10px;
         }
 
+        .mainPanel {
+            min-width: 350px;
+            min-height: 220px;
+        }
+
         .emptyBorder {
             margin: 6px;
         }
@@ -27,26 +32,40 @@
         .space {
             margin-right: 5px;
         }
+
+        .addSection {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            align-items: flex-start;
+            -webkit-align-items: flex-start;
+        }
+
+        .optionSection {
+            margin-top:0.3em;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            align-items: flex-end;
+            -webkit-align-items: flex-end;
+        }
     </ui:style>
-    <g:DockLayoutPanel unit="PX" width="350px" height="220px" addStyleNames="{style.emptyBorder}" debugId="git-commit-mainForm">
-        <g:center>
-            <g:DockLayoutPanel unit="PX" width="100%" height="100%" styleName="{style.spacing}">
-                <g:north size="22.0">
-                    <g:CheckBox ui:field="all" HTML="{locale.commitAllFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
-                                debugId="git-commit-addAll"/>
-                </g:north>
-                <g:north size="22.0">
-                    <g:CheckBox ui:field="amend" HTML="{locale.commitAmendFieldTitle}"
-                                addStyleNames="{res.gitCSS.textFont}" debugId="git-commit-amend"/>
-                </g:north>
-                <g:north size="20.0">
-                    <g:Label text="{locale.commitMessageFieldTitle}" addStyleNames="{res.gitCSS.textFont}"/>
-                </g:north>
-                <g:center>
-                    <g:TextArea ui:field="message" width="338px" height="140px" addStyleNames="{res.gitCSS.textFont}"
-                                debugId="git-commit-message"/>
-                </g:center>
-            </g:DockLayoutPanel>
-        </g:center>
-    </g:DockLayoutPanel>
+
+    <g:HTMLPanel addStyleNames="{style.emptyBorder} {style.mainPanel}" debugId="git-commit-mainForm">
+        <div class="{style.addSection}"><!-- Late 'git add' section -->
+            <g:CheckBox ui:field="all" HTML="{locale.commitAllFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
+                        debugId="git-commit-addAll"/>
+            <g:CheckBox ui:field="addSelection" HTML="{locale.commitSelectionFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
+                        debugId="git-commit-addSelection"/>
+        </div>
+        <div class="{style.optionSection}"><!-- Commit modifiers -->
+            <g:CheckBox ui:field="amend" HTML="{locale.commitAmendFieldTitle}"
+                        addStyleNames="{res.gitCSS.textFont}" debugId="git-commit-amend"/>
+        </div>
+        <g:TextArea ui:field="message" width="338px" height="140px" addStyleNames="{res.gitCSS.textFont}"
+                        debugId="git-commit-message"/>
+    </g:HTMLPanel>
+
 </ui:UiBinder>

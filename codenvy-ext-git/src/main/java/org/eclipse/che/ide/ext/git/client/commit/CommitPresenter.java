@@ -16,11 +16,16 @@ import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.GitServiceClient;
 import org.eclipse.che.ide.ext.git.client.DateTimeFormatter;
+import org.eclipse.che.ide.ext.git.shared.LogResponse;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
+import org.eclipse.che.ide.rest.Unmarshallable;
+import org.eclipse.che.ide.util.loging.Log;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+
+import java.util.List;
 
 import javax.annotation.Nonnull;
 
@@ -140,5 +145,31 @@ public class CommitPresenter implements CommitView.ActionDelegate {
     public void onValueChanged() {
         String message = view.getMessage();
         view.setEnableCommitButton(!message.isEmpty());
+    }
+
+    @Override
+    public void setAmendCommitMessage() {
+        final Unmarshallable<LogResponse> unmarshall = dtoUnmarshallerFactory.newUnmarshaller(LogResponse.class);
+        this.service.log(appContext.getCurrentProject().getRootProject(), false, new AsyncRequestCallback<LogResponse>(unmarshall) {
+            @Override
+            protected void onSuccess(final LogResponse result) {
+                final List<Revision> commits = result.getCommits();
+                String message = "";
+                if (commits != null && (!commits.isEmpty())) {
+                    final Revision tip = commits.get(0);
+                    if (tip != null) {
+                        message = tip.getMessage();
+                    }
+                }
+                CommitPresenter.this.view.setMessage(message);
+                CommitPresenter.this.view.setEnableCommitButton(!message.isEmpty());
+            }
+
+            @Override
+            protected void onFailure(final Throwable exception) {
+                Log.warn(CommitPresenter.class, "Git log failed", exception);
+                CommitPresenter.this.view.setMessage("");
+            }
+        });
     }
 }

@@ -50,6 +50,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.reset;
 
 /**
  * Testing {@link BranchPresenter} functionality.
@@ -174,8 +175,12 @@ public class BranchPresenterTest extends BaseTest {
         }).when(service).branchRename((ProjectDescriptor)anyObject(), anyString(), anyString(), (AsyncRequestCallback<String>)anyObject());
 
         selectBranch();
+        reset(view);
         presenter.onRenameClicked();
 
+        verify(view).setEnableCheckoutButton(false);
+        verify(view).setEnableRenameButton(false);
+        verify(view).setEnableDeleteButton(false);
         verify(selectedBranch).getDisplayName();
         verify(service).branchRename(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(RETURNED_MESSAGE),
                                      (AsyncRequestCallback<String>)anyObject());
@@ -229,8 +234,12 @@ public class BranchPresenterTest extends BaseTest {
         }).when(service).branchDelete((ProjectDescriptor)anyObject(), anyString(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
 
         selectBranch();
+        reset(view);
         presenter.onDeleteClicked();
 
+        verify(view).setEnableCheckoutButton(false);
+        verify(view).setEnableRenameButton(false);
+        verify(view).setEnableDeleteButton(false);
         verify(selectedBranch).getName();
         verify(service)
                 .branchDelete(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(NEED_DELETING), (AsyncRequestCallback<String>)anyObject());
@@ -288,8 +297,12 @@ public class BranchPresenterTest extends BaseTest {
         }).when(projectServiceClient).getFileContent(anyString(), (AsyncRequestCallback<String>)anyObject());
 
         selectBranch();
+        reset(view);
         presenter.onCheckoutClicked();
 
+        verify(view).setEnableCheckoutButton(false);
+        verify(view).setEnableRenameButton(false);
+        verify(view).setEnableDeleteButton(false);
         verify(editorAgent).getOpenedEditors();
         verify(selectedBranch, times(2)).getDisplayName();
         verify(selectedBranch).isRemote();

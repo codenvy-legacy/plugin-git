@@ -42,12 +42,26 @@ public class CommitViewImpl extends Window implements CommitView {
 
     private static CommitViewImplUiBinder ourUiBinder = GWT.create(CommitViewImplUiBinder.class);
 
+    /**
+     * The add all uncommited change field.
+     */
     @UiField
     CheckBox addAll;
+    /**
+     * The 'include selection' in commit field.
+     */
     @UiField
     CheckBox addSelection;
+
+    /**
+     * The amend commit flag.
+     */
     @UiField
     CheckBox amend;
+
+    /**
+     * The commit message input field.
+     */
     @UiField
     TextArea message;
     Button   btnCommit;

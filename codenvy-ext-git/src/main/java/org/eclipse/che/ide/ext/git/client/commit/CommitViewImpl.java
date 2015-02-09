@@ -177,6 +177,20 @@ public class CommitViewImpl extends Window implements CommitView {
         delegate.onValueChanged();
     }
 
+    @UiHandler("addAll")
+    public void onAddAllValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.addSelection.setValue(false);
+        }
+    }
+
+    @UiHandler("addSelection")
+    public void onAddSelectionValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.addAll.setValue(false);
+        }
+    }
+
     @UiHandler("amend")
     public void onAmendValueChange(final ValueChangeEvent<Boolean> event) {
         if (event.getValue()) {

@@ -52,6 +52,11 @@ public class CommitViewImpl extends Window implements CommitView {
      */
     @UiField
     CheckBox addSelection;
+    /**
+     * The 'commit only selection' field.
+     */
+    @UiField
+    CheckBox onlySelection;
 
     /**
      * The amend commit flag.
@@ -156,6 +161,16 @@ public class CommitViewImpl extends Window implements CommitView {
         this.addSelection.setValue(includeSelection);
     }
 
+    @Override
+    public boolean isOnlySelection() {
+        return this.onlySelection.getValue();
+    }
+
+    @Override
+    public void setOnlySelection(final boolean onlySelection) {
+        this.onlySelection.setValue(onlySelection);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void setEnableCommitButton(boolean enable) {
@@ -195,6 +210,7 @@ public class CommitViewImpl extends Window implements CommitView {
     public void onAddAllValueChange(final ValueChangeEvent<Boolean> event) {
         if (event.getValue()) {
             this.addSelection.setValue(false);
+            this.onlySelection.setValue(false);
         }
     }
 
@@ -202,6 +218,15 @@ public class CommitViewImpl extends Window implements CommitView {
     public void onAddSelectionValueChange(final ValueChangeEvent<Boolean> event) {
         if (event.getValue()) {
             this.addAll.setValue(false);
+            this.onlySelection.setValue(false);
+        }
+    }
+
+    @UiHandler("onlySelection")
+    public void onOnlySelectionValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.addAll.setValue(false);
+            this.addSelection.setValue(false);
         }
     }
 

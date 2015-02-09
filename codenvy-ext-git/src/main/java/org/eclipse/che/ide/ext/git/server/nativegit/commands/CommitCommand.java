@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +39,7 @@ public class CommitCommand extends GitCommand<Void> {
     private GitUser committer;
     private boolean amend;
     private boolean all;
+    private List<String> files;
 
     public CommitCommand(File place) {
         super(place);
@@ -98,6 +100,9 @@ public class CommitCommand extends GitCommand<Void> {
             commandLine.add(String.format("--author=%s \\<%s>", name, email));
         }
 
+        if (files != null) {
+            commandLine.add(files);
+        }
 
         start();
         if (commitMsgFile != null) {
@@ -157,6 +162,18 @@ public class CommitCommand extends GitCommand<Void> {
      */
     public CommitCommand setCommitter(GitUser committer) {
         this.committer = committer;
+        return this;
+    }
+
+    /**
+     * Sets the list of iles to commit (ignores index).
+     *
+     * @param files
+     *         the files to commit
+     * @return this object
+     */
+    public CommitCommand setFiles(List<String> files) {
+        this.files = files;
         return this;
     }
 }

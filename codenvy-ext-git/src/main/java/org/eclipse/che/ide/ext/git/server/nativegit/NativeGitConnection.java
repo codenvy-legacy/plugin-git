@@ -300,6 +300,7 @@ public class NativeGitConnection implements GitConnection {
         command.setAll(request.isAll());
         command.setAmend(request.isAmend());
         command.setMessage(request.getMessage());
+        command.setFiles(request.getFiles());
 
         try {
             command.execute();

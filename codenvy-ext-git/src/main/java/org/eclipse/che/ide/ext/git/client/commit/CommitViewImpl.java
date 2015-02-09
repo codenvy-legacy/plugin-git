@@ -17,6 +17,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -162,6 +163,16 @@ public class CommitViewImpl extends Window implements CommitView {
     @UiHandler("message")
     public void onMessageChanged(KeyUpEvent event) {
         delegate.onValueChanged();
+    }
+
+    @UiHandler("amend")
+    public void onAmendValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.delegate.setAmendCommitMessage();
+        } else {
+            this.message.setValue("");
+            this.setEnableCommitButton(false);
+        }
     }
 
     /** {@inheritDoc} */

@@ -59,6 +59,8 @@
                         debugId="git-commit-addAll"/>
             <g:CheckBox ui:field="addSelection" HTML="{locale.commitSelectionFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
                         debugId="git-commit-addSelection"/>
+            <g:CheckBox ui:field="onlySelection" HTML="{locale.commitOnlySelectionFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
+                        debugId="git-commit-onlySelection"/>
         </div>
         <div class="{style.optionSection}"><!-- Commit modifiers -->
             <g:CheckBox ui:field="amend" HTML="{locale.commitAmendFieldTitle}"

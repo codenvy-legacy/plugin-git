@@ -45,6 +45,8 @@ public class CommitViewImpl extends Window implements CommitView {
     @UiField
     CheckBox addAll;
     @UiField
+    CheckBox addSelection;
+    @UiField
     CheckBox amend;
     @UiField
     TextArea message;
@@ -128,6 +130,16 @@ public class CommitViewImpl extends Window implements CommitView {
     @Override
     public void setAmend(boolean isAmend) {
         amend.setValue(isAmend);
+    }
+
+    @Override
+    public boolean isIncludeSelection() {
+        return this.addSelection.getValue();
+    }
+
+    @Override
+    public void setIncludeSelection(final boolean includeSelection) {
+        this.addSelection.setValue(includeSelection);
     }
 
     /** {@inheritDoc} */

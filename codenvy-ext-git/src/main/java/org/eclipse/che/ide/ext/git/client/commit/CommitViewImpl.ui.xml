@@ -36,7 +36,7 @@
                                 debugId="git-commit-addAll"/>
                 </g:north>
                 <g:north size="22.0">
-                    <g:CheckBox ui:field="amend" visible="false" HTML="{locale.commitAmendFieldTitle}"
+                    <g:CheckBox ui:field="amend" HTML="{locale.commitAmendFieldTitle}"
                                 addStyleNames="{res.gitCSS.textFont}" debugId="git-commit-amend"/>
                 </g:north>
                 <g:north size="20.0">

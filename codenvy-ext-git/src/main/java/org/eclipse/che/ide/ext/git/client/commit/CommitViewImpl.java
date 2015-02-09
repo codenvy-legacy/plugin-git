@@ -43,7 +43,7 @@ public class CommitViewImpl extends Window implements CommitView {
     private static CommitViewImplUiBinder ourUiBinder = GWT.create(CommitViewImplUiBinder.class);
 
     @UiField
-    CheckBox all;
+    CheckBox addAll;
     @UiField
     CheckBox amend;
     @UiField
@@ -109,13 +109,13 @@ public class CommitViewImpl extends Window implements CommitView {
     /** {@inheritDoc} */
     @Override
     public boolean isAllFilesInclued() {
-        return all.getValue();
+        return this.addAll.getValue();
     }
 
     /** {@inheritDoc} */
     @Override
     public void setAllFilesInclude(boolean isAllFiles) {
-        all.setValue(isAllFiles);
+        this.addAll.setValue(isAllFiles);
     }
 
     /** {@inheritDoc} */

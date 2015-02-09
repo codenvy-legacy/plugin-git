@@ -55,7 +55,7 @@
 
     <g:HTMLPanel addStyleNames="{style.emptyBorder} {style.mainPanel}" debugId="git-commit-mainForm">
         <div class="{style.addSection}"><!-- Late 'git add' section -->
-            <g:CheckBox ui:field="all" HTML="{locale.commitAllFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
+            <g:CheckBox ui:field="addAll" HTML="{locale.commitAllFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
                         debugId="git-commit-addAll"/>
             <g:CheckBox ui:field="addSelection" HTML="{locale.commitSelectionFieldTitle}" addStyleNames="{res.gitCSS.textFont}"
                         debugId="git-commit-addSelection"/>

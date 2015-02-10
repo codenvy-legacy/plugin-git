@@ -23,6 +23,7 @@ import org.eclipse.che.ide.ext.git.shared.RepoInfo;
 import org.eclipse.che.ide.ext.git.shared.ResetRequest;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.eclipse.che.ide.ext.git.shared.Status;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
@@ -401,7 +402,7 @@ public interface GitServiceClient {
     /**
      * Gets the working tree status. The status of added, modified or deleted files is shown is written in {@link String}. The format may
      * be
-     * short or not. Example of detailed format:<br>
+     * long, short or porcelain. Example of detailed format:<br>
      * <p/>
      * <p/>
      * <pre>
@@ -427,7 +428,7 @@ public interface GitServiceClient {
      *         to show in short format or not
      * @param callback
      */
-    void statusText(@Nonnull ProjectDescriptor project, boolean shortFormat, @Nonnull AsyncRequestCallback<String> callback);
+    void statusText(@Nonnull ProjectDescriptor project, StatusFormat format, @Nonnull AsyncRequestCallback<String> callback);
 
     /**
      * Gets the working tree status : list of untracked, changed not commited and changed not updated.

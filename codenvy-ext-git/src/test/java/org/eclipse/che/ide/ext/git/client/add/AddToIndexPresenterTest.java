@@ -17,6 +17,7 @@ import org.eclipse.che.ide.api.project.tree.generic.ProjectNode;
 import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.selection.SelectionAgent;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
+import org.eclipse.che.ide.ext.git.shared.Status;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.websocket.WebSocketException;
 import org.eclipse.che.ide.websocket.rest.RequestCallback;
@@ -50,31 +51,33 @@ public class AddToIndexPresenterTest extends BaseTest {
     public static final boolean  NEED_UPDATING = true;
     public static final SafeHtml SAFE_HTML     = mock(SafeHtml.class);
     public static final String   MESSAGE       = "message";
-    public static final String   STATUS_TEXT   = "Changes not staged for commit";
 
     @Captor
     private ArgumentCaptor<RequestCallback<Void>>        requestCallbackAddToIndexCaptor;
     @Captor
-    private ArgumentCaptor<AsyncRequestCallback<String>> asyncRequestCallbackStatusCaptor;
+    private ArgumentCaptor<AsyncRequestCallback<Status>> asyncRequestCallbackStatusCaptor;
 
     @Mock
     private AddToIndexView      view;
     @Mock
     private SelectionAgent      selectionAgent;
+    @Mock
+    private Status              statusResponse;
+
     private AddToIndexPresenter presenter;
 
     @Override
     public void disarm() {
         super.disarm();
-        presenter = new AddToIndexPresenter(view, service, constant, appContext, selectionAgent, notificationManager);
+        presenter = new AddToIndexPresenter(view, appContext, dtoUnmarshallerFactory, constant, service, notificationManager, selectionAgent);
     }
 
     @Test
     public void testDialogWillNotBeShownWhenStatusRequestIsFailed() throws Exception {
         presenter.showDialog();
 
-        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
-        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+        verify(service).status(eq(rootProjectDescriptor), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<Status> callback = asyncRequestCallbackStatusCaptor.getValue();
 
         //noinspection NonJREEmulationClassesInClientCode
         Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
@@ -87,14 +90,16 @@ public class AddToIndexPresenterTest extends BaseTest {
 
     @Test
     public void testDialogWillNotBeShownWhenNothingAddToIndex() throws Exception {
+        when(this.statusResponse.isClean()).thenReturn(true);
+
         presenter.showDialog();
 
-        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
-        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+        verify(service).status(eq(rootProjectDescriptor), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<Status> callback = asyncRequestCallbackStatusCaptor.getValue();
 
         //noinspection NonJREEmulationClassesInClientCode
         Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-        onSuccess.invoke(callback, "working directory clean");
+        onSuccess.invoke(callback, this.statusResponse);
 
         verify(notificationManager).showInfo(anyString());
         verify(view, never()).showDialog();
@@ -109,15 +114,16 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(selection.getFirstElement()).thenReturn(project);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexAllChanges()).thenReturn(MESSAGE);
+        when(this.statusResponse.isClean()).thenReturn(false);
 
         presenter.showDialog();
 
-        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
-        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+        verify(service).status(eq(rootProjectDescriptor), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<Status> callback = asyncRequestCallbackStatusCaptor.getValue();
 
         //noinspection NonJREEmulationClassesInClientCode
         Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-        onSuccess.invoke(callback, STATUS_TEXT);
+        onSuccess.invoke(callback, this.statusResponse);
 
         verify(appContext).getCurrentProject();
         verify(constant).addToIndexAllChanges();
@@ -135,15 +141,16 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(selection.getFirstElement()).thenReturn(folder);
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexFolder(anyString())).thenReturn(SAFE_HTML);
+        when(this.statusResponse.isClean()).thenReturn(false);
 
         presenter.showDialog();
 
-        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
-        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+        verify(service).status(eq(rootProjectDescriptor), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<Status> callback = asyncRequestCallbackStatusCaptor.getValue();
 
         //noinspection NonJREEmulationClassesInClientCode
         Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-        onSuccess.invoke(callback, STATUS_TEXT);
+        onSuccess.invoke(callback, this.statusResponse);
 
         verify(appContext).getCurrentProject();
         verify(constant).addToIndexFolder(eq(PROJECT_NAME));
@@ -162,15 +169,16 @@ public class AddToIndexPresenterTest extends BaseTest {
         when(selectionAgent.getSelection()).thenReturn(selection);
         when(constant.addToIndexFile(anyString())).thenReturn(SAFE_HTML);
         when(SAFE_HTML.asString()).thenReturn(MESSAGE);
+        when(this.statusResponse.isClean()).thenReturn(false);
 
         presenter.showDialog();
 
-        verify(service).statusText(eq(rootProjectDescriptor), eq(false), asyncRequestCallbackStatusCaptor.capture());
-        AsyncRequestCallback<String> callback = asyncRequestCallbackStatusCaptor.getValue();
+        verify(service).status(eq(rootProjectDescriptor), asyncRequestCallbackStatusCaptor.capture());
+        AsyncRequestCallback<Status> callback = asyncRequestCallbackStatusCaptor.getValue();
 
         //noinspection NonJREEmulationClassesInClientCode
         Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
-        onSuccess.invoke(callback, STATUS_TEXT);
+        onSuccess.invoke(callback, this.statusResponse);
 
         verify(appContext).getCurrentProject();
         verify(constant).addToIndexFile(eq(PROJECT_NAME));

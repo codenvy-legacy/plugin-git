@@ -46,6 +46,7 @@ import org.eclipse.che.ide.ext.git.shared.ResetRequest;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.eclipse.che.ide.ext.git.shared.RmRequest;
 import org.eclipse.che.ide.ext.git.shared.Status;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
 import org.eclipse.che.ide.rest.AsyncRequestLoader;
@@ -67,6 +68,7 @@ import java.util.Map;
 
 import static org.eclipse.che.ide.MimeType.APPLICATION_JSON;
 import static org.eclipse.che.ide.MimeType.TEXT_PLAIN;
+import static org.eclipse.che.ide.ext.git.shared.StatusFormat.PORCELAIN;
 import static org.eclipse.che.ide.rest.HTTPHeader.ACCEPT;
 import static org.eclipse.che.ide.rest.HTTPHeader.CONTENTTYPE;
 import static com.google.gwt.http.client.RequestBuilder.POST;
@@ -176,9 +178,9 @@ public class GitServiceClientImpl implements GitServiceClient {
 
     /** {@inheritDoc} */
     @Override
-    public void statusText(@Nonnull ProjectDescriptor project, boolean shortFormat, @Nonnull AsyncRequestCallback<String> callback) {
+    public void statusText(@Nonnull ProjectDescriptor project, StatusFormat format, @Nonnull AsyncRequestCallback<String> callback) {
         String url = baseHttpUrl + STATUS;
-        String params = "?projectPath=" + project.getPath() + "&short=" + shortFormat;
+        String params = "?projectPath=" + project.getPath() + "&format=" + format;
 
         asyncRequestFactory.createPostRequest(url + params, null)
                            .loader(loader)
@@ -267,7 +269,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     /** {@inheritDoc} */
     @Override
     public void status(@Nonnull ProjectDescriptor project, @Nonnull AsyncRequestCallback<Status> callback) {
-        String params = "?projectPath=" + project.getPath() + "&short=false";
+        String params = "?projectPath=" + project.getPath() + "&format=" + PORCELAIN;
         String url = baseHttpUrl + STATUS + params;
         asyncRequestFactory.createPostRequest(url, null).loader(loader)
                            .header(CONTENTTYPE, APPLICATION_JSON)

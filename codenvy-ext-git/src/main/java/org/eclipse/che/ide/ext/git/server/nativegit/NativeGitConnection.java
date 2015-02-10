@@ -63,6 +63,7 @@ import org.eclipse.che.ide.ext.git.shared.ResetRequest;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.eclipse.che.ide.ext.git.shared.RmRequest;
 import org.eclipse.che.ide.ext.git.shared.Status;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 import org.eclipse.che.ide.ext.git.shared.Tag;
 import org.eclipse.che.ide.ext.git.shared.TagCreateRequest;
 import org.eclipse.che.ide.ext.git.shared.TagDeleteRequest;
@@ -519,8 +520,8 @@ public class NativeGitConnection implements GitConnection {
     }
 
     @Override
-    public Status status(boolean shortFormat) throws GitException {
-        return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, shortFormat);
+    public Status status(final StatusFormat format) throws GitException {
+        return new NativeGitStatusImpl(getCurrentBranch(), nativeGit, format);
     }
 
     @Override

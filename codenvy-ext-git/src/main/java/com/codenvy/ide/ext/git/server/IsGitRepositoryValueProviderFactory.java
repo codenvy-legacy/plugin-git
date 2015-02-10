@@ -13,30 +13,29 @@ package com.codenvy.ide.ext.git.server;
 import com.codenvy.api.core.ForbiddenException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.project.server.FolderEntry;
-import com.codenvy.api.project.server.Project;
 import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueProvider;
 
+import javax.inject.Singleton;
 import java.util.LinkedList;
 import java.util.List;
 
 /**
  * @author Roman Nikitenko
  */
+@Singleton
 public class IsGitRepositoryValueProviderFactory implements ValueProviderFactory {
-    @Override
-    public String getName() {
-        return "vcs.provider.name";
-    }
+
+    public static String NAME = "vcs.provider.name";
 
     @Override
-    public ValueProvider newInstance(final Project project) {
+    public ValueProvider newInstance(final FolderEntry project) {
         return new ValueProvider() {
             @Override
-            public List<String> getValues() {
+            public List<String> getValues(String attributeName) {
                 final List<String> list = new LinkedList<>();
                 try {
-                    final FolderEntry git = (FolderEntry)project.getBaseFolder().getChild(".git");
+                    final FolderEntry git = (FolderEntry)project.getChild(".git");
                     if (git != null) {
                         list.add("git");
                     }
@@ -46,7 +45,7 @@ public class IsGitRepositoryValueProviderFactory implements ValueProviderFactory
             }
 
             @Override
-            public void setValues(List<String> value) {
+            public void setValues(String attributeName, List<String> value) {
                 //noting todo
             }
         };

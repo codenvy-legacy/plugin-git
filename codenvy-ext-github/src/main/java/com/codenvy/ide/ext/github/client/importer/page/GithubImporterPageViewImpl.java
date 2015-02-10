@@ -71,8 +71,6 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     @UiField
     Label                  labelUrlError;
     @UiField
-    HTMLPanel              descriptionArea;
-    @UiField
     TextBox                projectName;
     @UiField
     TextArea               projectDescription;
@@ -183,9 +181,17 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
 
     @UiHandler("projectName")
     void onProjectNameChanged(KeyUpEvent event) {
+        String projectNameValue = projectName.getValue();
+
+        if (projectNameValue != null && projectNameValue.contains(" ")) {
+            projectNameValue = projectNameValue.replace(" ", "-");
+            projectName.setValue(projectNameValue);
+        }
+
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
             return;
         }
+
         delegate.projectNameChanged(projectName.getValue());
     }
 
@@ -219,6 +225,12 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     }
 
     @Override
+    public void setVisibility(boolean visible) {
+        projectPublic.setValue(visible, false);
+        projectPrivate.setValue(!visible, false);
+    }
+
+    @Override
     public void reset() {
         projectUrl.setText("");
         projectName.setText("");
@@ -238,11 +250,6 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     @Override
     public void hideNameError() {
         projectName.removeStyleName(style.inputError());
-    }
-
-    @Override
-    public void setImporterDescription(@Nonnull String text) {
-        descriptionArea.getElement().setInnerText(text);
     }
 
     @Override

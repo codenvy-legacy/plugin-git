@@ -81,6 +81,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
         view.setAmend(false);
         view.setAllFilesInclude(false);
         view.setIncludeSelection(false);
+        view.setOnlySelection(false);
         view.setEnableCommitButton(!view.getMessage().isEmpty());
         view.showDialog();
         view.focusInMessageField();
@@ -93,9 +94,12 @@ public class CommitPresenter implements CommitView.ActionDelegate {
         final boolean all = view.isAllFilesInclued();
         final boolean amend = view.isAmend();
         final boolean selectionFlag = this.view.isIncludeSelection();
+        final boolean onlySelectionFlag = this.view.isOnlySelection();
 
         if (selectionFlag) {
             commitAddSelection(message, amend);
+        } else if (onlySelectionFlag) {
+            commitOnlySelection(message, amend);
         } else {
             doCommit(message, all, amend);
         }
@@ -137,6 +141,34 @@ public class CommitPresenter implements CommitView.ActionDelegate {
             filePattern.add(getPath(node, base));
         }
         return filePattern;
+    }
+
+    private void commitOnlySelection(final String message, final boolean amend) {
+        // first git-add the selection
+        @SuppressWarnings("unchecked")
+        final Selection<StorableNode< ? >> selection = (Selection<StorableNode< ? >>)this.selectionAgent.getSelection();
+        if (!selection.isEmpty() && (selection.getFirstElement() instanceof StorableNode)) {
+            final List<String> files = buildFileList(selection);
+            service.commit(appContext.getCurrentProject().getRootProject(), message, files, amend,
+                           new AsyncRequestCallback<Revision>(dtoUnmarshallerFactory.newUnmarshaller(Revision.class)) {
+                               @Override
+                               protected void onSuccess(final Revision result) {
+                                   if (!result.isFake()) {
+                                       onCommitSuccess(result);
+                                   } else {
+                                       final Notification notification = new Notification(result.getMessage(), ERROR);
+                                       notificationManager.showNotification(notification);
+                                   }
+                               }
+
+                               @Override
+                               protected void onFailure(final Throwable exception) {
+                                   handleError(exception);
+                               }
+                           }
+                   );
+        } // else don't commit as it goes against user intent
+        this.view.close();
     }
 
     private void doCommit(final String message, final boolean all, final boolean amend) {

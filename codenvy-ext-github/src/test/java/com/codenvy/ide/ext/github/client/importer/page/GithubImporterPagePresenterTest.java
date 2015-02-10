@@ -10,7 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client.importer.page;
 
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
+import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.project.shared.dto.ProjectImporterDescriptor;
+import com.codenvy.api.project.shared.dto.Source;
 import com.codenvy.api.user.gwt.client.UserServiceClient;
 import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.notification.Notification;
@@ -39,7 +43,6 @@ import com.googlecode.gwt.test.GwtTestWithMockito;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -50,6 +53,7 @@ import org.mockito.Mock;
 
 import java.lang.reflect.Method;
 import java.util.Iterator;
+import java.util.Map;
 
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -66,11 +70,8 @@ import static org.mockito.Mockito.when;
  *
  * @author Roman Nikitenko
  */
-@Ignore
 @GwtModule("com.codenvy.ide.ext.github.GitHub")
 public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
-
-    private Wizard.UpdateDelegate updateDelegate;
 
     @Captor
     private ArgumentCaptor<ConfirmCallback> confirmCallbackCaptor;
@@ -81,6 +82,8 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     @Captor
     private ArgumentCaptor<AsyncRequestCallback<StringMap<Array<GitHubRepository>>>> asyncRequestCallbackRepoListCaptor;
 
+    @Mock
+    private Wizard.UpdateDelegate       updateDelegate;
     @Mock
     private DtoFactory                  dtoFactory;
     @Mock
@@ -101,13 +104,27 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     private EventBus                    eventBus;
     @Mock
     private GitHubLocalizationConstant  locale;
+    @Mock
+    private ImportProject               dataObject;
+    @Mock
+    private ImportSourceDescriptor      importSourceDescriptor;
+    @Mock
+    private NewProject                  newProject;
+    @Mock
+    private Map<String, String>         parameters;
     @InjectMocks
     private GithubImporterPagePresenter presenter;
 
     @Before
     public void setUp() {
-        updateDelegate = mock(Wizard.UpdateDelegate.class);
+        Source source = mock(Source.class);
+        when(importSourceDescriptor.getParameters()).thenReturn(parameters);
+        when(source.getProject()).thenReturn(importSourceDescriptor);
+        when(dataObject.getSource()).thenReturn(source);
+        when(dataObject.getProject()).thenReturn(newProject);
 
+        presenter.setUpdateDelegate(updateDelegate);
+        presenter.init(dataObject);
     }
 
     @Test
@@ -120,7 +137,6 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         presenter.onLoadRepoClicked();
         InOrder inOrder = inOrder(view, userServiceClient);
 
-        inOrder.verify(view).reset();
         inOrder.verify(view).setLoaderVisibility(true);
         inOrder.verify(userServiceClient).getCurrentUser(asyncRequestCallbackUserDescriptorCaptor.capture());
     }
@@ -177,9 +193,7 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         Method onSuccess = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onSuccess");
         onSuccess.invoke(asyncRequestCallback, repositories);
 
-        verify(view, times(2)).reset();
-        //verify(wizardContext).getData(eq(ImportProjectWizard.PROJECT_IMPORTER));
-        //verify(view).setImporterDescription(eq(importerDescription));
+        verify(view).reset();
         verify(view, times(2)).setInputsEnableState(eq(true));
         verify(container).setWidget(eq(view));
         verify(view).setLoaderVisibility(eq(true));
@@ -196,7 +210,6 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         String importerDescription = "description";
         AcceptsOneWidget container = mock(AcceptsOneWidget.class);
         ProjectImporterDescriptor projectImporter = mock(ProjectImporterDescriptor.class);
-        //when(wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER)).thenReturn(projectImporter);
         when(projectImporter.getDescription()).thenReturn(importerDescription);
 
         presenter.go(container);
@@ -206,9 +219,6 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         Method onFailure = GwtReflectionUtils.getMethod(asyncRequestCallback.getClass(), "onFailure");
         onFailure.invoke(asyncRequestCallback, mock(Throwable.class));
 
-        verify(view).reset();
-        //verify(wizardContext).getData(eq(ImportProjectWizard.PROJECT_IMPORTER));
-        //verify(view).setImporterDescription(eq(importerDescription));
         verify(view, times(2)).setInputsEnableState(eq(true));
         verify(container).setWidget(eq(view));
         verify(view).setLoaderVisibility(eq(true));
@@ -354,26 +364,29 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
 
     @Test
     public void onRepositorySelectedTest() {
-        ProjectData projectData =
-                new ProjectData("name", "description", "type", Collections.<String>createArray(), "repoUrl", "readOnlyUrl");
+        ProjectData projectData = new ProjectData("name", "description", "type", Collections.<String>createArray(), "repoUrl", "readOnlyUrl");
 
         presenter.onRepositorySelected(projectData);
 
-        verify(view).setProjectName(eq("name"));
-        verify(view).setProjectUrl(eq("repoUrl"));
+        verify(newProject).setName(eq("name"));
+        verify(newProject).setDescription(eq("description"));
+        verify(importSourceDescriptor).setLocation(eq("repoUrl"));
+        verify(view).setProjectName(anyString());
+        verify(view).setProjectDescription(anyString());
+        verify(view).setProjectUrl(anyString());
         verify(updateDelegate).updateControls();
     }
 
     @Test
     public void projectUrlStartWithWhiteSpaceEnteredTest() {
         String incorrectUrl = " https://github.com/codenvy/ide.git";
+        when(view.getProjectName()).thenReturn("");
 
         presenter.projectUrlChanged(incorrectUrl);
 
         verify(view).showUrlError(eq(locale.importProjectMessageStartWithWhiteSpace()));
-        //verify(wizardContext).removeData(eq(ImportProjectWizard.PROJECT_URL));
-        //verify(wizardContext, never()).putData(eq(ImportProjectWizard.PROJECT_URL), anyString());
-        verify(view, never()).setProjectName(anyString());
+        verify(importSourceDescriptor).setLocation(eq(incorrectUrl));
+        verify(view).setProjectName(anyString());
         verify(updateDelegate).updateControls();
     }
 
@@ -461,19 +474,19 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         presenter.projectUrlChanged(correctUrl);
 
         verify(view).showUrlError(eq(locale.importProjectMessageProtocolIncorrect()));
-        //verify(wizardContext).removeData(eq(ImportProjectWizard.PROJECT_URL));
-        //verify(wizardContext, never()).putData(eq(ImportProjectWizard.PROJECT_URL), anyString());
-        verify(view, never()).setProjectName(anyString());
+        verify(importSourceDescriptor).setLocation(eq(correctUrl));
+        verify(view).setProjectName(anyString());
         verify(updateDelegate).updateControls();
     }
 
     @Test
     public void correctProjectNameEnteredTest() {
         String correctName = "angularjs";
+        when(view.getProjectName()).thenReturn(correctName);
 
         presenter.projectNameChanged(correctName);
 
-        //verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(correctName));
+        verify(newProject).setName(eq(correctName));
         verify(view).hideNameError();
         verify(view, never()).showNameError();
         verify(updateDelegate).updateControls();
@@ -482,10 +495,11 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     @Test
     public void correctProjectNameWithPointEnteredTest() {
         String correctName = "Test.project..ForCodenvy";
+        when(view.getProjectName()).thenReturn(correctName);
 
         presenter.projectNameChanged(correctName);
 
-        //verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(correctName));
+        verify(newProject).setName(eq(correctName));
         verify(view).hideNameError();
         verify(view, never()).showNameError();
         verify(updateDelegate).updateControls();
@@ -494,33 +508,22 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
     @Test
     public void emptyProjectNameEnteredTest() {
         String emptyName = "";
+        when(view.getProjectName()).thenReturn(emptyName);
 
         presenter.projectNameChanged(emptyName);
 
-        //verify(wizardContext, never()).putData(eq(ProjectWizard.PROJECT_NAME), anyString());
-        //verify(wizardContext).removeData(eq(ProjectWizard.PROJECT_NAME));
-        verify(updateDelegate).updateControls();
-    }
-
-    @Test
-    public void replaceSpaceToHyphenTest() {
-        String namesWithSpace = "Test project For  Codenvy";
-        String fixedName = "Test-project-For--Codenvy";
-        presenter.projectNameChanged(namesWithSpace);
-
-        //verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(fixedName));
-        verify(view).hideNameError();
+        verify(newProject).setName(eq(emptyName));
         verify(updateDelegate).updateControls();
     }
 
     @Test
     public void incorrectProjectNameEnteredTest() {
         String incorrectName = "angularjs+";
+        when(view.getProjectName()).thenReturn(incorrectName);
 
         presenter.projectNameChanged(incorrectName);
 
-        //verify(wizardContext, never()).putData(eq(ProjectWizard.PROJECT_NAME), anyString());
-        //verify(wizardContext).removeData(eq(ProjectWizard.PROJECT_NAME));
+        verify(newProject).setName(eq(incorrectName));
         verify(view).showNameError();
         verify(updateDelegate).updateControls();
     }
@@ -530,22 +533,22 @@ public class GithubImporterPagePresenterTest extends GwtTestWithMockito {
         String description = "description";
         presenter.projectDescriptionChanged(description);
 
-        //verify(wizardContext).putData(eq(ProjectWizard.PROJECT_DESCRIPTION), eq(description));
+        verify(newProject).setDescription(eq(description));
     }
 
     @Test
     public void projectVisibilityChangedTest() {
         presenter.projectVisibilityChanged(true);
 
-        //verify(wizardContext).putData(eq(ProjectWizard.PROJECT_VISIBILITY), eq(true));
+        verify(newProject).setVisibility(eq("public"));
     }
 
     private void verifyInvocationsForCorrectUrl(String correctUrl) {
         verify(view, never()).showUrlError(anyString());
-        //verify(wizardContext).putData(eq(ImportProjectWizard.PROJECT_URL), eq(correctUrl));
+        verify(importSourceDescriptor).setLocation(eq(correctUrl));
         verify(view).hideUrlError();
         verify(view).setProjectName(anyString());
-        verify(updateDelegate, times(2)).updateControls();
+        verify(updateDelegate).updateControls();
     }
 
 }

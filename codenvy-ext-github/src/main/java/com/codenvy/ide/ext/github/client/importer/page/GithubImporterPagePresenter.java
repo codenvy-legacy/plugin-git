@@ -129,6 +129,7 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
     @Override
     public void projectUrlChanged(@Nonnull String url) {
         dataObject.getSource().getProject().setLocation(url);
+        isGitUrlCorrect(url);
 
         String projectName = view.getProjectName();
         if (projectName.isEmpty()) {
@@ -136,7 +137,7 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
 
             dataObject.getProject().setName(projectName);
             view.setProjectName(projectName);
-            projectNameChanged(projectName);
+            validateProjectName();
         }
 
         updateDelegate.updateControls();

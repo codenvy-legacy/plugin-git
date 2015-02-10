@@ -25,13 +25,18 @@ import java.util.List;
  */
 public class IsGitRepositoryValueProviderFactory implements ValueProviderFactory {
     @Override
-    public ValueProvider newInstance(final FolderEntry project) {
+    public String getName() {
+        return "vcs.provider.name";
+    }
+
+    @Override
+    public ValueProvider newInstance(final Project project) {
         return new ValueProvider() {
             @Override
-            public List<String> getValues(String attributeName) {
+            public List<String> getValues() {
                 final List<String> list = new LinkedList<>();
                 try {
-                    final FolderEntry git = (FolderEntry)project.getChild(".git");
+                    final FolderEntry git = (FolderEntry)project.getBaseFolder().getChild(".git");
                     if (git != null) {
                         list.add("git");
                     }
@@ -41,7 +46,7 @@ public class IsGitRepositoryValueProviderFactory implements ValueProviderFactory
             }
 
             @Override
-            public void setValues(String attributeName, List<String> value) {
+            public void setValues(List<String> value) {
                 //noting todo
             }
         };

@@ -129,6 +129,7 @@ public class RemotePresenter implements RemoteView.ActionDelegate {
         service.remoteDelete(project, name, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
+                selectedRemote = null;
                 getRemotes();
             }
 

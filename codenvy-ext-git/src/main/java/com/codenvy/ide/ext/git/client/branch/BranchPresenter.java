@@ -141,6 +141,9 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         service.branchDelete(project.getRootProject(), name, true, new AsyncRequestCallback<String>() {
             @Override
             protected void onSuccess(String result) {
+                view.setEnableCheckoutButton(false);
+                view.setEnableDeleteButton(false);
+                view.setEnableRenameButton(false);
                 getBranches();
             }
 
@@ -227,6 +230,12 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                            new AsyncRequestCallback<Array<Branch>>(dtoUnmarshallerFactory.newArrayUnmarshaller(Branch.class)) {
                                @Override
                                protected void onSuccess(Array<Branch> result) {
+                                   if (selectedBranch != null) {
+                                       boolean enabled = !selectedBranch.isActive();
+                                       view.setEnableCheckoutButton(enabled);
+                                       view.setEnableDeleteButton(true);
+                                       view.setEnableRenameButton(true);
+                                   }
                                    view.setBranches(result);
                                }
 

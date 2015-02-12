@@ -34,9 +34,6 @@ public interface GitImporterPageView extends View<GitImporterPageView.ActionDele
         void projectVisibilityChanged(boolean aPublic);
     }
 
-    /** Reset the page. */
-    void reset();
-
     /** Show the name error. */
     void showNameError();
 
@@ -48,14 +45,6 @@ public interface GitImporterPageView extends View<GitImporterPageView.ActionDele
 
     /** Hide URL error. */
     void hideUrlError();
-
-    /**
-     * Set the importer's description.
-     *
-     * @param text
-     *         description
-     */
-    void setImporterDescription(@Nonnull String text);
 
     /**
      * Set the project's URL.
@@ -92,4 +81,7 @@ public interface GitImporterPageView extends View<GitImporterPageView.ActionDele
      */
     void setInputsEnableState(boolean isEnabled);
 
+    void setProjectDescription(@Nonnull String projectDescription);
+
+    void setVisibility(boolean visible);
 }

@@ -10,13 +10,11 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.importer.page;
 
-import com.codenvy.api.project.shared.dto.ProjectImporterDescriptor;
-import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
-import com.codenvy.ide.api.projecttype.wizard.ImportProjectWizard;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
-import com.codenvy.ide.api.wizard.Wizard;
-import com.codenvy.ide.api.wizard.WizardContext;
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
+import com.codenvy.ide.util.NameUtils;
 import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
@@ -26,9 +24,11 @@ import javax.annotation.Nonnull;
 /**
  * @author Roman Nikitenko
  */
-public class GitImporterPagePresenter implements ImporterPagePresenter, GitImporterPageView.ActionDelegate {
+public class GitImporterPagePresenter extends AbstractWizardPage<ImportProject> implements GitImporterPageView.ActionDelegate {
 
-    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_\\-\\.]*$");
+    private static final String PUBLIC_VISIBILITY  = "public";
+    private static final String PRIVATE_VISIBILITY = "private";
+
     // An alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
     private static final RegExp SCP_LIKE_SYNTAX = RegExp.compile("([A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-:]+)+:");
     // the transport protocol
@@ -44,8 +44,6 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
 
     private GitLocalizationConstant locale;
     private GitImporterPageView     view;
-    private WizardContext           wizardContext;
-    private Wizard.UpdateDelegate   updateDelegate;
 
     @Inject
     public GitImporterPagePresenter(GitImporterPageView view,
@@ -55,103 +53,77 @@ public class GitImporterPagePresenter implements ImporterPagePresenter, GitImpor
         this.locale = locale;
     }
 
-    @Nonnull
     @Override
-    public String getId() {
-        return "git";
-    }
-
-    @Override
-    public void disableInputs() {
-        view.setInputsEnableState(false);
-    }
-
-    @Override
-    public void enableInputs() {
-        view.setInputsEnableState(true);
-    }
-
-    @Override
-    public void setContext(@Nonnull WizardContext wizardContext) {
-        this.wizardContext = wizardContext;
-    }
-
-    @Override
-    public void setProjectWizardDelegate(@Nonnull Wizard.UpdateDelegate updateDelegate) {
-        this.updateDelegate = updateDelegate;
-    }
-
-    @Override
-    public void clear() {
-        view.reset();
+    public boolean isCompleted() {
+        return isGitUrlCorrect(dataObject.getSource().getProject().getLocation());
     }
 
     @Override
     public void projectNameChanged(@Nonnull String name) {
-        if (name.isEmpty()) {
-            wizardContext.removeData(ProjectWizard.PROJECT_NAME);
-        } else {
-            name = replaceSpaceToHyphen(name);
-            if (NAME_PATTERN.test(name)) {
-                wizardContext.putData(ProjectWizard.PROJECT_NAME, name);
-                view.hideNameError();
-            } else {
-                wizardContext.removeData(ProjectWizard.PROJECT_NAME);
-                view.showNameError();
-            }
-        }
+        dataObject.getProject().setName(name);
         updateDelegate.updateControls();
+
+        validateProjectName();
     }
 
-    private String replaceSpaceToHyphen(String projectName) {
-        if (projectName.contains(" ")) {
-            projectName  = projectName.replace(" ", "-");
-            view.setProjectName(projectName);
+    private void validateProjectName() {
+        if (NameUtils.checkProjectName(view.getProjectName())) {
+            view.hideNameError();
+        } else {
+            view.showNameError();
         }
-        return projectName;
     }
 
     @Override
     public void projectUrlChanged(@Nonnull String url) {
-        if (!isGitUrlCorrect(url)) {
-            wizardContext.removeData(ImportProjectWizard.PROJECT_URL);
-        } else {
-            wizardContext.putData(ImportProjectWizard.PROJECT_URL, url);
-            String projectName = view.getProjectName();
-            if (projectName.isEmpty()) {
-                projectName = parseUri(url);
-                view.setProjectName(projectName);
-                projectNameChanged(projectName);
-            }
+        dataObject.getSource().getProject().setLocation(url);
+        isGitUrlCorrect(url);
+
+        String projectName = view.getProjectName();
+        if (projectName.isEmpty()) {
+            projectName = extractProjectNameFromUri(url);
+
+            dataObject.getProject().setName(projectName);
+            view.setProjectName(projectName);
+            validateProjectName();
         }
+
         updateDelegate.updateControls();
     }
 
     @Override
-    public void projectDescriptionChanged(@Nonnull String projectDescriptionValue) {
-        wizardContext.putData(ProjectWizard.PROJECT_DESCRIPTION, projectDescriptionValue);
+    public void projectDescriptionChanged(@Nonnull String projectDescription) {
+        dataObject.getProject().setDescription(projectDescription);
+        updateDelegate.updateControls();
     }
 
     @Override
-    public void projectVisibilityChanged(boolean aPublic) {
-        wizardContext.putData(ProjectWizard.PROJECT_VISIBILITY, aPublic);
+    public void projectVisibilityChanged(boolean visible) {
+        dataObject.getProject().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
+        updateDelegate.updateControls();
     }
 
     @Override
     public void go(@Nonnull AcceptsOneWidget container) {
-        clear();
-        ProjectImporterDescriptor projectImporter = wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER);
-        if (projectImporter != null) {
-            view.setImporterDescription(projectImporter.getDescription());
-        }
+        container.setWidget(view);
+        updateView();
 
         view.setInputsEnableState(true);
-        container.setWidget(view);
         view.focusInUrlInput();
     }
 
+    /** Updates view from data-object. */
+    private void updateView() {
+        final NewProject project = dataObject.getProject();
+
+        view.setProjectName(project.getName());
+        view.setProjectDescription(project.getDescription());
+        view.setVisibility(PUBLIC_VISIBILITY.equals(project.getVisibility()));
+        view.setProjectUrl(dataObject.getSource().getProject().getLocation());
+    }
+
     /** Gets project name from uri. */
-    private String parseUri(@Nonnull String uri) {
+    private String extractProjectNameFromUri(@Nonnull String uri) {
         int indexFinishProjectName = uri.lastIndexOf(".");
         int indexStartProjectName = uri.lastIndexOf("/") != -1 ? uri.lastIndexOf("/") + 1 : (uri.lastIndexOf(":") + 1);
 

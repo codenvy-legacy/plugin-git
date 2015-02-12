@@ -10,16 +10,13 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.github.client.importer.page;
 
-import com.codenvy.api.project.shared.dto.ProjectImporterDescriptor;
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.api.project.shared.dto.NewProject;
 import com.codenvy.api.user.gwt.client.UserServiceClient;
 import com.codenvy.api.user.shared.dto.UserDescriptor;
 import com.codenvy.ide.api.notification.Notification;
 import com.codenvy.ide.api.notification.NotificationManager;
-import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
-import com.codenvy.ide.api.projecttype.wizard.ImportProjectWizard;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
-import com.codenvy.ide.api.wizard.Wizard;
-import com.codenvy.ide.api.wizard.WizardContext;
+import com.codenvy.ide.api.wizard.AbstractWizardPage;
 import com.codenvy.ide.collections.Array;
 import com.codenvy.ide.collections.Collections;
 import com.codenvy.ide.collections.StringMap;
@@ -35,6 +32,7 @@ import com.codenvy.ide.rest.DtoUnmarshallerFactory;
 import com.codenvy.ide.ui.dialogs.ConfirmCallback;
 import com.codenvy.ide.ui.dialogs.DialogFactory;
 import com.codenvy.ide.util.Config;
+import com.codenvy.ide.util.NameUtils;
 import com.codenvy.security.oauth.OAuthCallback;
 import com.codenvy.security.oauth.OAuthStatus;
 import com.google.gwt.regexp.shared.RegExp;
@@ -45,7 +43,6 @@ import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
-
 import java.util.Comparator;
 
 import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
@@ -53,9 +50,12 @@ import static com.codenvy.ide.api.notification.Notification.Type.ERROR;
 /**
  * @author Roman Nikitenko
  */
-public class GithubImporterPagePresenter implements ImporterPagePresenter, GithubImporterPageView.ActionDelegate, OAuthCallback {
+public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProject>
+        implements GithubImporterPageView.ActionDelegate, OAuthCallback {
 
-    private static final RegExp NAME_PATTERN    = RegExp.compile("^[A-Za-z0-9_\\-\\.]*$");
+    private static final String PUBLIC_VISIBILITY  = "public";
+    private static final String PRIVATE_VISIBILITY = "private";
+
     // An alternative scp-like syntax: [user@]host.xz:path/to/repo.git/
     private static final RegExp SCP_LIKE_SYNTAX = RegExp.compile("([A-Za-z0-9_\\-]+\\.[A-Za-z0-9_\\-:]+)+:");
     // the transport protocol
@@ -68,20 +68,16 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
     private static final RegExp REPO_NAME       = RegExp.compile("/[A-Za-z0-9_.\\-]+$");
     // start with white space
     private static final RegExp WHITE_SPACE     = RegExp.compile("^\\s");
-
-    private       NotificationManager                notificationManager;
     private final UserServiceClient                  userServiceClient;
-    private       GitHubClientService                gitHubClientService;
     private final DtoUnmarshallerFactory             dtoUnmarshallerFactory;
     private final DtoFactory                         dtoFactory;
+    private       NotificationManager                notificationManager;
+    private       GitHubClientService                gitHubClientService;
     private       DialogFactory                      dialogFactory;
     private       EventBus                           eventBus;
     private       StringMap<Array<GitHubRepository>> repositories;
-    private       ProjectData                        selectedRepository;
     private       GitHubLocalizationConstant         locale;
     private       GithubImporterPageView             view;
-    private       WizardContext                      wizardContext;
-    private       Wizard.UpdateDelegate              updateDelegate;
     private       String                             baseUrl;
     private       UserDescriptor                     userDescriptor;
 
@@ -109,105 +105,79 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
         this.locale = locale;
     }
 
-    @Nonnull
     @Override
-    public String getId() {
-        return "github";
-    }
-
-    @Override
-    public void disableInputs() {
-        view.setInputsEnableState(false);
-    }
-
-    @Override
-    public void enableInputs() {
-        view.setInputsEnableState(true);
-    }
-
-    @Override
-    public void setContext(@Nonnull WizardContext wizardContext) {
-        this.wizardContext = wizardContext;
-    }
-
-    @Override
-    public void setProjectWizardDelegate(@Nonnull Wizard.UpdateDelegate updateDelegate) {
-        this.updateDelegate = updateDelegate;
-    }
-
-    @Override
-    public void clear() {
-        view.reset();
+    public boolean isCompleted() {
+        return isGitUrlCorrect(dataObject.getSource().getProject().getLocation());
     }
 
     @Override
     public void projectNameChanged(@Nonnull String name) {
-        if (name.isEmpty()) {
-            wizardContext.removeData(ProjectWizard.PROJECT_NAME);
-        } else {
-            name = replaceSpaceToHyphen(name);
-            if (NAME_PATTERN.test(name)) {
-                wizardContext.putData(ProjectWizard.PROJECT_NAME, name);
-                view.hideNameError();
-            } else {
-                wizardContext.removeData(ProjectWizard.PROJECT_NAME);
-                view.showNameError();
-            }
-        }
+        dataObject.getProject().setName(name);
         updateDelegate.updateControls();
+
+        validateProjectName();
     }
 
-    private String replaceSpaceToHyphen(String projectName) {
-        if (projectName.contains(" ")) {
-            projectName  = projectName.replace(" ", "-");
-            view.setProjectName(projectName);
+    private void validateProjectName() {
+        if (NameUtils.checkProjectName(view.getProjectName())) {
+            view.hideNameError();
+        } else {
+            view.showNameError();
         }
-        return projectName;
     }
 
     @Override
     public void projectUrlChanged(@Nonnull String url) {
-        if (!isGitUrlCorrect(url)) {
-            wizardContext.removeData(ImportProjectWizard.PROJECT_URL);
-        } else {
-            wizardContext.putData(ImportProjectWizard.PROJECT_URL, url);
-            String projectName = view.getProjectName();
-            if (projectName.isEmpty()) {
-                projectName = parseUri(url);
-                view.setProjectName(projectName);
-                projectNameChanged(projectName);
-            }
+        dataObject.getSource().getProject().setLocation(url);
+        isGitUrlCorrect(url);
+
+        String projectName = view.getProjectName();
+        if (projectName.isEmpty()) {
+            projectName = extractProjectNameFromUri(url);
+
+            dataObject.getProject().setName(projectName);
+            view.setProjectName(projectName);
+            validateProjectName();
         }
+
         updateDelegate.updateControls();
     }
 
     @Override
-    public void projectDescriptionChanged(@Nonnull String projectDescriptionValue) {
-        wizardContext.putData(ProjectWizard.PROJECT_DESCRIPTION, projectDescriptionValue);
+    public void projectDescriptionChanged(@Nonnull String projectDescription) {
+        dataObject.getProject().setDescription(projectDescription);
+        updateDelegate.updateControls();
     }
 
     @Override
-    public void projectVisibilityChanged(boolean aPublic) {
-        wizardContext.putData(ProjectWizard.PROJECT_VISIBILITY, aPublic);
+    public void projectVisibilityChanged(boolean visible) {
+        dataObject.getProject().setVisibility(visible ? PUBLIC_VISIBILITY : PRIVATE_VISIBILITY);
+        updateDelegate.updateControls();
     }
 
     @Override
     public void go(@Nonnull AcceptsOneWidget container) {
-        clear();
-        ProjectImporterDescriptor projectImporter = wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER);
-        if (projectImporter != null) {
-            view.setImporterDescription(projectImporter.getDescription());
-        }
+        container.setWidget(view);
+        updateView();
 
         view.setInputsEnableState(true);
-        container.setWidget(view);
-        getUserRepos(false);
         view.focusInUrlInput();
+
+        getUserRepos(false);
+    }
+
+    /** Updates view from data-object. */
+    private void updateView() {
+        final NewProject project = dataObject.getProject();
+
+        view.setProjectName(project.getName());
+        view.setProjectDescription(project.getDescription());
+        view.setVisibility(PUBLIC_VISIBILITY.equals(project.getVisibility()));
+        view.setProjectUrl(dataObject.getSource().getProject().getLocation());
     }
 
     @Override
     public void onLoadRepoClicked() {
-        clear();
         showProcessing(true);
         userServiceClient.getCurrentUser(
                 new AsyncRequestCallback<UserDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(UserDescriptor.class)) {
@@ -274,10 +244,12 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
 
     @Override
     public void onRepositorySelected(@Nonnull ProjectData repository) {
-        selectedRepository = repository;
-        view.setProjectName(selectedRepository.getName());
-        view.setProjectUrl(selectedRepository.getRepositoryUrl());
-        view.setProjectDescription(selectedRepository.getDescription());
+        dataObject.getProject().setName(repository.getName());
+        dataObject.getProject().setDescription(repository.getDescription());
+        dataObject.getSource().getProject().setLocation(repository.getRepositoryUrl());
+
+        updateView();
+
         updateDelegate.updateControls();
     }
 
@@ -329,7 +301,6 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
             view.setRepositories(projectsData);
             view.reset();
             view.showGithubPanel();
-            selectedRepository = null;
         }
     }
 
@@ -340,7 +311,7 @@ public class GithubImporterPagePresenter implements ImporterPagePresenter, Githu
     }
 
     /** Gets project name from uri. */
-    private String parseUri(@Nonnull String uri) {
+    private String extractProjectNameFromUri(@Nonnull String uri) {
         int indexFinishProjectName = uri.lastIndexOf(".");
         int indexStartProjectName = uri.lastIndexOf("/") != -1 ? uri.lastIndexOf("/") + 1 : (uri.lastIndexOf(":") + 1);
 

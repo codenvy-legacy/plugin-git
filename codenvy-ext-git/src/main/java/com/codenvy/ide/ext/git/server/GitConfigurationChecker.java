@@ -29,6 +29,12 @@ import java.util.Set;
 /**
  * Checks Git configuration to ensure properly work Git-extension in Codenvy.
  *
+ * Here we check that we have correct setting for git ignore.
+ * Must be ignored files :
+ *    .codenvy/misc.xml
+ *    .vfs/
+ * like system files for Codenvy
+ *
  * @author Artem Zatsarynnyy
  */
 @Singleton

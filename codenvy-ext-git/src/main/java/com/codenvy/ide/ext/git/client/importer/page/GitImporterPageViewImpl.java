@@ -20,7 +20,6 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
-import com.google.gwt.user.client.ui.HTMLPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.TextArea;
@@ -33,17 +32,10 @@ import javax.annotation.Nonnull;
  * @author Roman Nikitenko
  */
 public class GitImporterPageViewImpl extends Composite implements GitImporterPageView {
-    interface GitImporterPageViewImplUiBinder extends UiBinder<DockLayoutPanel, GitImporterPageViewImpl> {
-    }
-
-    private ActionDelegate delegate;
-
     @UiField(provided = true)
     Style       style;
     @UiField
     Label       labelUrlError;
-    @UiField
-    HTMLPanel   descriptionArea;
     @UiField
     TextBox     projectName;
     @UiField
@@ -54,7 +46,7 @@ public class GitImporterPageViewImpl extends Composite implements GitImporterPag
     RadioButton projectPublic;
     @UiField
     TextBox     projectUrl;
-
+    private ActionDelegate delegate;
     @Inject
     public GitImporterPageViewImpl(GitResources resources,
                                    GitImporterPageViewImplUiBinder uiBinder) {
@@ -67,9 +59,17 @@ public class GitImporterPageViewImpl extends Composite implements GitImporterPag
 
     @UiHandler("projectName")
     void onProjectNameChanged(KeyUpEvent event) {
+        String projectNameValue = projectName.getValue();
+
+        if (projectNameValue != null && projectNameValue.contains(" ")) {
+            projectNameValue = projectNameValue.replace(" ", "-");
+            projectName.setValue(projectNameValue);
+        }
+
         if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
             return;
         }
+
         delegate.projectNameChanged(projectName.getValue());
     }
 
@@ -98,18 +98,6 @@ public class GitImporterPageViewImpl extends Composite implements GitImporterPag
     }
 
     @Override
-    public void reset() {
-        projectUrl.setText("");
-        projectName.setText("");
-        projectDescription.setText("");
-        descriptionArea.clear();
-        projectPublic.setValue(true);
-        projectPrivate.setValue(false);
-        hideUrlError();
-        hideNameError();
-    }
-
-    @Override
     public void showNameError() {
         projectName.addStyleName(style.inputError());
     }
@@ -117,11 +105,6 @@ public class GitImporterPageViewImpl extends Composite implements GitImporterPag
     @Override
     public void hideNameError() {
         projectName.removeStyleName(style.inputError());
-    }
-
-    @Override
-    public void setImporterDescription(@Nonnull String text) {
-        descriptionArea.getElement().setInnerText(text);
     }
 
     @Override
@@ -165,8 +148,22 @@ public class GitImporterPageViewImpl extends Composite implements GitImporterPag
     }
 
     @Override
+    public void setProjectDescription(@Nonnull String projectDescription) {
+        this.projectDescription.setValue(projectDescription);
+    }
+
+    @Override
+    public void setVisibility(boolean visible) {
+        projectPublic.setValue(visible, false);
+        projectPrivate.setValue(!visible, false);
+    }
+
+    @Override
     public void setDelegate(@Nonnull ActionDelegate delegate) {
         this.delegate = delegate;
+    }
+
+    interface GitImporterPageViewImplUiBinder extends UiBinder<DockLayoutPanel, GitImporterPageViewImpl> {
     }
 
     public interface Style extends Styles {

@@ -10,14 +10,12 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.importer.page;
 
-import com.codenvy.api.project.shared.dto.ProjectImporterDescriptor;
-import com.codenvy.ide.api.projecttype.wizard.ImportProjectWizard;
-import com.codenvy.ide.api.projecttype.wizard.ProjectWizard;
+import com.codenvy.api.project.shared.dto.ImportProject;
+import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
+import com.codenvy.api.project.shared.dto.NewProject;
+import com.codenvy.api.project.shared.dto.Source;
 import com.codenvy.ide.api.wizard.Wizard;
-import com.codenvy.ide.api.wizard.WizardContext;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
-import com.codenvy.ide.ext.git.client.importer.page.GitImporterPagePresenter;
-import com.codenvy.ide.ext.git.client.importer.page.GitImporterPageView;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 
 import org.junit.Before;
@@ -27,11 +25,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Map;
+
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,51 +42,61 @@ import static org.mockito.Mockito.when;
  */
 @RunWith(MockitoJUnitRunner.class)
 public class GitImporterPagePresenterTest {
-    private WizardContext            wizardContext;
+    @Mock
     private Wizard.UpdateDelegate    updateDelegate;
     @Mock
     private GitImporterPageView      view;
     @Mock
     private GitLocalizationConstant  locale;
+    @Mock
+    private ImportProject            dataObject;
+    @Mock
+    private ImportSourceDescriptor   importSourceDescriptor;
+    @Mock
+    private NewProject               newProject;
+    @Mock
+    private Map<String, String>      parameters;
     @InjectMocks
     private GitImporterPagePresenter presenter;
 
     @Before
     public void setUp() {
-        wizardContext = mock(WizardContext.class);
-        updateDelegate = mock(Wizard.UpdateDelegate.class);
-        presenter.setContext(wizardContext);
-        presenter.setProjectWizardDelegate(updateDelegate);
+        Source source = mock(Source.class);
+        when(importSourceDescriptor.getParameters()).thenReturn(parameters);
+        when(source.getProject()).thenReturn(importSourceDescriptor);
+        when(dataObject.getSource()).thenReturn(source);
+        when(dataObject.getProject()).thenReturn(newProject);
+
+        presenter.setUpdateDelegate(updateDelegate);
+        presenter.init(dataObject);
     }
 
     @Test
     public void testGo() {
-        String importerDescription = "description";
         AcceptsOneWidget container = mock(AcceptsOneWidget.class);
-        ProjectImporterDescriptor projectImporter = mock(ProjectImporterDescriptor.class);
-        when(wizardContext.getData(ImportProjectWizard.PROJECT_IMPORTER)).thenReturn(projectImporter);
-        when(projectImporter.getDescription()).thenReturn(importerDescription);
 
         presenter.go(container);
 
-        verify(view).reset();
-        verify(wizardContext).getData(eq(ImportProjectWizard.PROJECT_IMPORTER));
-        verify(view).setImporterDescription(eq(importerDescription));
-        verify(view).setInputsEnableState(eq(true));
         verify(container).setWidget(eq(view));
+        verify(view).setProjectName(anyString());
+        verify(view).setProjectDescription(anyString());
+        verify(view).setVisibility(anyBoolean());
+        verify(view).setProjectUrl(anyString());
+        verify(view).setInputsEnableState(eq(true));
         verify(view).focusInUrlInput();
     }
 
     @Test
     public void projectUrlStartWithWhiteSpaceEnteredTest() {
         String incorrectUrl = " https://github.com/codenvy/ide.git";
+        String name = "ide";
+        when(view.getProjectName()).thenReturn("");
 
         presenter.projectUrlChanged(incorrectUrl);
 
         verify(view).showUrlError(eq(locale.importProjectMessageStartWithWhiteSpace()));
-        verify(wizardContext).removeData(eq(ImportProjectWizard.PROJECT_URL));
-        verify(wizardContext, never()).putData(eq(ImportProjectWizard.PROJECT_URL), anyString());
-        verify(view, never()).setProjectName(anyString());
+        verify(newProject).setName(eq(name));
+        verify(view).setProjectName(name);
         verify(updateDelegate).updateControls();
     }
 
@@ -168,25 +178,25 @@ public class GitImporterPagePresenterTest {
 
     @Test
     public void projectUrlWithIncorrectProtocolEnteredTest() {
-        String correctUrl = "htps://github.com/codenvy/ide.git";
+        String incorrectUrl = "htps://github.com/codenvy/ide.git";
         when(view.getProjectName()).thenReturn("");
 
-        presenter.projectUrlChanged(correctUrl);
+        presenter.projectUrlChanged(incorrectUrl);
 
         verify(view).showUrlError(eq(locale.importProjectMessageProtocolIncorrect()));
-        verify(wizardContext).removeData(eq(ImportProjectWizard.PROJECT_URL));
-        verify(wizardContext, never()).putData(eq(ImportProjectWizard.PROJECT_URL), anyString());
-        verify(view, never()).setProjectName(anyString());
+        verify(importSourceDescriptor).setLocation(eq(incorrectUrl));
+        verify(view).setProjectName(anyString());
         verify(updateDelegate).updateControls();
     }
 
     @Test
     public void correctProjectNameEnteredTest() {
         String correctName = "angularjs";
+        when(view.getProjectName()).thenReturn(correctName);
 
         presenter.projectNameChanged(correctName);
 
-        verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(correctName));
+        verify(newProject).setName(eq(correctName));
         verify(view).hideNameError();
         verify(view, never()).showNameError();
         verify(updateDelegate).updateControls();
@@ -195,45 +205,35 @@ public class GitImporterPagePresenterTest {
     @Test
     public void correctProjectNameWithPointEnteredTest() {
         String correctName = "Test.project..ForCodenvy";
+        when(view.getProjectName()).thenReturn(correctName);
 
         presenter.projectNameChanged(correctName);
 
-        verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(correctName));
+        verify(newProject).setName(eq(correctName));
         verify(view).hideNameError();
         verify(view, never()).showNameError();
         verify(updateDelegate).updateControls();
     }
 
     @Test
-    public void replaceSpaceToHyphenTest() {
-        String namesWithSpace = "Test project For  Codenvy";
-        String fixedName = "Test-project-For--Codenvy";
-        presenter.projectNameChanged(namesWithSpace);
-
-        verify(wizardContext).putData(eq(ProjectWizard.PROJECT_NAME), eq(fixedName));
-        verify(view).hideNameError();
-        verify(updateDelegate).updateControls();
-    }
-
-    @Test
     public void emptyProjectNameEnteredTest() {
         String emptyName = "";
+        when(view.getProjectName()).thenReturn(emptyName);
 
         presenter.projectNameChanged(emptyName);
 
-        verify(wizardContext, never()).putData(eq(ProjectWizard.PROJECT_NAME), anyString());
-        verify(wizardContext).removeData(eq(ProjectWizard.PROJECT_NAME));
+        verify(newProject).setName(eq(emptyName));
         verify(updateDelegate).updateControls();
     }
 
     @Test
     public void incorrectProjectNameEnteredTest() {
         String incorrectName = "angularjs+";
+        when(view.getProjectName()).thenReturn(incorrectName);
 
         presenter.projectNameChanged(incorrectName);
 
-        verify(wizardContext, never()).putData(eq(ProjectWizard.PROJECT_NAME), anyString());
-        verify(wizardContext).removeData(eq(ProjectWizard.PROJECT_NAME));
+        verify(newProject).setName(eq(incorrectName));
         verify(view).showNameError();
         verify(updateDelegate).updateControls();
     }
@@ -243,22 +243,22 @@ public class GitImporterPagePresenterTest {
         String description = "description";
         presenter.projectDescriptionChanged(description);
 
-        verify(wizardContext).putData(eq(ProjectWizard.PROJECT_DESCRIPTION), eq(description));
+        verify(newProject).setDescription(eq(description));
     }
 
     @Test
     public void projectVisibilityChangedTest() {
         presenter.projectVisibilityChanged(true);
 
-        verify(wizardContext).putData(eq(ProjectWizard.PROJECT_VISIBILITY), eq(true));
+        verify(newProject).setVisibility(eq("public"));
     }
 
     private void verifyInvocationsForCorrectUrl(String correctUrl) {
         verify(view, never()).showUrlError(anyString());
-        verify(wizardContext).putData(eq(ImportProjectWizard.PROJECT_URL), eq(correctUrl));
+        verify(importSourceDescriptor).setLocation(eq(correctUrl));
         verify(view).hideUrlError();
         verify(view).setProjectName(anyString());
-        verify(updateDelegate, times(2)).updateControls();
+        verify(updateDelegate).updateControls();
     }
 
 }

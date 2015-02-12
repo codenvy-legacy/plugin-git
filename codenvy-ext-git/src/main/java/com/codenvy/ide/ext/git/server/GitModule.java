@@ -12,6 +12,7 @@ package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.project.server.ProjectImporter;
 import com.codenvy.api.project.server.ValueProviderFactory;
+import com.codenvy.api.project.server.type.ProjectType;
 import com.codenvy.ide.ext.git.server.commons.GitRepositoryPrivacyChecker;
 import com.codenvy.ide.ext.git.server.nativegit.NativeGitConnectionFactory;
 import com.codenvy.ide.ext.git.server.rest.BranchListWriter;
@@ -38,11 +39,12 @@ public class GitModule extends AbstractModule {
     protected void configure() {
         Multibinder<ProjectImporter> projectImporterMultibinder = Multibinder.newSetBinder(binder(), ProjectImporter.class);
         projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
+        Multibinder.newSetBinder(binder(), ProjectType.class).addBinding().to(GitProjectType.class);
         bind(GitConfigurationChecker.class).asEagerSingleton();
         bind(GitRepositoryPrivacyChecker.class);
 
         Multibinder<ValueProviderFactory> multiBinder = Multibinder.newSetBinder(binder(), ValueProviderFactory.class);
-        multiBinder.addBinding().to(IsGitRepositoryValueProviderFactory.class);
+        multiBinder.addBinding().to(GitValueProviderFactory.class);
 
         bind(GitService.class);
         bind(BranchListWriter.class);

@@ -14,7 +14,6 @@ import com.codenvy.ide.Resources;
 import com.codenvy.ide.api.parts.PartStackUIResources;
 import com.codenvy.ide.api.parts.base.BaseView;
 import com.codenvy.ide.api.parts.base.ToolButton;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.safehtml.shared.SimpleHtmlSanitizer;
@@ -37,10 +36,13 @@ import org.vectomatic.dom.svg.ui.SVGImage;
  */
 @Singleton
 public class GitOutputPartViewImpl extends BaseView<GitOutputPartView.ActionDelegate> implements GitOutputPartView {
+
     interface GitOutputPartViewImplUiBinder extends UiBinder<Widget, GitOutputPartViewImpl> {
     }
 
-    private static GitOutputPartViewImplUiBinder uiBinder = GWT.create(GitOutputPartViewImplUiBinder.class);
+    private static final String INFO_COLOR = "lightgreen";
+    private static final String WARNING_COLOR = "cyan";
+    private static final String ERROR_COLOR = "#F62217";
 
     @UiField
     FlowPanel                                  consoleArea;
@@ -49,9 +51,11 @@ public class GitOutputPartViewImpl extends BaseView<GitOutputPartView.ActionDele
     ScrollPanel                                scrollPanel;
 
     @Inject
-    public GitOutputPartViewImpl(PartStackUIResources resources, Resources coreResources) {
+    public GitOutputPartViewImpl(PartStackUIResources resources,
+                                 Resources coreResources,
+                                 GitOutputPartViewImplUiBinder uiBinder) {
         super(resources);
-        container.add(uiBinder.createAndBindUi(this));
+        setContentWidget(uiBinder.createAndBindUi(this));
 
         ToolButton clearButton = new ToolButton(new SVGImage(coreResources.clear()));
         clearButton.addClickHandler(new ClickHandler() {
@@ -64,16 +68,6 @@ public class GitOutputPartViewImpl extends BaseView<GitOutputPartView.ActionDele
         minimizeButton.ensureDebugId("console-minimizeBut");
         toolBar.addEast(clearButton, 20);
     }
-
-    /** {@inheritDoc} */
-    @Override
-    public void setDelegate(ActionDelegate delegate) {
-        this.delegate = delegate;
-    }
-
-    private static final String INFO_COLOR = "lightgreen";
-    private static final String WARNING_COLOR = "cyan";
-    private static final String ERROR_COLOR = "#F62217";
 
     /** {@inheritDoc} */
     @Override

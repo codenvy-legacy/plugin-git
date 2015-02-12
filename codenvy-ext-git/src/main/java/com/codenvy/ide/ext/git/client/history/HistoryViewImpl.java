@@ -19,7 +19,6 @@ import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.shared.Revision;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -53,10 +52,9 @@ import java.util.List;
  */
 @Singleton
 public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implements HistoryView {
+
     interface HistoryViewImplUiBinder extends UiBinder<Widget, HistoryViewImpl> {
     }
-
-    private static HistoryViewImplUiBinder ourUiBinder = GWT.create(HistoryViewImplUiBinder.class);
 
     @UiField
     DockLayoutPanel           dataCommitBPanel;
@@ -101,15 +99,18 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
      * @param partStackUIResources
      */
     @Inject
-    protected HistoryViewImpl(GitResources resources, GitLocalizationConstant locale, PartStackUIResources partStackUIResources, Resources res) {
+    protected HistoryViewImpl(GitResources resources,
+                              GitLocalizationConstant locale,
+                              PartStackUIResources partStackUIResources,
+                              Resources res,
+                              HistoryViewImplUiBinder uiBinder) {
         super(partStackUIResources);
 
         this.res = resources;
         this.locale = locale;
 
         createCommitsTable(res);
-
-        container.add(ourUiBinder.createAndBindUi(this));
+        setContentWidget(uiBinder.createAndBindUi(this));
         minimizeButton.ensureDebugId("git-showHistory-minimizeBut");
 
         btnProjectChanges.getElement().appendChild(new Image(resources.projectLevel()).getElement());

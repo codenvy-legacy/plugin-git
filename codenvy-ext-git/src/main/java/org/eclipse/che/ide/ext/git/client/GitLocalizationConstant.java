@@ -291,6 +291,9 @@ public interface GitLocalizationConstant extends Messages {
     @Key("view.add_to_index.all_changes")
     String addToIndexAllChanges();
 
+    @Key("view.add_to_index.multiple")
+    String addToIndexMultiple();
+
     @Key("view.add_to_index.folder")
     SafeHtml addToIndexFolder(String folder);
 

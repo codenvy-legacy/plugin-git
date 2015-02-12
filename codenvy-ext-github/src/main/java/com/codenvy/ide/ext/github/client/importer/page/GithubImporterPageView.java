@@ -65,20 +65,14 @@ public interface GithubImporterPageView extends View<GithubImporterPageView.Acti
     void hideUrlError();
 
     /**
-     * Set the importer's description.
-     *
-     * @param text
-     *         description
-     */
-    void setImporterDescription(@Nonnull String text);
-
-    /**
      * Set the project's URL.
      *
      * @param url
      *         the project's URL to set
      */
     void setProjectUrl(@Nonnull String url);
+
+    void setVisibility(boolean visible);
 
     /**
      * Get the project's name value.

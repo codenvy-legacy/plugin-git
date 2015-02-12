@@ -15,16 +15,8 @@
     <ui:with field='locale' type='com.codenvy.ide.ext.git.client.GitLocalizationConstant'/>
     <ui:with field="style" type="com.codenvy.ide.ext.git.client.importer.page.GitImporterPageViewImpl.Style"/>
     <g:DockLayoutPanel unit="PX" addStyleNames="{style.mainPanel}">
-        <g:north size="240">
+        <g:north size="205">
             <g:FlowPanel ui:field="importerPanel">
-                <g:FlowPanel height="20px" addStyleNames="{style.namePanel}">
-                    <g:HTMLPanel addStyleNames="{style.horizontalLine}"/>
-                    <g:Label text="{locale.gitImporterPageImporterInfo}" addStyleNames="{style.label}"/>
-                </g:FlowPanel>
-                <g:FlowPanel height="15px" addStyleNames="{style.namePanel}">
-                    <g:HTMLPanel debugId="importProject-descriptionArea" ui:field="descriptionArea"
-                                 addStyleNames="{style.description}"/>
-                </g:FlowPanel>
                 <g:FlowPanel height="37px" addStyleNames="{style.namePanel}">
                     <g:Label text="{locale.gitImporterPageProjectUrl}"
                              addStyleNames="{style.labelPosition}"/>

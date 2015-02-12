@@ -11,8 +11,7 @@
 package com.codenvy.ide.ext.git.client.inject;
 
 import com.codenvy.ide.api.extension.ExtensionGinModule;
-import com.codenvy.ide.api.projectimporter.ImporterPagePresenter;
-import com.codenvy.ide.api.projectimporter.ProjectImporter;
+import com.codenvy.ide.api.projectimport.wizard.ImportWizardRegistrar;
 import com.codenvy.ide.ext.git.client.GitOutputPartView;
 import com.codenvy.ide.ext.git.client.GitOutputPartViewImpl;
 import com.codenvy.ide.ext.git.client.GitServiceClient;
@@ -27,10 +26,9 @@ import com.codenvy.ide.ext.git.client.fetch.FetchView;
 import com.codenvy.ide.ext.git.client.fetch.FetchViewImpl;
 import com.codenvy.ide.ext.git.client.history.HistoryView;
 import com.codenvy.ide.ext.git.client.history.HistoryViewImpl;
+import com.codenvy.ide.ext.git.client.importer.GitImportWizardRegistrar;
 import com.codenvy.ide.ext.git.client.merge.MergeView;
 import com.codenvy.ide.ext.git.client.merge.MergeViewImpl;
-import com.codenvy.ide.ext.git.client.importer.page.GitImporterPagePresenter;
-import com.codenvy.ide.ext.git.client.importer.GitProjectImporter;
 import com.codenvy.ide.ext.git.client.pull.PullView;
 import com.codenvy.ide.ext.git.client.pull.PullViewImpl;
 import com.codenvy.ide.ext.git.client.push.PushToRemoteView;
@@ -59,11 +57,7 @@ public class GitGinModule extends AbstractGinModule {
     protected void configure() {
         bind(GitServiceClient.class).to(GitServiceClientImpl.class).in(Singleton.class);
 
-        GinMultibinder<ProjectImporter> projectImporterMultibinder = GinMultibinder.newSetBinder(binder(), ProjectImporter.class);
-        projectImporterMultibinder.addBinding().to(GitProjectImporter.class);
-
-        GinMultibinder<ImporterPagePresenter> importerPageMultibinder = GinMultibinder.newSetBinder(binder(), ImporterPagePresenter.class);
-        importerPageMultibinder.addBinding().to(GitImporterPagePresenter.class);
+        GinMultibinder.newSetBinder(binder(), ImportWizardRegistrar.class).addBinding().to(GitImportWizardRegistrar.class);
 
         bind(AddToIndexView.class).to(AddToIndexViewImpl.class).in(Singleton.class);
         bind(ResetToCommitView.class).to(ResetToCommitViewImpl.class).in(Singleton.class);

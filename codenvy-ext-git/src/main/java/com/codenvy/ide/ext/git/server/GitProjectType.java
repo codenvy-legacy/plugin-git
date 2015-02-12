@@ -12,14 +12,21 @@ package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.project.server.type.ProjectType;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
 /**
  * @author Vitaly Parfonov
  */
+@Singleton
 public class GitProjectType extends ProjectType {
 
-    public GitProjectType(IsGitRepositoryValueProviderFactory isGitRepositoryValueProviderFactory) {
+    public static String VCS_PROVIDER_NAME = "vcs.provider.name";
+
+    @Inject
+    public GitProjectType(GitValueProviderFactory gitRepositoryValueProviderFactory) {
         super("git", "git", false, true);
-        addVariableDefinition(IsGitRepositoryValueProviderFactory.NAME, "Is this git repo or not?", false,
-                              isGitRepositoryValueProviderFactory);
+        addVariableDefinition(VCS_PROVIDER_NAME, "Is this git repo or not?", false,
+                              gitRepositoryValueProviderFactory);
     }
 }

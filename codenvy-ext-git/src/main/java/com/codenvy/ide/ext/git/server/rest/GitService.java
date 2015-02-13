@@ -11,13 +11,9 @@
 package com.codenvy.ide.ext.git.server.rest;
 
 import com.codenvy.api.core.ApiException;
-import com.codenvy.api.core.ForbiddenException;
-import com.codenvy.api.core.NotFoundException;
 import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.UnauthorizedException;
-import com.codenvy.api.project.server.Project;
-import com.codenvy.api.project.server.ProjectConfig;
-import com.codenvy.api.project.server.ProjectManager;
+import com.codenvy.api.project.server.*;
 import com.codenvy.api.project.shared.dto.ImportSourceDescriptor;
 import com.codenvy.api.vfs.server.MountPoint;
 import com.codenvy.api.vfs.server.VirtualFile;
@@ -269,12 +265,18 @@ public class GitService {
             gitConnection.init(request);
             Project project = projectManager.getProject(vfsId, projectPath);
             if (project != null) {
-                ProjectConfig config = project.getConfig();
-                config.getMixinTypes().add("git");
-                project.updateConfig(config);
+                addGitMixinIfNotExist(project);
             }
         } finally {
             gitConnection.close();
+        }
+    }
+
+    private void addGitMixinIfNotExist(Project project) throws ServerException, ValueStorageException, ProjectTypeConstraintException, InvalidValueException {
+        ProjectConfig config = project.getConfig();
+        if (!config.getMixinTypes().contains("git")) {
+            config.getMixinTypes().add("git");
+            project.updateConfig(config);
         }
     }
 

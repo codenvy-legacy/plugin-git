@@ -10,15 +10,27 @@
  *******************************************************************************/
 package com.codenvy.ide.ext.git.client.history;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+
 import com.codenvy.ide.Resources;
 import com.codenvy.ide.api.parts.PartStackUIResources;
 import com.codenvy.ide.api.parts.base.BaseView;
 import com.codenvy.ide.collections.Array;
+import com.codenvy.ide.editor.codemirror.highlighter.client.HighlightMode;
+import com.codenvy.ide.editor.codemirror.highlighter.client.Highlighter;
+import com.codenvy.ide.editor.codemirror.highlighter.client.HighlighterProvider;
+import com.codenvy.ide.editor.codemirror.highlighter.client.HighlighterProvider.HighlightModeCallback;
 import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.shared.Revision;
+import com.codenvy.ide.util.loging.Log;
 import com.google.gwt.cell.client.Cell;
 import com.google.gwt.cell.client.TextCell;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.safehtml.shared.SafeHtmlBuilder;
@@ -31,7 +43,6 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Image;
-import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.UIObject;
 import com.google.gwt.user.client.ui.Widget;
@@ -39,11 +50,6 @@ import com.google.gwt.view.client.SelectionChangeEvent;
 import com.google.gwt.view.client.SingleSelectionModel;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * The implementation of {@link HistoryView}.
@@ -71,7 +77,7 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
     @UiField
     TextBox                   commitBDate;
     @UiField
-    TextArea                  editor;
+    Element                   editor;
     @UiField(provided = true)
     CellTable<Revision>       commits;
     @UiField
@@ -91,6 +97,10 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
     @UiField(provided = true)
     final GitLocalizationConstant locale;
 
+    private Highlighter hightlighter;
+
+    private String delayedDiffContext;
+
     /**
      * Create view.
      *
@@ -99,11 +109,12 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
      * @param partStackUIResources
      */
     @Inject
-    protected HistoryViewImpl(GitResources resources,
-                              GitLocalizationConstant locale,
-                              PartStackUIResources partStackUIResources,
-                              Resources res,
-                              HistoryViewImplUiBinder uiBinder) {
+    protected HistoryViewImpl(final GitResources resources,
+                              final GitLocalizationConstant locale,
+                              final PartStackUIResources partStackUIResources,
+                              final Resources res,
+                              final HistoryViewImplUiBinder uiBinder,
+                              final HighlighterProvider highlighterProvider) {
         super(partStackUIResources);
 
         this.res = resources;
@@ -119,6 +130,22 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
         btnDiffWithWorkTree.getElement().appendChild(new Image(resources.diffWorkTree()).getElement());
         btnDiffWithPrevCommit.getElement().appendChild(new Image(resources.diffPrevVersion()).getElement());
         btnRefresh.getElement().appendChild(new Image(resources.refresh()).getElement());
+
+        highlighterProvider.get("diff", 3, new HighlightModeCallback() {
+            @Override
+            public void onReady(final HighlightMode highlightMode) {
+                HistoryViewImpl.this.hightlighter = highlightMode.forElement(HistoryViewImpl.this.editor);
+                if (delayedDiffContext != null) {
+                    HistoryViewImpl.this.hightlighter.highlightText(delayedDiffContext);
+                    delayedDiffContext = null;
+                }
+            }
+            @Override
+            public void onFailure() {
+                Log.warn(HistoryViewImpl.class, "Diff highlighter not available");
+                // could go on with textarea to at least show the content
+            }
+        });
     }
 
     /** Creates table what contains list of available commits.
@@ -247,7 +274,11 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
     /** {@inheritDoc} */
     @Override
     public void setDiffContext(@Nonnull String diffContext) {
-        editor.setText(diffContext);
+        if (this.hightlighter == null) {
+            this.delayedDiffContext = diffContext;
+        } else {
+            this.hightlighter.highlightText(diffContext);
+        }
     }
 
     /** {@inheritDoc} */
@@ -267,7 +298,8 @@ public class HistoryViewImpl extends BaseView<HistoryView.ActionDelegate> implem
         commitADate.setText("");
         commitBDate.setText("");
         compareType.setText("");
-        editor.setText("");
+
+        setDiffContext("");
 
         List<Revision> list = new ArrayList<Revision>();
         commits.setRowData(list);

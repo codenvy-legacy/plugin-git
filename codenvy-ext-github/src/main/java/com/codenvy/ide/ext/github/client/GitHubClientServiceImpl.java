@@ -113,6 +113,13 @@ public class GitHubClientServiceImpl implements GitHubClientService {
         asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
     }
 
+    @Override
+    public void getPullRequest(final String owner, final String repository, final String pullRequestId,
+                               final AsyncRequestCallback<GitHubPullRequest> callback) {
+        String url = baseUrl + PULL_REQUESTS + "/" + owner + "/" + repository + "/" + pullRequestId;
+        asyncRequestFactory.createGetRequest(url).loader(loader).send(callback);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void createPullRequest(@Nonnull String user, @Nonnull String repository, @Nonnull GitHubPullRequestCreationInput input,

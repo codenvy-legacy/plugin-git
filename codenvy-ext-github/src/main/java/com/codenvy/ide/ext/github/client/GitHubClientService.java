@@ -107,6 +107,19 @@ public interface GitHubClientService {
     void getPullRequests(@Nonnull String owner, @Nonnull String repository, @Nonnull AsyncRequestCallback<GitHubPullRequestList> callback);
 
     /**
+     * Get a pull request by id for a given repository.
+     * 
+     * @param owner the owner of the target repository
+     * @param repository the target repository
+     * @param pullRequestId the Id of the pull request
+     * @param callback the callback with either the pull request as argument or null if it doesn't exist
+     */
+    void getPullRequest(@Nonnull String owner,
+                        @Nonnull String repository,
+                        @Nonnull String pullRequestId,
+                        @Nonnull AsyncRequestCallback<GitHubPullRequest> callback);
+
+    /**
      * Create a pull request on origin repository
      *
      * @param user

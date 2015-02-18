@@ -52,7 +52,7 @@ public class GitConfigurationChecker {
     private final Path DEFAULT_GITIGNORE_FILE_PATH;
 
     public GitConfigurationChecker() {
-        GLOBAL_GITCONFIG_FILE_PATH = Paths.get(System.getProperty("user.home").replace("\\", "/") + "/.gitconfig");
+        GLOBAL_GITCONFIG_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitconfig");
         DEFAULT_GITIGNORE_FILE_PATH = Paths.get(System.getProperty("user.home") + "/.gitignore_codenvy");
 
         DEPRECATED_GITIGNORE_PATTERNS.add(".codenvy/");
@@ -128,7 +128,7 @@ public class GitConfigurationChecker {
     private String getExcludesfilePropertyDefaultContent() {
         return "\n"
                + "[core]\n"
-               + "\texcludesfile = " + DEFAULT_GITIGNORE_FILE_PATH
+               + "\texcludesfile = " + DEFAULT_GITIGNORE_FILE_PATH.toString().replace("\\", "/")
                + "\n";
     }
 }

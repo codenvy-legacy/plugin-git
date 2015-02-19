@@ -31,6 +31,7 @@
         <module>codenvy-ext-git-provider-github</module>
         <module>codenvy-ext-git-provider-projectlocker</module>
         <module>codenvy-ext-git-provider-wso2</module>
+        <module>codenvy-ext-git-provider-bitbucket</module>
     </modules>
     <scm>
         <connection>scm:git:git@github.com:codenvy/plugin-git.git</connection>

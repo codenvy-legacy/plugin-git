@@ -15,13 +15,13 @@ import com.codenvy.api.core.ServerException;
 import com.codenvy.api.core.util.LineConsumerFactory;
 import com.codenvy.api.user.server.dao.UserProfileDao;
 import com.codenvy.commons.env.EnvironmentContext;
-import com.codenvy.commons.lang.Strings;
 import com.codenvy.commons.user.User;
 import com.codenvy.dto.server.DtoFactory;
 import com.codenvy.ide.ext.git.server.GitConnection;
 import com.codenvy.ide.ext.git.server.GitConnectionFactory;
 import com.codenvy.ide.ext.git.server.GitException;
 import com.codenvy.ide.ext.git.shared.GitUser;
+import com.google.common.base.Joiner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +80,8 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         final String lastName = profileAttributes.get("lastName");
         final String email = profileAttributes.get("email");
         if (firstName != null || lastName != null) {
-            gitUser.withName(Strings.join(" ", Strings.nullToEmpty(firstName), Strings.nullToEmpty(lastName)));
+            Joiner joiner = Joiner.on(" ").skipNulls();
+            gitUser.withName(joiner.join(firstName, lastName));
         } else {
             gitUser.withName(user.getName());
         }

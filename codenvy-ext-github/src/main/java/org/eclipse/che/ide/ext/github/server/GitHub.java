@@ -743,33 +743,17 @@ public class GitHub {
     }
 
     private GitHubException fault(HttpURLConnection http) throws IOException {
-        InputStream errorStream = null;
-        try {
-            int responseCode = http.getResponseCode();
-            errorStream = http.getErrorStream();
-            if (errorStream == null) {
-                errorStream = http.getInputStream();
-            }
-            if (errorStream == null) {
-                return new GitHubException(responseCode, null, null);
+        final int responseCode = http.getResponseCode();
+
+        try (final InputStream stream = (responseCode >= 400 ? http.getErrorStream() : http.getInputStream())) {
+
+            String body = null;
+            if (stream != null) {
+                final int length = http.getContentLength();
+                body = readBody(stream, length);
             }
 
-            int length = http.getContentLength();
-            String body = readBody(errorStream, length);
-
-            if (body != null) {
-                if (http.getResponseCode() != 401) {
-                    return new GitHubException(http.getResponseCode(), body, http.getContentType());
-                } else {
-                    return new GitHubException(400, body, http.getContentType());
-                }
-            }
-
-            return new GitHubException(responseCode, null, null);
-        } finally {
-            if (errorStream != null) {
-                errorStream.close();
-            }
+            return new GitHubException(responseCode, body, http.getContentType());
         }
     }
 

@@ -8,17 +8,17 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.server.nativegit;
+package org.eclipse.che.ide.ext.git.server.nativegit;
 
-import com.codenvy.commons.env.EnvironmentContext;
-import com.codenvy.dto.server.DtoFactory;
-import com.codenvy.ide.ext.git.server.GitException;
-import com.codenvy.ide.ext.git.shared.GitUser;
-import com.codenvy.security.oauth1.BitbucketOAuthAuthenticator;
-import com.codenvy.security.oauth1.OAuthAuthenticationException;
-import com.codenvy.security.oauth1.shared.User;
 import com.google.api.client.auth.oauth.OAuthCredentialsResponse;
 
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.dto.server.DtoFactory;
+import org.eclipse.che.ide.ext.git.server.GitException;
+import org.eclipse.che.ide.ext.git.shared.GitUser;
+import org.eclipse.che.security.oauth1.BitbucketOAuthAuthenticator;
+import org.eclipse.che.security.oauth1.OAuthAuthenticationException;
+import org.eclipse.che.security.oauth1.shared.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +28,7 @@ import javax.inject.Singleton;
 import java.io.IOException;
 
 /**
- * {@link com.codenvy.ide.ext.git.server.nativegit.CredentialsProvider} implementation for Bitbucket.
+ * {@link org.eclipse.che.ide.ext.git.server.nativegit.CredentialsProvider} implementation for Bitbucket.
  *
  * @author Kevin Pollet
  */

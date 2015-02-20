@@ -26,6 +26,7 @@
     <modules>
         <module>codenvy-ext-git</module>
         <module>codenvy-ext-github</module>
+        <module>codenvy-ext-bitbucket</module>
         <module>codenvy-git-server</module>
         <module>codenvy-ext-git-provider-codenvy</module>
         <module>codenvy-ext-git-provider-github</module>

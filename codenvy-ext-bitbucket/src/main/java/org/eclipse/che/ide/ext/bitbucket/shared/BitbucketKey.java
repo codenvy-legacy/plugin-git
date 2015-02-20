@@ -8,22 +8,26 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package com.codenvy.ide.ext.git.server.nativegit;
+package org.eclipse.che.ide.ext.bitbucket.shared;
 
-import com.codenvy.inject.DynaModule;
-import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.Multibinder;
+import org.eclipse.che.dto.shared.DTO;
 
 /**
- * The module that contains configuration of the server side part of the Git extension.
+ * Represents a Bitbucket SSH keys.
  *
  * @author Kevin Pollet
  */
-@DynaModule
-public class BitbucketGitModule extends AbstractModule {
-    @Override
-    protected void configure() {
-        Multibinder.newSetBinder(binder(), CredentialsProvider.class).addBinding().to(BitbucketOAuthCredentialProvider.class);
-    }
-}
+@DTO
+public interface BitbucketKey {
+    String getPk();
 
+    void setPk(String pk);
+
+    String getKey();
+
+    void setKey(String key);
+
+    String getLabel();
+
+    void setLabel(String label);
+}

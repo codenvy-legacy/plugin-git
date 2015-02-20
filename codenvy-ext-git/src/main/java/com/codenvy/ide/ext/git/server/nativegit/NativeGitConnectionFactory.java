@@ -80,8 +80,7 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         final String lastName = profileAttributes.get("lastName");
         final String email = profileAttributes.get("email");
         if (firstName != null || lastName != null) {
-            Joiner joiner = Joiner.on(" ").skipNulls();
-            gitUser.withName(joiner.join(firstName, lastName));
+            gitUser.withName(Joiner.on(" ").skipNulls().join(firstName, lastName));
         } else {
             gitUser.withName(user.getName());
         }

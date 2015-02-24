@@ -19,7 +19,7 @@ import com.codenvy.api.project.server.ValueProviderFactory;
 import com.codenvy.api.project.server.ValueStorageException;
 
 import javax.inject.Singleton;
-import java.util.LinkedList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -34,22 +34,22 @@ public class GitValueProviderFactory implements ValueProviderFactory {
         return new ValueProvider() {
             @Override
             public List<String> getValues(String attributeName) throws ValueStorageException {
-                final List<String> list = new LinkedList<>();
                 try {
                     final FolderEntry git = (FolderEntry)project.getChild(".git");
                     if (git != null) {
-                        list.add("git");
+                        return Arrays.asList("git");
+                    } else {
+                        throw new ValueStorageException(String.format("Folder .git not found in %s", project.getPath()));
                     }
                 } catch (ForbiddenException | ServerException e) {
                     throw new ValueStorageException(e.getMessage());
                 }
-                return list;
             }
 
             @Override
             public void setValues(String attributeName, List<String> value) throws InvalidValueException {
                 throw new InvalidValueException(
-                        String.format("It is not possible to set value for attribute %s on project %s .Git project values are read only",
+                        String.format("It is not possible to set value for attribute %s on project %s .git project values are read only",
                                       attributeName, project.getPath()));
             }
         };

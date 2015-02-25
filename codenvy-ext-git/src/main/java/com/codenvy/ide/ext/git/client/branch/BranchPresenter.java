@@ -119,6 +119,9 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                             @Override
                             protected void onSuccess(String result) {
                                 getBranches();
+                                view.setEnableCheckoutButton(false);
+                                view.setEnableDeleteButton(false);
+                                view.setEnableRenameButton(false);
                             }
 
                             @Override
@@ -142,6 +145,9 @@ public class BranchPresenter implements BranchView.ActionDelegate {
             @Override
             protected void onSuccess(String result) {
                 getBranches();
+                view.setEnableCheckoutButton(false);
+                view.setEnableDeleteButton(false);
+                view.setEnableRenameButton(false);
             }
 
             @Override
@@ -176,6 +182,9 @@ public class BranchPresenter implements BranchView.ActionDelegate {
             protected void onSuccess(String result) {
                 getBranches();
                 refreshProject(openedEditors);
+                view.setEnableCheckoutButton(false);
+                view.setEnableDeleteButton(false);
+                view.setEnableRenameButton(false);
             }
 
             @Override

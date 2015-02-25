@@ -11,6 +11,7 @@
 package com.codenvy.ide.ext.git.server;
 
 import com.codenvy.api.project.server.type.ProjectType;
+import com.codenvy.api.project.server.type.TransientMixin;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,13 +20,13 @@ import javax.inject.Singleton;
  * @author Vitaly Parfonov
  */
 @Singleton
-public class GitProjectType extends ProjectType {
+public class GitProjectType extends TransientMixin {
 
     public static String VCS_PROVIDER_NAME = "vcs.provider.name";
 
     @Inject
     public GitProjectType(GitValueProviderFactory gitRepositoryValueProviderFactory) {
-        super("git", "git", false, true);
+        super("git", "git");
         addVariableDefinition(VCS_PROVIDER_NAME, "Is this git repo or not?", false,
                               gitRepositoryValueProviderFactory);
     }

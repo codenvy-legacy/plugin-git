@@ -18,23 +18,24 @@ import com.codenvy.ide.ext.git.client.GitLocalizationConstant;
 import com.codenvy.ide.ext.git.client.GitResources;
 import com.codenvy.ide.ext.git.client.history.HistoryPresenter;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 /** @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a> */
 @Singleton
 public class HistoryAction extends GitAction {
-    private final HistoryPresenter     presenter;
+    private final Provider<HistoryPresenter> presenterProvider;
     private final AnalyticsEventLogger eventLogger;
 
     @Inject
-    public HistoryAction(HistoryPresenter presenter,
+    public HistoryAction(Provider<HistoryPresenter> presenterProvider,
                          AppContext appContext,
                          GitResources resources,
                          GitLocalizationConstant constant,
                          AnalyticsEventLogger eventLogger,
                          SelectionAgent selectionAgent) {
         super(constant.historyControlTitle(), constant.historyControlPrompt(), resources.showHistory(), appContext, selectionAgent);
-        this.presenter = presenter;
+        this.presenterProvider = presenterProvider;
         this.eventLogger = eventLogger;
     }
 
@@ -42,6 +43,6 @@ public class HistoryAction extends GitAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         eventLogger.log(this);
-        presenter.showDialog();
+        this.presenterProvider.get().showDialog();
     }
 }

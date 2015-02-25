@@ -124,6 +124,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.codenvy.plugin-editor-codemirror</groupId>
+            <artifactId>codemirror-highlighter</artifactId>
+            <version>${codenvy.plugin-editor-codemirror.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.codenvy.security</groupId>
             <artifactId>codenvy-security-oauth2-gwt-client</artifactId>
             <version>${codenvy.security.version}</version>

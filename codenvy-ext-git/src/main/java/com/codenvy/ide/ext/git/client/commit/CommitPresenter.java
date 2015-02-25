@@ -64,9 +64,9 @@ public class CommitPresenter implements CommitView.ActionDelegate {
     public void showDialog() {
         view.setAmend(false);
         view.setAllFilesInclude(false);
-        view.focusInMessageField();
         view.setEnableCommitButton(!view.getMessage().isEmpty());
         view.showDialog();
+        view.focusInMessageField();
     }
 
     /** {@inheritDoc} */

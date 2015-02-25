@@ -141,6 +141,14 @@ public class GitHubService {
         return github.listPullRequestsByRepository(user, repository);
     }
 
+    @Path("pullrequests/{user}/{repository}/{pullRequestId}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public GitHubPullRequestList getPullRequestsById(@PathParam("user") String user, @PathParam("repository") String repository, @PathParam("pullRequestId") String pullRequestId)
+            throws IOException, GitHubException, ParsingResponseException {
+        return github.listPullRequestsByRepository(user, repository);
+    }
+
     @Path("pullrequest/{user}/{repository}")
     @POST
     @Produces(MediaType.APPLICATION_JSON)

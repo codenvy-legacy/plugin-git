@@ -79,4 +79,37 @@ public interface GitHubPullRequest {
     void setHead(GitHubPullRequestHead head);
 
     GitHubPullRequest withHead(GitHubPullRequestHead head);
+
+    /**
+     * Tells if the pull request is merged.
+     * 
+     * @return true iff the pull request is merged
+     */
+    boolean getMerged();
+
+    void setMerged(boolean merged);
+
+    GitHubPullRequest withMerged(boolean merged);
+
+    /**
+     * Tells which user merged the pull request (if it was).
+     * 
+     * @return the user
+     */
+    GitHubUser getMergedBy();
+
+    void setMergedBy(GitHubUser user);
+
+    GitHubPullRequest withMergedBy(GitHubUser user);
+
+    /**
+     * Tells if the pull request is mergeable.
+     * 
+     * @return true iff the merge can be done automatically
+     */
+    boolean getMergeable();
+
+    void setMergeable(boolean mergeable);
+
+    GitHubPullRequest withMergeable(boolean mergeable);
 }

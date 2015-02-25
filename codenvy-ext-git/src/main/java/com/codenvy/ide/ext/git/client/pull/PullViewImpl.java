@@ -180,7 +180,7 @@ public class PullViewImpl extends Window implements PullView {
 
     @UiHandler("remoteBranch")
     public void onValueChanged(ChangeEvent event) {
-        delegate.onRemoteBranchChanged();;
+        delegate.onRemoteBranchChanged();
     }
 
     /** {@inheritDoc} */

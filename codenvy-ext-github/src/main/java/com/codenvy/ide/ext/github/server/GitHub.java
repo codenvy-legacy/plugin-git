@@ -33,7 +33,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -323,6 +323,29 @@ public class GitHub {
         final String url = "https://api.github.com/repos/" + user + '/' + repository + "/pulls?access_token=" + oauthToken;
         GitHubPullRequestList gitHubPullRequestList = DtoFactory.getInstance().createDto(GitHubPullRequestList.class);
         return getPullRequests(url, gitHubPullRequestList);
+    }
+
+    /**
+     * Get the pull request with given id in owner:repository.
+     * @param owner
+     *         the owner of the repository
+     * @param repository
+     *         the target repository
+     * @param pullRequestId
+     *         the pull request id
+     * @return the pull request or null if it doesn't exist
+     * @throws IOException 
+     * @throws GitHubException 
+     * @throws ParsingResponseException 
+     */
+    public GitHubPullRequest getPullRequestById(final String owner, final String repository, final String pullRequestId) throws GitHubException, IOException, ParsingResponseException {
+        final String oauthToken = getToken(getUserId());
+        final String url = MessageFormat.format("https://api.github.com/repos/{0}/{1}/pulls/{2}?access_token={3}",
+                                                owner, repository, pullRequestId, oauthToken);
+        final String method = "GET";
+        final String response = doJsonRequest(url, method, 200);
+        GitHubPullRequest pullRequest = parseJsonResponse(response, GitHubPullRequest.class, null);
+        return pullRequest;
     }
 
     /**

@@ -80,7 +80,8 @@ public class NativeGitConnectionFactory extends GitConnectionFactory {
         final String lastName = profileAttributes.get("lastName");
         final String email = profileAttributes.get("email");
         if (firstName != null || lastName != null) {
-            gitUser.withName(Joiner.on(" ").skipNulls().join(firstName, lastName));
+            // add this temporary for fixing problem with "<none>" in last name of user from profile
+            gitUser.withName(Joiner.on(" ").skipNulls().join(firstName, lastName.contains("<none>") ? "" : lastName));
         } else {
             gitUser.withName(user.getName());
         }

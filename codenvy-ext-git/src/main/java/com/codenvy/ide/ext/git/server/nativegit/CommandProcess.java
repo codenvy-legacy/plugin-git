@@ -60,6 +60,9 @@ public class CommandProcess {
         if (command.getAskPassScriptPath() != null) {
             environment.put("GIT_ASKPASS", command.getAskPassScriptPath());
         }
+        environment.put("LANG", "en_US.UTF-8");
+        environment.put("GDM_LANG", "en_US.UTF-8");
+        environment.put("LANGUAGE", "us");
 
         //set up and override command specific environment variables
         for (Map.Entry<String, String> entry : ((Map<String, String>)command.getCommandEnvironment()).entrySet()) {

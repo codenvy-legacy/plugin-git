@@ -83,13 +83,14 @@ public class CodenvyAccessTokenCredentialProvider implements CredentialsProvider
                 String lastName = profile.getAttributes().get("lastName");
                 String email = profile.getAttributes().get("email");
 
+                String name;
                 if (firstName != null || lastName != null) {
                     // add this temporary for fixing problem with "<none>" in last name of user from profile
-                    gitUser.setName(Joiner.on(" ").skipNulls().join(firstName, lastName.contains("<none>") ? "" : lastName));
+                    name = Joiner.on(" ").skipNulls().join(firstName, lastName.contains("<none>") ? "" : lastName);
                 } else {
-                    gitUser.setName("Anonymous");
+                    name = user.getName();
                 }
-
+                gitUser.setName(name != null && !name.isEmpty() ? name : "Anonymous");
                 gitUser.setEmail(email != null ? email : "anonymous@noemail.com");
                 return gitUser;
 

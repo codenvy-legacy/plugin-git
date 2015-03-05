@@ -66,7 +66,7 @@ public class GitHubOAuthCredentialProvider implements CredentialsProvider {
                 if (user != null) {
                     return DtoFactory.getInstance().createDto(GitUser.class)
                                      .withEmail(user.getEmail())
-                                     .withName(user.getName());
+                                     .withName(user.getName() != null && !user.getName().isEmpty() ? user.getName() : "Anonymous");
                 }
 
             }

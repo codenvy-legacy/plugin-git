@@ -101,7 +101,12 @@ public class GitHub {
     public GitHubRepository getUserRepository(String user, String repository)
             throws IOException, GitHubException, ParsingResponseException {
         final String method = "GET";
-        final String url = "https://api.github.com/repos/" + user + "/" + repository;
+        final String oauthToken = getToken(getUserId());
+        String url = "https://api.github.com/repos/" + user + "/" + repository ;
+        if (oauthToken != null) {
+            url += "?access_token=" + oauthToken;
+        }
+
         final String response = doJsonRequest(url, method, 200);
 
         return parseJsonResponse(response, GitHubRepository.class, null);
@@ -125,7 +130,11 @@ public class GitHub {
             LOG.error("Git user is not set.");
             throw new IllegalArgumentException("User's name must not be null.");
         }
-        final String url = "https://api.github.com/users/" + user + "/repos";
+        final String oauthToken = getToken(getUserId());
+        String url = "https://api.github.com/users/" + user + "/repos";
+        if (oauthToken != null) {
+            url += "?access_token=" + oauthToken;
+        }
         GitHubRepositoryList gitHubRepositoryList = DtoFactory.getInstance().createDto(GitHubRepositoryList.class);
         return getRepositories(url, gitHubRepositoryList);
     }
@@ -334,9 +343,9 @@ public class GitHub {
      * @param pullRequestId
      *         the pull request id
      * @return the pull request or null if it doesn't exist
-     * @throws IOException 
-     * @throws GitHubException 
-     * @throws ParsingResponseException 
+     * @throws IOException
+     * @throws GitHubException
+     * @throws ParsingResponseException
      */
     public GitHubPullRequest getPullRequestById(final String owner, final String repository, final String pullRequestId) throws GitHubException, IOException, ParsingResponseException {
         final String oauthToken = getToken(getUserId());
@@ -521,7 +530,7 @@ public class GitHub {
     }
 
     private String doJsonRequest(String url, String method, int success, GitHubPullRequestList gitHubPullRequestList) throws IOException,
-                                                                                                                    GitHubException {
+                                                                                                                             GitHubException {
         HttpURLConnection http = null;
         try {
             http = (HttpURLConnection)new URL(url).openConnection();
@@ -656,7 +665,7 @@ public class GitHub {
             return;
         }
         resetPages(repositoryList);
-        
+
         String[] links = linkHeader.split(DELIM_LINKS);
         for (String link : links) {
             Matcher matcher = linkPattern.matcher(link.trim());

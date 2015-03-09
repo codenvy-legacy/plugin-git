@@ -10,18 +10,24 @@
  *******************************************************************************/
 package com.codenvy.ide.git;
 
-import com.codenvy.api.auth.shared.dto.Credentials;
-import com.codenvy.api.core.*;
-import com.codenvy.api.core.rest.HttpJsonHelper;
-import com.codenvy.api.core.rest.shared.dto.Link;
-import com.codenvy.commons.lang.Pair;
-import com.codenvy.commons.user.User;
-import com.codenvy.api.auth.shared.dto.Token;
-import com.codenvy.commons.env.EnvironmentContext;
-import com.codenvy.commons.json.JsonHelper;
-import com.codenvy.commons.json.JsonParseException;
-import com.codenvy.commons.user.UserImpl;
-import com.codenvy.dto.server.DtoFactory;
+import org.eclipse.che.api.auth.shared.dto.Credentials;
+
+
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.core.rest.HttpJsonHelper;
+import org.eclipse.che.api.core.rest.shared.dto.Link;
+import org.eclipse.che.commons.lang.Pair;
+import org.eclipse.che.commons.user.User;
+import org.eclipse.che.api.auth.shared.dto.Token;
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.json.JsonHelper;
+import org.eclipse.che.commons.json.JsonParseException;
+import org.eclipse.che.commons.user.UserImpl;
+import org.eclipse.che.dto.server.DtoFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.everrest.core.impl.provider.json.JsonValue;

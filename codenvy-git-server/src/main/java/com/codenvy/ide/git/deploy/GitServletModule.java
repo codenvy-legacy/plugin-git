@@ -12,7 +12,7 @@ package com.codenvy.ide.git.deploy;
 
 import com.codenvy.ide.git.CodenvyGitServlet;
 import com.codenvy.ide.git.VFSPermissionsFilter;
-import com.codenvy.inject.DynaModule;
+import org.eclipse.che.inject.DynaModule;
 import com.google.inject.servlet.ServletModule;
 
 import java.util.HashMap;

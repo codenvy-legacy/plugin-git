@@ -409,7 +409,7 @@ public interface GitConnection extends Closeable {
      */
     List<GitUser> getCommiters() throws GitException;
 
-    /** Gte configuration. */
+    /** Get configuration. */
     Config getConfig() throws GitException;
 
     /** Close connection, release associated resources. */

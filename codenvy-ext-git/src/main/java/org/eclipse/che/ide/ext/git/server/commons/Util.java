@@ -18,12 +18,15 @@ import java.util.regex.Pattern;
  * Commons class for Git and nested modules.
  *
  * @author Vladyslav Zhukovskii
+ * @author Kevin Pollet
  */
 public class Util {
     public static final Pattern GIT_SSH_URL_PATTERN =
             Pattern.compile("((((git|ssh)://)(([^\\\\/@:]+@)??)[^\\\\/@:]+)|([^\\\\/@:]+@[^\\\\/@:]+))(:|/)[^\\\\@:]+");
 
     public static final Pattern GITHUB_URL_PATTERN = Pattern.compile(".*github\\.com.*");
+
+    public static final Pattern BITBUCKET_URL_PATTERN = Pattern.compile(".*bitbucket\\.org.*");
 
     public static String getCodenvyTimeStampKeyLabel() {
         return "Codenvy SSH Key (" + new SimpleDateFormat().format(new Date()) + ")";
@@ -35,6 +38,10 @@ public class Util {
 
     public static boolean isGitHub(String url) {
         return GITHUB_URL_PATTERN.matcher(url).matches();
+    }
+
+    public static boolean isBitbucket(String url) {
+        return BITBUCKET_URL_PATTERN.matcher(url).matches();
     }
 
     /**

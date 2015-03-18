@@ -40,7 +40,7 @@ public class PullTest extends BaseTest {
         File repo2 = new File(getTarget().toAbsolutePath().toString(), "repo2");
         repo2.mkdir();
         forClean.add(repo2);
-        GitConnection connection = connectionFactory.getConnection(repo2, getUser(), LineConsumerFactory.NULL);
+        GitConnection connection = connectionFactory.getConnection(repo2,  LineConsumerFactory.NULL);
         connection.clone(newDTO(CloneRequest.class)
                 .withRemoteUri(getRepository().toAbsolutePath().toString()));
         addFile(getRepository(), "newfile1", "new file1 content");
@@ -62,7 +62,7 @@ public class PullTest extends BaseTest {
         File repo2 = new File(getTarget().toAbsolutePath().toString(), "repo2");
         repo2.mkdir();
         forClean.add(repo2);
-        GitConnection connection = connectionFactory.getConnection(repo2, getUser(), LineConsumerFactory.NULL);
+        GitConnection connection = connectionFactory.getConnection(repo2, LineConsumerFactory.NULL);
         connection.clone(newDTO(CloneRequest.class)
                 .withRemoteUri(getRepository().toAbsolutePath().toString())
                 .withWorkingDir(repo2.getAbsolutePath()));
@@ -106,7 +106,7 @@ public class PullTest extends BaseTest {
         PullRequest request = newDTO(PullRequest.class);
         request.setRemote(getRepository().toAbsolutePath().toString());
         request.setRefSpec(branchName);
-        connectionFactory.getConnection(newRepo, getUser(), LineConsumerFactory.NULL).pull(request);
+        connectionFactory.getConnection(newRepo, LineConsumerFactory.NULL).pull(request);
         //then
         assertTrue(new File(newRepo.getAbsolutePath(), "remoteFile").exists());
     }

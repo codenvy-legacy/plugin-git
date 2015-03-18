@@ -346,7 +346,6 @@ public interface GitConnection extends Closeable {
      * @throws GitException
      *         if any error occurs
      * @throws IllegalArgumentException
-     *         {@link RmRequest#getFiles()} returns <code>null</code> or empty array
      * @see RmRequest
      */
     void rm(RmRequest request) throws GitException;
@@ -397,9 +396,6 @@ public interface GitConnection extends Closeable {
      * @see TagListRequest
      */
     List<Tag> tagList(TagListRequest request) throws GitException;
-
-    /** @return user associated with this connection */
-    GitUser getUser();
 
     /**
      * Gel list of commiters in current repository.

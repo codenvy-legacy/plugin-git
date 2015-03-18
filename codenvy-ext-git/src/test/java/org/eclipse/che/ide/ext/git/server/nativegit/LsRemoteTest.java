@@ -29,7 +29,7 @@ public class LsRemoteTest extends BaseTest {
 
     @Test
     public void testShouldBeAbleToGetResultFromPublicRepo() throws GitException, UnauthorizedException {
-        GitConnection connection = connectionFactory.getConnection("/tmp", getUser());
+        GitConnection connection = connectionFactory.getConnection("/tmp");
         Set<RemoteReference> remoteReferenceSet =
                 new HashSet<>(connection.lsRemote(newDTO(LsRemoteRequest.class)
                         .withRemoteUrl("https://github.com/codenvy/everrest.git")
@@ -41,7 +41,7 @@ public class LsRemoteTest extends BaseTest {
 
     @Test(expectedExceptions = GitException.class)
     public void testShouldThrowGitExceptionIfUserTryGetInfoAboutPrivateRepoAndUserIsUnauthorized() throws GitException, UnauthorizedException {
-        GitConnection connection = connectionFactory.getConnection("/tmp", getUser());
+        GitConnection connection = connectionFactory.getConnection("/tmp");
         connection.lsRemote(newDTO(LsRemoteRequest.class)
                 .withRemoteUrl("https://bitbucket.org/exoinvitemain/privater.git")
                 .withUseAuthorization(false));

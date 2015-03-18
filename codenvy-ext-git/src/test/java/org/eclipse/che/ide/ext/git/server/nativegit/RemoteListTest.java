@@ -36,7 +36,7 @@ public class RemoteListTest extends BaseTest {
         forClean.add(repository2);
 
         GitConnection connection = connectionFactory
-                .getConnection(repository2.getAbsolutePath(), getUser(), LineConsumerFactory.NULL);
+                .getConnection(repository2.getAbsolutePath(), LineConsumerFactory.NULL);
         connection.clone(newDTO(CloneRequest.class).withRemoteUri(getRepository().toAbsolutePath().toString()));
         assertEquals(connection.remoteList(newDTO(RemoteListRequest.class)).size(), 1);
         //create new remote

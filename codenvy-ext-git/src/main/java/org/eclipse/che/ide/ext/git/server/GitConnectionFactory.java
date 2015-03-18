@@ -17,20 +17,6 @@ import java.io.File;
 
 /** @author andrew00x */
 public abstract class GitConnectionFactory {
-    /**
-     * Get connection to Git repository located in <code>workDir</code>.
-     *
-     * @param workDir
-     *         repository directory
-     * @param user
-     *         user
-     * @return connection to Git repository
-     * @throws GitException
-     *         if can't initialize connection
-     */
-    public final GitConnection getConnection(String workDir, GitUser user) throws GitException {
-        return getConnection(new File(workDir), user, LineConsumerFactory.NULL);
-    }
 
     /**
      * Get connection to Git repository located in <code>workDir</code>
@@ -45,22 +31,6 @@ public abstract class GitConnectionFactory {
         return getConnection(new File(workDir));
     }
 
-    /**
-     * Get connection to Git repository located in <code>workDir</code>.
-     *
-     * @param workDir
-     *         repository directory
-     * @param user
-     *         user
-     * @param outputPublisherFactory
-     *         a consumer factory for git output
-     * @return connection to Git repository
-     * @throws GitException
-     *         if can't initialize connection
-     */
-    public final GitConnection getConnection(String workDir, GitUser user, LineConsumerFactory outputPublisherFactory) throws GitException {
-        return getConnection(new File(workDir), user, outputPublisherFactory);
-    }
 
     /**
      * Get connection to Git repository located in <code>workDir</code>
@@ -89,21 +59,6 @@ public abstract class GitConnectionFactory {
     public final GitConnection getConnection(File workDir) throws GitException {
         return getConnection(workDir, LineConsumerFactory.NULL);
     }
-
-    /**
-     * Get connection to Git repository located in <code>workDir</code>.
-     *
-     * @param workDir
-     *         repository directory
-     * @param user
-     *         user
-     * @param outputPublisherFactory
-     *         to create a consumer for git output
-     * @return connection to Git repository
-     * @throws GitException
-     *         if can't initialize connection
-     */
-    public abstract GitConnection getConnection(File workDir, GitUser user, LineConsumerFactory outputPublisherFactory) throws GitException;
 
     /**
      * Get connection to Git repository locate in <code>workDir</code>

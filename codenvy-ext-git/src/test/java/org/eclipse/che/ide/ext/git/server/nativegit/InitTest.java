@@ -35,8 +35,8 @@ public class InitTest extends BaseTest {
         File destination = new File(getTarget().toAbsolutePath().toString(), "repository2");
         destination.mkdir();
         forClean.add(destination);
-        GitConnection connection = connectionFactory.getConnection(destination,
-                newDTO(GitUser.class).withName("user").withEmail("user@email.com"), LineConsumerFactory.NULL);
+        GitConnection connection = connectionFactory.getConnection(destination
+                , LineConsumerFactory.NULL);
         //when
         connection.init(newDTO(InitRequest.class).withWorkingDir(null).withBare(false));
         //then

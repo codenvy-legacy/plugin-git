@@ -55,10 +55,8 @@ public class RemoteAddTest extends BaseTest {
         nativeGit.createBranchCreateCommand().setBranchName("b1").execute();
         nativeGit.createBranchCreateCommand().setBranchName("b2").execute();
         nativeGit.createBranchCreateCommand().setBranchName("b3").execute();
-        final GitConnectionFactory factory = new NativeGitConnectionFactory(null, null, null);
+        final GitConnectionFactory factory = new NativeGitConnectionFactory(null,  null);
         GitConnection connection = factory.getConnection(repository2,
-                newDTO(GitUser.class).withName("test_name")
-                        .withEmail("test@email"),
                 NULL);
         connection.init(newDTO(InitRequest.class));
         //add remote tracked only to b1 and b3 branches

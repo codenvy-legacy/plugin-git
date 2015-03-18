@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.server.nativegit;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.NotFoundException;
@@ -24,6 +26,7 @@ import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.ide.ext.git.server.GitException;
 import org.eclipse.che.ide.ext.git.shared.GitUser;
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,21 +80,8 @@ public class CodenvyAccessTokenCredentialProvider implements CredentialsProvider
                 Link link = DtoFactory.getInstance().createDto(Link.class).withMethod("GET")
                                       .withHref(UriBuilder.fromUri(apiEndpoint).path("profile").build().toString());
                 final ProfileDescriptor profile = HttpJsonHelper.request(ProfileDescriptor.class, link);
-
-
-                String firstName = profile.getAttributes().get("firstName");
-                String lastName = profile.getAttributes().get("lastName");
-                String email = profile.getAttributes().get("email");
-
-                String name;
-                if (firstName != null || lastName != null) {
-                    // add this temporary for fixing problem with "<none>" in last name of user from profile
-                    name = Joiner.on(" ").skipNulls().join(firstName, lastName.contains("<none>") ? "" : lastName);
-                } else {
-                    name = user.getName();
-                }
-                gitUser.setName(name != null && !name.isEmpty() ? name : "Anonymous");
-                gitUser.setEmail(email != null ? email : "anonymous@noemail.com");
+                gitUser.setName(firstNonNull(profile.getAttributes().get("git.user.name"), "unknown"));
+                gitUser.setEmail(firstNonNull(profile.getAttributes().get("git.user.email"), "unknown@unknown.com"));
                 return gitUser;
 
             }

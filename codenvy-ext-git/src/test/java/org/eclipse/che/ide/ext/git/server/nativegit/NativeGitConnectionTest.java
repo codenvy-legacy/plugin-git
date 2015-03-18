@@ -19,6 +19,7 @@ import static org.testng.Assert.*;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.ide.ext.git.server.GitException;
+
 import com.google.common.collect.ImmutableList;
 
 import org.eclipse.che.ide.ext.git.server.nativegit.commands.BranchDeleteCommand;
@@ -43,6 +44,7 @@ import org.eclipse.che.ide.ext.git.shared.Remote;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -54,7 +56,6 @@ import java.io.IOException;
 @Listeners(MockitoTestNGListener.class)
 public class NativeGitConnectionTest {
 
-    @Mock
     GitUser             user;
     @Mock
     GitUser             wso2User;
@@ -88,8 +89,9 @@ public class NativeGitConnectionTest {
     @BeforeMethod
     public void setUp() throws Exception {
 
-        connection = new NativeGitConnection(nativeGit, user, keysManager, credentialsLoader, new GitAskPassScript());
-
+        connection = new NativeGitConnection(nativeGit, keysManager, credentialsLoader, new GitAskPassScript());
+        user = DtoFactory.getInstance().createDto(GitUser.class).withName("test_name").withEmail("test@email");
+        when(credentialsLoader.getUser(Mockito.eq("codenvy"))).thenReturn(user);
         when(nativeGit.createEmptyGitCommand()).thenReturn(emptyGitCommand);
         when(nativeGit.createCommitCommand()).thenReturn(commitCommand);
         when(nativeGit.createBranchDeleteCommand()).thenReturn(branchDeleteCommand);

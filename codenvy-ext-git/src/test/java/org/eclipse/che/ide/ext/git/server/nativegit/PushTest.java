@@ -37,7 +37,7 @@ public class PushTest extends BaseTest {
         File pushTo = new File(getTarget().toAbsolutePath().toString(), "repo2");
         pushTo.mkdir();
         forClean.add(pushTo);
-        GitConnection connection = connectionFactory.getConnection(pushTo, getUser(), NULL);
+        GitConnection connection = connectionFactory.getConnection(pushTo,  NULL);
         connection.clone(newDTO(CloneRequest.class).withRemoteUri(getRepository().toAbsolutePath().toString()));
         addFile(pushTo.toPath(), "newfile", "content");
         NativeGit pushToGit = new NativeGit(pushTo);

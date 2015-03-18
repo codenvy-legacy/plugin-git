@@ -55,7 +55,7 @@ public class FetchTest extends BaseTest {
         FetchRequest request = newDTO(FetchRequest.class);
         request.setRemote(getRepository().toAbsolutePath().toString());
         //when
-        connectionFactory.getConnection(fetchTestRepo, getUser(), LineConsumerFactory.NULL).fetch(request);
+        connectionFactory.getConnection(fetchTestRepo, LineConsumerFactory.NULL).fetch(request);
         //then
         //make merge with FETCH_HEAD
         new NativeGit(fetchTestRepo).createMergeCommand()
@@ -81,7 +81,7 @@ public class FetchTest extends BaseTest {
         request.setRemote(getRepository().toAbsolutePath().toString());
         request.setRefSpec(Arrays.asList(branchName));
         //when
-        connectionFactory.getConnection(fetchTestRepo, getUser(), LineConsumerFactory.NULL).fetch(request);
+        connectionFactory.getConnection(fetchTestRepo,  LineConsumerFactory.NULL).fetch(request);
         //then
         //make merge with FETCH_HEAD
         new NativeGit(fetchTestRepo).createMergeCommand()

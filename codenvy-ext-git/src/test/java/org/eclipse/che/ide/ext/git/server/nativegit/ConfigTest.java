@@ -33,7 +33,6 @@ public class ConfigTest extends BaseTest {
     @BeforeMethod
     protected void setUp() throws Exception {
         connection = connectionFactory.getConnection(getRepository().toFile(),
-                newDTO(GitUser.class).withName("user").withEmail("user@email.com"),
                 LineConsumerFactory.NULL);
     }
 

@@ -223,6 +223,20 @@ public class GitServiceClientImpl implements GitServiceClient {
         asyncRequestFactory.createPostRequest(url, commitRequest).loader(loader).send(callback);
     }
 
+    @Override
+    public void commit(@Nonnull final ProjectDescriptor project, @Nonnull final String message,
+                       @Nonnull final List<String> files, final boolean amend,
+                       @Nonnull final AsyncRequestCallback<Revision> callback) {
+        CommitRequest commitRequest = dtoFactory.createDto(CommitRequest.class)
+                                                .withMessage(message)
+                                                .withAmend(amend)
+                                                .withAll(false)
+                                                .withFiles(files);
+        String url = baseHttpUrl + COMMIT + "?projectPath=" + project.getPath();
+
+        asyncRequestFactory.createPostRequest(url, commitRequest).loader(loader).send(callback);
+    }
+
     /** {@inheritDoc} */
     @Override
     public void config(@Nonnull ProjectDescriptor project, @Nullable List<String> entries, boolean all,

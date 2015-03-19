@@ -13,6 +13,10 @@ package org.eclipse.che.ide.ext.git.client.commit;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.project.tree.generic.StorableNode;
+import org.eclipse.che.ide.api.selection.Selection;
+import org.eclipse.che.ide.api.selection.SelectionAgent;
+import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.GitServiceClient;
 import org.eclipse.che.ide.ext.git.client.DateTimeFormatter;
@@ -22,9 +26,13 @@ import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.Unmarshallable;
 import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.websocket.WebSocketException;
+import org.eclipse.che.ide.websocket.rest.RequestCallback;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -46,6 +54,7 @@ public class CommitPresenter implements CommitView.ActionDelegate {
     private final GitLocalizationConstant constant;
     private final NotificationManager     notificationManager;
     private final DateTimeFormatter       dateTimeFormatter;
+    private final SelectionAgent          selectionAgent;
 
     @Inject
     public CommitPresenter(CommitView view,
@@ -54,7 +63,8 @@ public class CommitPresenter implements CommitView.ActionDelegate {
                            NotificationManager notificationManager,
                            DtoUnmarshallerFactory dtoUnmarshallerFactory,
                            AppContext appContext,
-                           DateTimeFormatter dateTimeFormatter) {
+                           DateTimeFormatter dateTimeFormatter,
+                           final SelectionAgent selectionAgent) {
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.appContext = appContext;
@@ -63,12 +73,15 @@ public class CommitPresenter implements CommitView.ActionDelegate {
         this.service = service;
         this.constant = constant;
         this.notificationManager = notificationManager;
+        this.selectionAgent = selectionAgent;
     }
 
     /** Show dialog. */
     public void showDialog() {
         view.setAmend(false);
         view.setAllFilesInclude(false);
+        view.setIncludeSelection(false);
+        view.setOnlySelection(false);
         view.setEnableCommitButton(!view.getMessage().isEmpty());
         view.showDialog();
         view.focusInMessageField();
@@ -77,29 +90,121 @@ public class CommitPresenter implements CommitView.ActionDelegate {
     /** {@inheritDoc} */
     @Override
     public void onCommitClicked() {
-        String message = view.getMessage();
-        boolean all = view.isAllFilesInclued();
-        boolean amend = view.isAmend();
+        final String message = view.getMessage();
+        final boolean all = view.isAllFilesInclued();
+        final boolean amend = view.isAmend();
+        final boolean selectionFlag = this.view.isIncludeSelection();
+        final boolean onlySelectionFlag = this.view.isOnlySelection();
 
+        if (selectionFlag) {
+            commitAddSelection(message, amend);
+        } else if (onlySelectionFlag) {
+            commitOnlySelection(message, amend);
+        } else {
+            doCommit(message, all, amend);
+        }
+
+    }
+
+    private void commitAddSelection(final String message, final boolean amend) {
+        // first git-add the selection
+        @SuppressWarnings("unchecked")
+        final Selection<StorableNode< ? >> selection = (Selection<StorableNode< ? >>)this.selectionAgent.getSelection();
+        if (selection.isEmpty() || !(selection.getFirstElement() instanceof StorableNode)) {
+            doCommit(message, false, amend);
+        } else {
+            final List<String> filePattern = buildFileList(selection);
+
+            try {
+                service.add(appContext.getCurrentProject().getRootProject(), false, filePattern, new RequestCallback<Void>() {
+                    @Override
+                    protected void onSuccess(final Void result) {
+                        // then commit
+                        doCommit(message, false, amend);
+                    }
+                    @Override
+                    protected void onFailure(final Throwable exception) {
+                        handleError(exception);
+                    }
+                });
+            } catch (final WebSocketException e) {
+                handleError(new Exception("Communication error with the server", e));
+            }
+        }
+    }
+
+    private List<String> buildFileList(final Selection<StorableNode< ? >> selection) {
+        final List<String> filePattern = new ArrayList<>();
+        final Array<StorableNode< ? >> selected = selection.getAll();
+        final String base = appContext.getCurrentProject().getRootProject().getPath();
+        for (final StorableNode< ? > node : selected.asIterable()) {
+            filePattern.add(getPath(node, base));
+        }
+        return filePattern;
+    }
+
+    private void commitOnlySelection(final String message, final boolean amend) {
+        // first git-add the selection
+        @SuppressWarnings("unchecked")
+        final Selection<StorableNode< ? >> selection = (Selection<StorableNode< ? >>)this.selectionAgent.getSelection();
+        if (!selection.isEmpty() && (selection.getFirstElement() instanceof StorableNode)) {
+            final List<String> files = buildFileList(selection);
+            service.commit(appContext.getCurrentProject().getRootProject(), message, files, amend,
+                           new AsyncRequestCallback<Revision>(dtoUnmarshallerFactory.newUnmarshaller(Revision.class)) {
+                               @Override
+                               protected void onSuccess(final Revision result) {
+                                   if (!result.isFake()) {
+                                       onCommitSuccess(result);
+                                   } else {
+                                       final Notification notification = new Notification(result.getMessage(), ERROR);
+                                       notificationManager.showNotification(notification);
+                                   }
+                               }
+
+                               @Override
+                               protected void onFailure(final Throwable exception) {
+                                   handleError(exception);
+                               }
+                           }
+                   );
+        } // else don't commit as it goes against user intent
+        this.view.close();
+    }
+
+    private void doCommit(final String message, final boolean all, final boolean amend) {
         service.commit(appContext.getCurrentProject().getRootProject(), message, all, amend,
                        new AsyncRequestCallback<Revision>(dtoUnmarshallerFactory.newUnmarshaller(Revision.class)) {
                            @Override
-                           protected void onSuccess(Revision result) {
+                           protected void onSuccess(final Revision result) {
                                if (!result.isFake()) {
                                    onCommitSuccess(result);
                                } else {
-                                   Notification notification = new Notification(result.getMessage(), ERROR);
+                                   final Notification notification = new Notification(result.getMessage(), ERROR);
                                    notificationManager.showNotification(notification);
                                }
                            }
 
                            @Override
-                           protected void onFailure(Throwable exception) {
+                           protected void onFailure(final Throwable exception) {
                                handleError(exception);
                            }
                        }
-                      );
-        view.close();
+               );
+        this.view.close();
+    }
+
+    private String getPath(final StorableNode< ? > node, final String base) {
+        String path = node.getPath();
+        if (path.startsWith(base)) {
+            path = path.replaceFirst(base, "");
+        }
+        if (path.startsWith("/")) {
+            path = path.replaceFirst("/", "");
+        }
+        if (path.isEmpty() || "/".equals(path)) {
+            path = ".";
+        }
+        return path;
     }
 
     /**

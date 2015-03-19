@@ -60,6 +60,34 @@ public interface CommitView extends View<CommitView.ActionDelegate> {
      */
     void setAllFilesInclude(boolean isAllFiles);
 
+    /**
+     * Returns true if the project explorer selection must be included in the commited files.
+     * 
+     * @return true iff the selection mus tbe commited
+     */
+    boolean isIncludeSelection();
+
+    /**
+     * Sets the display of the include selection flag.
+     * 
+     * @param includeSelection is selection included
+     */
+    void setIncludeSelection(boolean includeSelection);
+
+    /**
+     * Tells the state of the field 'commit only selection'.
+     * 
+     * @return true iff the field is checked
+     */
+    boolean isOnlySelection();
+
+    /**
+     * Sets the state of the field 'commit only selection'.
+     * 
+     * @return true to check the field
+     */
+    void setOnlySelection(boolean onlySelection);
+
     /** @return <code>true</code> if need to amend the last commit, and <code>false</code> otherwise */
     boolean isAmend();
 

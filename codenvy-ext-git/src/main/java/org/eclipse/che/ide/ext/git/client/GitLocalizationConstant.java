@@ -256,7 +256,7 @@ public interface GitLocalizationConstant extends Messages {
 
     // ----VIEWS------------------------------------------------------------------
 
-    //GitImporterPage
+    // GitImporterPage
     @Key("view.import.gitImporterPage.importerInfo")
     String gitImporterPageImporterInfo();
 
@@ -290,6 +290,9 @@ public interface GitLocalizationConstant extends Messages {
     // Add
     @Key("view.add_to_index.all_changes")
     String addToIndexAllChanges();
+
+    @Key("view.add_to_index.multiple")
+    String addToIndexMultiple();
 
     @Key("view.add_to_index.folder")
     SafeHtml addToIndexFolder(String folder);
@@ -340,6 +343,12 @@ public interface GitLocalizationConstant extends Messages {
 
     @Key("view.commit.all_field_title")
     String commitAllFieldTitle();
+
+    @Key("view.commit.selection_field_title")
+    String commitSelectionFieldTitle();
+
+    @Key("view.commit.onlyselection_field_title")
+    String commitOnlySelectionFieldTitle();
 
     @Key("view.commit.amend_field_title")
     String commitAmendFieldTitle();

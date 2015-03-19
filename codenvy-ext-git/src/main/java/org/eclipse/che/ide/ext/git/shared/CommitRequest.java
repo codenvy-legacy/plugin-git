@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.ext.git.shared;
 
 import org.eclipse.che.dto.shared.DTO;
+import java.util.List;
 
 /**
  * Request to commit current state of index in new commit.
@@ -22,22 +23,44 @@ import org.eclipse.che.dto.shared.DTO;
 public interface CommitRequest extends GitRequest {
     /** @return commit message */
     String getMessage();
-    
+
     void setMessage(String message);
-    
+
     CommitRequest withMessage(String message);
 
     /** @return <code>true</code> if need automatically stage files that have been modified and deleted */
     boolean isAll();
-    
+
     void setAll(boolean isAll);
-    
+
     CommitRequest withAll(boolean all);
 
     /** @return <code>true</code> in case when commit is amending a previous commit. */
     boolean isAmend();
-    
+
     void setAmend(boolean isAmend);
-    
+
     CommitRequest withAmend(boolean amend);
+
+    /**
+     * Set the files to be commited (ignoring index).
+     * 
+     * @param files the files to commit
+     */
+    void setFiles(List<String> files);
+
+    /**
+     * Returns the files to be commited (ignoring index).
+     * 
+     * @return the commited files
+     */
+    List<String> getFiles();
+
+    /**
+     * Set the files to be commited (ignoring index).
+     * 
+     * @param files the files to commit
+     * @return this object
+     */
+    CommitRequest withFiles(List<String> files);
 }

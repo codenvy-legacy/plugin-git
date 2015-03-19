@@ -42,10 +42,31 @@ public class CommitViewImpl extends Window implements CommitView {
 
     private static CommitViewImplUiBinder ourUiBinder = GWT.create(CommitViewImplUiBinder.class);
 
+    /**
+     * The add all uncommited change field.
+     */
     @UiField
-    CheckBox all;
+    CheckBox addAll;
+    /**
+     * The 'include selection' in commit field.
+     */
+    @UiField
+    CheckBox addSelection;
+    /**
+     * The 'commit only selection' field.
+     */
+    @UiField
+    CheckBox onlySelection;
+
+    /**
+     * The amend commit flag.
+     */
     @UiField
     CheckBox amend;
+
+    /**
+     * The commit message input field.
+     */
     @UiField
     TextArea message;
     Button   btnCommit;
@@ -109,13 +130,13 @@ public class CommitViewImpl extends Window implements CommitView {
     /** {@inheritDoc} */
     @Override
     public boolean isAllFilesInclued() {
-        return all.getValue();
+        return this.addAll.getValue();
     }
 
     /** {@inheritDoc} */
     @Override
     public void setAllFilesInclude(boolean isAllFiles) {
-        all.setValue(isAllFiles);
+        this.addAll.setValue(isAllFiles);
     }
 
     /** {@inheritDoc} */
@@ -128,6 +149,26 @@ public class CommitViewImpl extends Window implements CommitView {
     @Override
     public void setAmend(boolean isAmend) {
         amend.setValue(isAmend);
+    }
+
+    @Override
+    public boolean isIncludeSelection() {
+        return this.addSelection.getValue();
+    }
+
+    @Override
+    public void setIncludeSelection(final boolean includeSelection) {
+        this.addSelection.setValue(includeSelection);
+    }
+
+    @Override
+    public boolean isOnlySelection() {
+        return this.onlySelection.getValue();
+    }
+
+    @Override
+    public void setOnlySelection(final boolean onlySelection) {
+        this.onlySelection.setValue(onlySelection);
     }
 
     /** {@inheritDoc} */
@@ -163,6 +204,30 @@ public class CommitViewImpl extends Window implements CommitView {
     @UiHandler("message")
     public void onMessageChanged(KeyUpEvent event) {
         delegate.onValueChanged();
+    }
+
+    @UiHandler("addAll")
+    public void onAddAllValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.addSelection.setValue(false);
+            this.onlySelection.setValue(false);
+        }
+    }
+
+    @UiHandler("addSelection")
+    public void onAddSelectionValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.addAll.setValue(false);
+            this.onlySelection.setValue(false);
+        }
+    }
+
+    @UiHandler("onlySelection")
+    public void onOnlySelectionValueChange(final ValueChangeEvent<Boolean> event) {
+        if (event.getValue()) {
+            this.addAll.setValue(false);
+            this.addSelection.setValue(false);
+        }
     }
 
     @UiHandler("amend")

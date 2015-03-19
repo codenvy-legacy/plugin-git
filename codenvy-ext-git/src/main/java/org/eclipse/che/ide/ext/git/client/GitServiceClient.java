@@ -314,6 +314,23 @@ public interface GitServiceClient {
      */
     void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, boolean all, boolean amend,
                 @Nonnull AsyncRequestCallback<Revision> callback);
+    /**
+     * Performs commit for the given files (ignoring git index).
+
+     * @param project
+     *         project (root of GIT repository)
+     * @param message
+     *         commit log message
+     * @param files
+     *         the list of iles that are commited, ignoring the index
+     * @param amend
+     *         indicates that previous commit must be overwritten
+     * @param callback
+     *         callback
+     * @throws WebSocketException
+     */
+    void commit(@Nonnull ProjectDescriptor project, @Nonnull String message, @Nonnull List<String> files, boolean amend,
+                @Nonnull AsyncRequestCallback<Revision> callback);
 
     /**
      * Performs commit changes from index to repository. The result of the commit is represented by {@link Revision}, which is returned by

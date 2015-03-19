@@ -31,8 +31,10 @@ import com.google.inject.Singleton;
 import javax.annotation.Nonnull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Presenter for add changes to Git index.
@@ -41,6 +43,9 @@ import java.util.List;
  */
 @Singleton
 public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
+
+    private static final String ROOT_FOLDER = ".";
+
     private AddToIndexView          view;
     private GitServiceClient        service;
     private GitLocalizationConstant constant;
@@ -90,10 +95,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
                                @Override
                                protected void onSuccess(final Status result) {
                                    if (!result.isClean()) {
-                                       final String workDir = project.getRootProject().getPath();
-                                       view.setMessage(formMessage(workDir));
-                                       view.setUpdated(false);
-                                       view.showDialog();
+                                   addSelection();
                                    } else {
                                        notificationManager.showInfo(constant.nothingAddToIndex());
                                    }
@@ -107,27 +109,29 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
                            });
     }
 
+    private void addSelection() {
+        if (isSelectionEmpty() || isSelectionSingle()) {
+            final String path = getSingleFilePattern();
+            this.view.setMessage(formatMessage(path), null);
+        } else {
+            final List<String> paths = getMultipleFilePatterns();
+            this.view.setMessage(constant.addToIndexMultiple(), paths);
+        }
+        this.view.setUpdated(false);
+        this.view.showDialog();
+    }
+
     /**
      * Form the message to display for adding to index, telling the user what is gonna to be added.
      *
      * @return {@link String} message to display
      */
     @Nonnull
-    private String formMessage(@Nonnull String workDir) {
-        Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
-
-        String path;
-        if (selection == null || selection.getFirstElement() == null) {
-            path = project.getRootProject().getPath();
-        } else {
-            path = selection.getFirstElement().getPath();
-        }
-
-        String pattern = path.replaceFirst(workDir, "");
-        pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
+    private String formatMessage(@Nonnull final String path) {
+        String pattern = path;
 
         // Root of the working tree:
-        if (pattern.length() == 0 || "/".equals(pattern)) {
+        if (ROOT_FOLDER.equals(pattern)) {
             return constant.addToIndexAllChanges();
         }
 
@@ -136,7 +140,7 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
             pattern = pattern.substring(0, 50) + "...";
         }
 
-        if (selection.getFirstElement() instanceof FolderNode) {
+        if (getExplorerSelection().getHeadElement() instanceof FolderNode) {
             return constant.addToIndexFolder(pattern).asString();
         } else {
             return constant.addToIndexFile(pattern).asString();
@@ -149,18 +153,18 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
         boolean update = view.isUpdated();
 
         try {
-            service.add(project.getRootProject(), update, getFilePatterns(), new RequestCallback<Void>() {
+            service.add(project.getRootProject(), update, getMultipleFilePatterns(), new RequestCallback<Void>() {
                 @Override
-                protected void onSuccess(Void result) {
+                protected void onSuccess(final Void result) {
                     notificationManager.showInfo(constant.addSuccess());
                 }
 
                 @Override
-                protected void onFailure(Throwable exception) {
+                protected void onFailure(final Throwable exception) {
                     handleError(exception);
                 }
             });
-        } catch (WebSocketException e) {
+        } catch (final WebSocketException e) {
             handleError(e);
         }
         view.close();
@@ -172,31 +176,103 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
      * @return pattern of the files to be added
      */
     @Nonnull
-    private List<String> getFilePatterns() {
-        String projectPath = project.getRootProject().getPath();
+    private List<String> getMultipleFilePatterns() {
 
-        Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
-        String path;
-        if (selection == null || selection.getFirstElement() == null) {
-            path = project.getRootProject().getPath();
+        final Selection<StorableNode> selection = getExplorerSelection();
+
+        if (selection == null || selection.isEmpty()) {
+            return Collections.singletonList(ROOT_FOLDER);
         } else {
-            path = selection.getFirstElement().getPath();
+            final Set<String> paths = new HashSet<>();
+            final Set<String> directories = new HashSet<>();
+
+            for (final StorableNode node : selection.getAllElements()) {
+                final String normalized = normalizePath(node.getPath());
+                if (ROOT_FOLDER.equals(normalized)) {
+                    return Collections.singletonList(ROOT_FOLDER);
+                }
+                if (!node.isLeaf()) {
+                    directories.add(normalized);
+                } else {
+                    paths.add(normalized);
+                }
+            }
+            // filter out 'duplicates'
+            final List<String> result = new ArrayList<>();
+            for (final String path : paths) {
+                boolean found = false;
+                for (final String directory : directories) {
+                    if (path.startsWith(directory)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    result.add(path);
+                }
+            }
+            // add directories to result
+            result.addAll(directories);
+            return result;
+        }
+    }
+
+    private boolean isSelectionSingle() {
+        final Selection<StorableNode> selection = getExplorerSelection();
+        return (selection != null && selection.isSingleSelection());
+    }
+
+    private boolean isSelectionEmpty() {
+        final Selection<StorableNode> selection = getExplorerSelection();
+        return (selection == null || selection.isEmpty());
+    }
+
+    private Selection<StorableNode> getExplorerSelection() {
+        final Selection<StorableNode> selection = (Selection<StorableNode>)selectionAgent.getSelection();
+        if (selection == null || selection.isEmpty() || selection.getHeadElement() instanceof StorableNode) {
+            return selection;
+        } else {
+            return null;
+        }
+    }
+
+    private String getSingleFilePattern() {
+        final Selection<StorableNode> selection = getExplorerSelection();
+        final String path;
+        if (selection == null || selection.isEmpty()) {
+            return ROOT_FOLDER;
+        } else {
+            path = selection.getHeadElement().getPath();
         }
 
-        String pattern = path.replaceFirst(projectPath, "");
-        pattern = (pattern.startsWith("/")) ? pattern.replaceFirst("/", "") : pattern;
+        return normalizePath(path);
+    }
 
-        return (pattern.length() == 0 || "/".equals(pattern)) ? new ArrayList<>(Arrays.asList("."))
-                                                              : new ArrayList<>(Arrays.asList(pattern));
+    private String normalizePath(final String path) {
+        final String projectPath = project.getRootProject().getPath();
+
+        String pattern = path;
+        if (path.startsWith(projectPath)) {
+            pattern = pattern.replaceFirst(projectPath, "");
+        }
+        // no GWT emulation for File
+        if (pattern.startsWith("/")) {
+            pattern = pattern.replaceFirst("/", "");
+        }
+
+        if (pattern.length() == 0 || "/".equals(pattern)) {
+            pattern = ROOT_FOLDER;
+        }
+        return pattern;
     }
 
     /**
      * Handler some action whether some exception happened.
      *
      * @param e
-     *         exception what happened
+     *         exception that happened
      */
-    private void handleError(@Nonnull Throwable e) {
+    private void handleError(@Nonnull final Throwable e) {
         String errorMessage = (e.getMessage() != null && !e.getMessage().isEmpty()) ? e.getMessage() : constant.addFailed();
         notificationManager.showError(errorMessage);
     }
@@ -205,25 +281,5 @@ public class AddToIndexPresenter implements AddToIndexView.ActionDelegate {
     @Override
     public void onCancelClicked() {
         view.close();
-    }
-
-    /**
-     * Returns <code>true</code> if the working tree has changes for add to index.
-     *
-     * @param statusText
-     *         the working tree status
-     * @return <code>true</code> if the working tree has changes for add to index, <code>false</code> otherwise
-     */
-    private boolean haveChanges(String statusText) {
-        if (statusText.contains("Changes not staged for commit")) {
-            return true;
-        }
-        if (statusText.contains("Untracked files")) {
-            return true;
-        }
-        if (statusText.contains("unmerged")) {
-            return true;
-        }
-        return false;
     }
 }

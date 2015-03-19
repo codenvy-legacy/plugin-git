@@ -30,6 +30,11 @@ public interface CommitView extends View<CommitView.ActionDelegate> {
 
         /** Performs any actions appropriate in response to the user having changed something. */
         void onValueChanged();
+
+        /**
+         * Set the commit message for an amend commit.
+         */
+        void setAmendCommitMessage();
     }
 
     /** @return entered message */

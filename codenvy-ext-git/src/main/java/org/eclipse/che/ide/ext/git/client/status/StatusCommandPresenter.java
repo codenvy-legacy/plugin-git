@@ -28,6 +28,7 @@ import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
 
 import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
+import static org.eclipse.che.ide.ext.git.shared.StatusFormat.LONG;
 
 /**
  * Handler to process actions with displaying the status of the Git work tree.
@@ -92,7 +93,7 @@ public class StatusCommandPresenter {
             return;
         }
 
-        service.statusText(project.getRootProject(), false,
+        service.statusText(project.getRootProject(), LONG,
                            new AsyncRequestCallback<String>(new StringUnmarshaller()) {
                                @Override
                                protected void onSuccess(String result) {

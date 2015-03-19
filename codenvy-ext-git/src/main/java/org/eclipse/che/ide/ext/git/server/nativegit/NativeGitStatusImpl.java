@@ -14,6 +14,7 @@ import org.eclipse.che.ide.ext.git.server.GitException;
 import org.eclipse.che.ide.ext.git.server.InfoPage;
 import org.eclipse.che.ide.ext.git.server.nativegit.commands.StatusCommand;
 import org.eclipse.che.ide.ext.git.shared.Status;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,7 +30,7 @@ public class NativeGitStatusImpl implements Status, InfoPage {
 
     private String branchName;
 
-    private boolean shortFormat;
+    private StatusFormat format;
 
     private boolean clean;
 
@@ -56,14 +57,14 @@ public class NativeGitStatusImpl implements Status, InfoPage {
      *         current repository branch name
      * @param nativeGit
      *         git commands factory
-     * @param shortFormat
-     *         if <code>true</code> short status will be used
+     * @param format
+     *         the output format for the status
      * @throws GitException
      *         when any error occurs
      */
-    public NativeGitStatusImpl(String branchName, NativeGit nativeGit, Boolean shortFormat) throws GitException {
+    public NativeGitStatusImpl(String branchName, NativeGit nativeGit, StatusFormat format) throws GitException {
         this.branchName = branchName;
-        this.shortFormat = shortFormat;
+        this.format = format;
         this.nativeGit = nativeGit;
         load();
     }
@@ -71,7 +72,7 @@ public class NativeGitStatusImpl implements Status, InfoPage {
     /** @see InfoPage#writeTo(java.io.OutputStream) */
     @Override
     public void writeTo(OutputStream out) throws IOException {
-        StatusCommand status = nativeGit.createStatusCommand().setShort(shortFormat);
+        StatusCommand status = nativeGit.createStatusCommand().setFormat(format);
         try {
             status.execute();
             out.write(status.getText().getBytes());
@@ -92,16 +93,16 @@ public class NativeGitStatusImpl implements Status, InfoPage {
         this.clean = clean;
     }
 
-    /** @see Status#isShortFormat() */
+    /** @see Status#getFormat() */
     @Override
-    public boolean isShortFormat() {
-        return shortFormat;
+    public StatusFormat getFormat() {
+        return this.format;
     }
 
-    /** @see Status#setShortFormat(boolean) */
+    /** @see Status#setFormat(StatusFormat) */
     @Override
-    public void setShortFormat(boolean shortFormat) {
-        this.shortFormat = shortFormat;
+    public void setFormat(final StatusFormat format) {
+        this.format = format;
     }
 
     /** @see Status#getBranchName() */
@@ -244,7 +245,7 @@ public class NativeGitStatusImpl implements Status, InfoPage {
      *         when it is not possible to get status information
      */
     public void load() throws GitException {
-        StatusCommand status = nativeGit.createStatusCommand().setShort(true);
+        StatusCommand status = nativeGit.createStatusCommand().setFormat(StatusFormat.PORCELAIN);
         List<String> statusOutput = status.execute();
         setClean(statusOutput.size() == 0);
         if (!isClean()) {

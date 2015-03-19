@@ -41,6 +41,7 @@ import org.eclipse.che.ide.ext.git.shared.ResetRequest;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.eclipse.che.ide.ext.git.shared.RmRequest;
 import org.eclipse.che.ide.ext.git.shared.Status;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 import org.eclipse.che.ide.ext.git.shared.Tag;
 import org.eclipse.che.ide.ext.git.shared.TagCreateRequest;
 import org.eclipse.che.ide.ext.git.shared.TagDeleteRequest;
@@ -354,13 +355,13 @@ public interface GitConnection extends Closeable {
     /**
      * Get status of working tree.
      *
-     * @param shortFormat
-     *         shortFormat
+     * @param format
+     *         the format of the ouput
      * @return status.
      * @throws GitException
      *         if any error occurs
      */
-    Status status(boolean shortFormat) throws GitException;
+    Status status(StatusFormat format) throws GitException;
 
     /**
      * Create new tag.

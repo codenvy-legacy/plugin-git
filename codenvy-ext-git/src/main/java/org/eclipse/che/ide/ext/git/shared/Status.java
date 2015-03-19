@@ -21,9 +21,9 @@ public interface Status {
 
     void setClean(boolean isClean);
 
-    boolean isShortFormat();
+    StatusFormat getFormat();
 
-    void setShortFormat(boolean isShort);
+    void setFormat(StatusFormat format);
 
     String getBranchName();
 

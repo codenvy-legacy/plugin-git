@@ -58,6 +58,7 @@ import org.eclipse.che.ide.ext.git.shared.ResetRequest;
 import org.eclipse.che.ide.ext.git.shared.Revision;
 import org.eclipse.che.ide.ext.git.shared.RmRequest;
 import org.eclipse.che.ide.ext.git.shared.Status;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 import org.eclipse.che.ide.ext.git.shared.Tag;
 import org.eclipse.che.ide.ext.git.shared.TagCreateRequest;
 import org.eclipse.che.ide.ext.git.shared.TagDeleteRequest;
@@ -216,7 +217,7 @@ public class GitService {
         Revision revision = gitConnection.commit(request);
         try {
             if (revision.isFake()) {
-                Status status = status(false);
+                Status status = status(StatusFormat.LONG);
 
                 try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
                     ((InfoPage)status).writeTo(bos);
@@ -408,10 +409,10 @@ public class GitService {
     @Path("status")
     @POST
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN})
-    public Status status(@QueryParam("short") boolean shortFormat) throws ApiException {
+    public Status status(@QueryParam("format") StatusFormat format) throws ApiException {
         GitConnection gitConnection = getGitConnection();
         try {
-            return gitConnection.status(shortFormat);
+            return gitConnection.status(format);
         } finally {
             gitConnection.close();
         }

@@ -21,6 +21,7 @@ import org.testng.annotations.Test;
 
 
 import static java.util.Arrays.asList;
+import static org.eclipse.che.ide.ext.git.shared.StatusFormat.SHORT;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
@@ -31,7 +32,7 @@ public class StatusTest extends BaseTest {
 
     @Test
     public void testEmptyStatus() throws Exception {
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertTrue(status.getAdded().isEmpty());
         assertTrue(status.getChanged().isEmpty());
@@ -47,7 +48,7 @@ public class StatusTest extends BaseTest {
         addFile("a", "a content");
         addFile("b", "b content");
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getUntracked(), asList("a", "b"));
         assertTrue(status.getAdded().isEmpty());
@@ -62,7 +63,7 @@ public class StatusTest extends BaseTest {
     public void testUntrackedFolder() throws Exception {
         addFile(getRepository().resolve("new_directory"), "a", "content of a");
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getUntrackedFolders(), asList("new_directory"));
         assertTrue(status.getAdded().isEmpty());
@@ -81,7 +82,7 @@ public class StatusTest extends BaseTest {
         //add "a" and "b" files
         getConnection().add(newDTO(AddRequest.class).withFilepattern(asList("a", "b")));
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getAdded(), asList("a", "b"));
         assertEquals(status.getUntracked(), asList("c"));
@@ -101,7 +102,7 @@ public class StatusTest extends BaseTest {
         //modify "a"
         addFile("a", "new content of a");
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getModified(), asList("a"));
         assertTrue(status.getUntracked().isEmpty());
@@ -127,7 +128,7 @@ public class StatusTest extends BaseTest {
         //change "a"
         addFile("a", "changed content of a");
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getChanged(), asList("a"));
         assertTrue(status.getAdded().isEmpty());
@@ -162,7 +163,7 @@ public class StatusTest extends BaseTest {
         //merge with "new_branch" to get conflict
         getConnection().merge(newDTO(MergeRequest.class).withCommit("new_branch"));
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getConflicting(), asList("a"));
         assertTrue(status.getModified().isEmpty());
@@ -181,7 +182,7 @@ public class StatusTest extends BaseTest {
         //delete "a"
         deleteFile("a");
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getMissing(), asList("a"));
         assertTrue(status.getAdded().isEmpty());
@@ -203,7 +204,7 @@ public class StatusTest extends BaseTest {
         //delete "a"
         deleteFile("a");
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getRemoved(), asList("a"));
         assertTrue(status.getAdded().isEmpty());
@@ -225,7 +226,7 @@ public class StatusTest extends BaseTest {
         //remove "a" from index
         getConnection().rm(newDTO(RmRequest.class).withItems(asList("a")));
 
-        final Status status = getConnection().status(true);
+        final Status status = getConnection().status(SHORT);
 
         assertEquals(status.getRemoved(), asList("a"));
         assertTrue(status.getAdded().isEmpty());

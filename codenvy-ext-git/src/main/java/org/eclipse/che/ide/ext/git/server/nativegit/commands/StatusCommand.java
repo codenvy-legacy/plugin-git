@@ -11,18 +11,19 @@
 package org.eclipse.che.ide.ext.git.server.nativegit.commands;
 
 import org.eclipse.che.ide.ext.git.server.GitException;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 
 import java.io.File;
 import java.util.List;
 
 /**
- * Show repository status
+ * Show repository status.
  *
  * @author Eugene Voevodin
  */
 public class StatusCommand extends GitCommand<List<String>> {
 
-    private boolean isShort;
+    private StatusFormat format;
 
     public StatusCommand(File repository) {
         super(repository);
@@ -33,20 +34,33 @@ public class StatusCommand extends GitCommand<List<String>> {
     public List<String> execute() throws GitException {
         reset();
         commandLine.add("status");
-        if (isShort) {
-            commandLine.add("--short");
+        if (format != null) {
+            switch (format) {
+                case LONG:
+                    commandLine.add("--long");
+                    break;
+                case SHORT:
+                    commandLine.add("--short");
+                    break;
+                case PORCELAIN:
+                    commandLine.add("--porcelain");
+                    break;
+                default:
+            }
         }
         start();
         return getLines();
     }
 
     /**
-     * @param aShort
-     *         short status format
-     * @return StatusCommand withe established short parameter
+     * Sets the output format that will be used.
+     * 
+     * @param format
+     *         the status format
+     * @return StatusCommand with the established format parameter
      */
-    public StatusCommand setShort(boolean aShort) {
-        isShort = aShort;
+    public StatusCommand setFormat(final StatusFormat format) {
+        this.format = format;
         return this;
     }
 }

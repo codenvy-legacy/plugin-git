@@ -15,18 +15,19 @@ import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
 import org.eclipse.che.ide.ext.git.client.GitOutputPartPresenter;
+import org.eclipse.che.ide.ext.git.shared.StatusFormat;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
 import com.googlecode.gwt.test.utils.GwtReflectionUtils;
 
 import org.junit.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Method;
 
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doAnswer;
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.verify;
  * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
  */
 public class StatusCommandPresenterTest extends BaseTest {
-    public static final boolean IS_NOT_FORMATTED = false;
+    public static final StatusFormat IS_NOT_FORMATTED = StatusFormat.LONG;
     @InjectMocks
     private StatusCommandPresenter presenter;
 
@@ -58,40 +59,46 @@ public class StatusCommandPresenterTest extends BaseTest {
 
     @Test
     public void testShowStatusWhenStatusTextRequestIsSuccessful() throws Exception {
-        doAnswer(new Answer() {
+        doAnswer(new Answer<AsyncRequestCallback<String>>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public AsyncRequestCallback<String> answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[2];
                 Method onSuccess = GwtReflectionUtils.getMethod(callback.getClass(), "onSuccess");
                 onSuccess.invoke(callback, EMPTY_TEXT);
                 return callback;
             }
-        }).when(service).statusText((ProjectDescriptor)anyObject(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).statusText(Matchers.<ProjectDescriptor> anyObject(),
+                                    Matchers.<StatusFormat> anyObject(),
+                                    Matchers.<AsyncRequestCallback<String>> anyObject());
 
         presenter.showStatus();
 
         verify(appContext).getCurrentProject();
-        verify(service).statusText(eq(rootProjectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
+        verify(service).statusText(eq(rootProjectDescriptor),
+                                   eq(IS_NOT_FORMATTED),
+                                   Matchers.<AsyncRequestCallback<String>> anyObject());
     }
 
     @Test
     public void testShowStatusWhenStatusTextRequestIsFailed() throws Exception {
-        doAnswer(new Answer() {
+        doAnswer(new Answer<AsyncRequestCallback<String>>() {
             @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
+            public AsyncRequestCallback<String> answer(InvocationOnMock invocation) throws Throwable {
                 Object[] arguments = invocation.getArguments();
                 AsyncRequestCallback<String> callback = (AsyncRequestCallback<String>)arguments[2];
                 Method onFailure = GwtReflectionUtils.getMethod(callback.getClass(), "onFailure");
                 onFailure.invoke(callback, mock(Throwable.class));
                 return callback;
             }
-        }).when(service).statusText((ProjectDescriptor)anyObject(), anyBoolean(), (AsyncRequestCallback<String>)anyObject());
+        }).when(service).statusText(Matchers.<ProjectDescriptor> anyObject(),
+                                    Matchers.<StatusFormat> anyObject(),
+                                    Matchers.<AsyncRequestCallback<String>> anyObject());
 
         presenter.showStatus();
 
         verify(appContext).getCurrentProject();
-        verify(service).statusText(eq(rootProjectDescriptor), eq(IS_NOT_FORMATTED), (AsyncRequestCallback<String>)anyObject());
+        verify(service).statusText(eq(rootProjectDescriptor), eq(IS_NOT_FORMATTED), Matchers.<AsyncRequestCallback<String>> anyObject());
         verify(notificationManager).showNotification((Notification)anyObject());
         verify(constant).statusFailed();
     }

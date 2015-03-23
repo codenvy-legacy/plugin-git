@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client.fetch;
 
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.GitServiceClient;
 import org.eclipse.che.ide.ext.git.client.BranchSearcher;
@@ -32,8 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_LOCAL;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 
@@ -44,6 +43,7 @@ import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
  */
 @Singleton
 public class FetchPresenter implements FetchView.ActionDelegate {
+    private final DtoFactory              dtoFactory;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private final NotificationManager     notificationManager;
     private final BranchSearcher          branchSearcher;
@@ -54,13 +54,15 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     private       CurrentProject          project;
 
     @Inject
-    public FetchPresenter(FetchView view,
+    public FetchPresenter(DtoFactory dtoFactory,
+                          FetchView view,
                           GitServiceClient service,
                           AppContext appContext,
                           GitLocalizationConstant constant,
                           NotificationManager notificationManager,
                           DtoUnmarshallerFactory dtoUnmarshallerFactory,
                           BranchSearcher branchSearcher) {
+        this.dtoFactory = dtoFactory;
         this.view = view;
         this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.branchSearcher = branchSearcher;
@@ -105,8 +107,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     }
 
     private void handleError(@Nonnull String errorMessage) {
-        Notification notification = new Notification(errorMessage, ERROR);
-        notificationManager.showNotification(notification);
+        notificationManager.showError(errorMessage);
     }
 
     /**
@@ -138,8 +139,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    String errorMessage =
                                            exception.getMessage() != null ? exception.getMessage() : constant.branchesListFailed();
-                                   Notification notification = new Notification(errorMessage, ERROR);
-                                   notificationManager.showNotification(notification);
+                                   notificationManager.showError(errorMessage);
                                    view.setEnableFetchButton(false);
                                }
                            });
@@ -157,8 +157,7 @@ public class FetchPresenter implements FetchView.ActionDelegate {
                           new RequestCallback<String>() {
                               @Override
                               protected void onSuccess(String result) {
-                                  Notification notification = new Notification(constant.fetchSuccess(remoteUrl), INFO);
-                                  notificationManager.showNotification(notification);
+                                  notificationManager.showInfo(constant.fetchSuccess(remoteUrl));
                               }
 
                               @Override
@@ -191,13 +190,26 @@ public class FetchPresenter implements FetchView.ActionDelegate {
     /**
      * Handler some action whether some exception happened.
      *
-     * @param t
+     * @param throwable
      *         exception what happened
      */
-    private void handleError(@Nonnull Throwable t, @Nonnull String remoteUrl) {
-        String errorMessage = (t.getMessage() != null) ? t.getMessage() : constant.fetchFail(remoteUrl);
-        Notification notification = new Notification(errorMessage, ERROR);
-        notificationManager.showNotification(notification);
+    private void handleError(@Nonnull Throwable throwable, @Nonnull String remoteUrl) {
+        String errorMessage = throwable.getMessage();
+        if (errorMessage == null) {
+            notificationManager.showError(constant.fetchFail(remoteUrl));
+            return;
+        }
+
+        try {
+            errorMessage = dtoFactory.createDtoFromJson(errorMessage, ServiceError.class).getMessage();
+            if (errorMessage.equals("Unable get private ssh key")) {
+                notificationManager.showError(constant.messagesUnableGetSshKey());
+                return;
+            }
+            notificationManager.showError(errorMessage);
+        } catch (Exception e) {
+            notificationManager.showError(errorMessage);
+        }
     }
 
     /** {@inheritDoc} */

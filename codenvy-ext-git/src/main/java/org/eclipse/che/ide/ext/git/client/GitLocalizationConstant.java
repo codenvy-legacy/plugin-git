@@ -64,6 +64,9 @@ public interface GitLocalizationConstant extends Messages {
     String buttonMerge();
 
     // MESSAGES
+    @Key("messages.unableGetSshKey")
+    String messagesUnableGetSshKey();
+
     @Key("messages.warningTitle")
     String messagesWarningTitle();
 

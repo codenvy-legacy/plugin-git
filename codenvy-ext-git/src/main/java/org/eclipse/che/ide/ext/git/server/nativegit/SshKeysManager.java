@@ -15,7 +15,6 @@ import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.ide.ext.git.server.GitException;
 import org.eclipse.che.ide.ext.git.server.commons.Util;
 import org.eclipse.che.ide.ext.ssh.server.SshKey;
-import org.eclipse.che.ide.ext.ssh.server.SshKeyPair;
 import org.eclipse.che.ide.ext.ssh.server.SshKeyStore;
 import org.eclipse.che.ide.ext.ssh.server.SshKeyStoreException;
 
@@ -83,20 +82,12 @@ public class SshKeysManager {
         SshKey publicKey;
         SshKey privateKey;
 
-        // check keys existence and generate if need
+        // check keys existence
         try {
             if ((privateKey = sshKeyStore.getPrivateKey(host)) != null) {
                 publicKey = sshKeyStore.getPublicKey(host);
-                if (publicKey == null) {
-                    sshKeyStore.removeKeys(host);
-                    SshKeyPair sshKeyPair = sshKeyStore.genKeyPair(host, null, null);
-                    publicKey = sshKeyPair.getPublicKey();
-                    privateKey = sshKeyPair.getPrivateKey();
-                }
             } else {
-                SshKeyPair sshKeyPair = sshKeyStore.genKeyPair(host, null, null);
-                publicKey = sshKeyPair.getPublicKey();
-                privateKey = sshKeyPair.getPrivateKey();
+                throw new SshKeyStoreException("Unable get private ssh key");
             }
         } catch (SshKeyStoreException e) {
             throw new GitException(e.getMessage(), e);
@@ -135,7 +126,7 @@ public class SshKeysManager {
             }
         }
 
-        if (uploader != null) {
+        if (uploader != null && publicKey != null) {
             // upload public key
             try {
                 uploader.uploadKey(publicKey);

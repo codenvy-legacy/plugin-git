@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client.push;
 
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.commons.exception.UnauthorizedException;
@@ -36,8 +36,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_LOCAL;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 
@@ -106,7 +104,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
 
                                @Override
                                protected void onFailure(Throwable exception) {
-                                   handleError(exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed());
+                                   String errorMessage = exception.getMessage() != null ? exception.getMessage() : constant.remoteListFailed();
+                                   notificationManager.showError(errorMessage);
                                    view.setEnablePushButton(false);
                                }
                            }
@@ -137,7 +136,8 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
 
             @Override
             public void onFailure(Throwable exception) {
-                handleError(exception.getMessage() != null ? exception.getMessage() : constant.localBranchesListFailed());
+                String errorMessage = exception.getMessage() != null ? exception.getMessage() : constant.localBranchesListFailed();
+                notificationManager.showError(errorMessage);
                 view.setEnablePushButton(false);
             }
         });
@@ -184,14 +184,15 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
 
                     @Override
                     public void onFailure(Throwable caught) {
-                        handleError(constant.failedGettingConfig());
+                        notificationManager.showError(constant.failedGettingConfig());
                     }
                 });
             }
 
             @Override
             public void onFailure(Throwable exception) {
-                handleError(exception.getMessage() != null ? exception.getMessage() : constant.remoteBranchesListFailed());
+                String errorMessage = exception.getMessage() != null ? exception.getMessage() : constant.remoteBranchesListFailed();
+                notificationManager.showError(errorMessage);
                 view.setEnablePushButton(false);
             }
 
@@ -262,8 +263,7 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
         service.push(project.getRootProject(), getRefs(), repository, false, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void result) {
-                Notification notification = new Notification(constant.pushSuccess(repository), INFO);
-                notificationManager.showNotification(notification);
+                notificationManager.showInfo(constant.pushSuccess(repository));
             }
 
             @Override
@@ -307,20 +307,26 @@ public class PushToRemotePresenter implements PushToRemoteView.ActionDelegate {
      *         exception what happened
      */
     void handleError(@Nonnull Throwable throwable) {
-        String errorMessage;
         if (throwable instanceof UnauthorizedException) {
-            errorMessage = constant.messagesNotAuthorized();
-        } else if (throwable.getMessage() != null) {
-            errorMessage = throwable.getMessage();
-        } else {
-            errorMessage = constant.pushFail();
+            notificationManager.showError(constant.messagesNotAuthorized());
+            return;
         }
 
-        handleError(errorMessage);
-    }
+        String errorMessage = throwable.getMessage();
+        if (errorMessage == null) {
+            notificationManager.showError(constant.pushFail());
+            return;
+        }
 
-    private void handleError(@Nonnull String errorMessage) {
-        Notification notification = new Notification(errorMessage, ERROR);
-        notificationManager.showNotification(notification);
+        try {
+            errorMessage = dtoFactory.createDtoFromJson(errorMessage, ServiceError.class).getMessage();
+            if (errorMessage.equals("Unable get private ssh key")) {
+                notificationManager.showError(constant.messagesUnableGetSshKey());
+                return;
+            }
+            notificationManager.showError(errorMessage);
+        } catch (Exception e) {
+            notificationManager.showError(errorMessage);
+        }
     }
 }

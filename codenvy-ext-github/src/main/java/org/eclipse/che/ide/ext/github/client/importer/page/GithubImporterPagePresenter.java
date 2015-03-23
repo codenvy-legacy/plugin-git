@@ -12,46 +12,36 @@ package org.eclipse.che.ide.ext.github.client.importer.page;
 
 import org.eclipse.che.api.project.shared.dto.ImportProject;
 import org.eclipse.che.api.project.shared.dto.NewProject;
-import org.eclipse.che.api.user.gwt.client.UserServiceClient;
-import org.eclipse.che.api.user.shared.dto.UserDescriptor;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.wizard.AbstractWizardPage;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
 import org.eclipse.che.ide.commons.exception.ExceptionThrownEvent;
+import org.eclipse.che.ide.commons.exception.UnauthorizedException;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.github.client.GitHubClientService;
 import org.eclipse.che.ide.ext.github.client.GitHubLocalizationConstant;
+import org.eclipse.che.ide.ext.github.client.authenticator.GitHubAuthenticator;
 import org.eclipse.che.ide.ext.github.client.load.ProjectData;
 import org.eclipse.che.ide.ext.github.client.marshaller.AllRepositoriesUnmarshaller;
 import org.eclipse.che.ide.ext.github.shared.GitHubRepository;
 import org.eclipse.che.ide.rest.AsyncRequestCallback;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
-import org.eclipse.che.ide.ui.dialogs.ConfirmCallback;
-import org.eclipse.che.ide.ui.dialogs.DialogFactory;
-import org.eclipse.che.ide.util.Config;
 import org.eclipse.che.ide.util.NameUtils;
-import org.eclipse.che.security.oauth.OAuthCallback;
 import org.eclipse.che.security.oauth.OAuthStatus;
 import com.google.gwt.regexp.shared.RegExp;
-import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
 import com.google.web.bindery.event.shared.EventBus;
 
 import javax.annotation.Nonnull;
 import java.util.Comparator;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-
 /**
  * @author Roman Nikitenko
  */
-public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProject>
-        implements GithubImporterPageView.ActionDelegate, OAuthCallback {
+public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProject> implements GithubImporterPageView.ActionDelegate {
 
     private static final String PUBLIC_VISIBILITY  = "public";
     private static final String PRIVATE_VISIBILITY = "private";
@@ -68,38 +58,29 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
     private static final RegExp REPO_NAME       = RegExp.compile("/[A-Za-z0-9_.\\-]+$");
     // start with white space
     private static final RegExp WHITE_SPACE     = RegExp.compile("^\\s");
-    private final UserServiceClient                  userServiceClient;
-    private final DtoUnmarshallerFactory             dtoUnmarshallerFactory;
+
     private final DtoFactory                         dtoFactory;
     private       NotificationManager                notificationManager;
     private       GitHubClientService                gitHubClientService;
-    private       DialogFactory                      dialogFactory;
     private       EventBus                           eventBus;
     private       StringMap<Array<GitHubRepository>> repositories;
     private       GitHubLocalizationConstant         locale;
     private       GithubImporterPageView             view;
-    private       String                             baseUrl;
-    private       UserDescriptor                     userDescriptor;
+    private       GitHubAuthenticator                gitHubAuthenticator;
 
     @Inject
     public GithubImporterPagePresenter(GithubImporterPageView view,
-                                       @Named("restContext") String baseUrl,
+                                       GitHubAuthenticator gitHubAuthenticator,
                                        NotificationManager notificationManager,
-                                       UserServiceClient userServiceClient,
                                        GitHubClientService gitHubClientService,
-                                       DtoUnmarshallerFactory dtoUnmarshallerFactory,
                                        DtoFactory dtoFactory,
-                                       DialogFactory dialogFactory,
                                        EventBus eventBus,
                                        GitHubLocalizationConstant locale) {
         this.view = view;
-        this.baseUrl = baseUrl;
+        this.gitHubAuthenticator = gitHubAuthenticator;
         this.notificationManager = notificationManager;
-        this.userServiceClient = userServiceClient;
         this.gitHubClientService = gitHubClientService;
-        this.dtoUnmarshallerFactory = dtoUnmarshallerFactory;
         this.dtoFactory = dtoFactory;
-        this.dialogFactory = dialogFactory;
         this.eventBus = eventBus;
         this.view.setDelegate(this);
         this.locale = locale;
@@ -162,8 +143,6 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
 
         view.setInputsEnableState(true);
         view.focusInUrlInput();
-
-        getUserRepos(false);
     }
 
     /** Updates view from data-object. */
@@ -178,27 +157,11 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
 
     @Override
     public void onLoadRepoClicked() {
-        showProcessing(true);
-        userServiceClient.getCurrentUser(
-                new AsyncRequestCallback<UserDescriptor>(dtoUnmarshallerFactory.newUnmarshaller(UserDescriptor.class)) {
-                    @Override
-                    protected void onSuccess(UserDescriptor user) {
-                        userDescriptor = user;
-                        getUserRepos(true);
-                    }
-
-                    @Override
-                    protected void onFailure(Throwable exception) {
-                        showProcessing(false);
-                        notificationManager.showNotification(new Notification(exception.getMessage(), Notification.Type.ERROR));
-                    }
-                }
-                                        );
-
+        getUserRepos();
     }
 
     /** Get the list of all authorized user's repositories. */
-    private void getUserRepos(final boolean isUserAction) {
+    private void getUserRepos() {
         showProcessing(true);
         gitHubClientService.getAllRepositories(
                 new AsyncRequestCallback<StringMap<Array<GitHubRepository>>>(new AllRepositoriesUnmarshaller(dtoFactory)) {
@@ -211,35 +174,30 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
                     @Override
                     protected void onFailure(Throwable exception) {
                         showProcessing(false);
-                        if (isUserAction) {
-                            if (exception.getMessage().contains("Bad credentials")) {
-                                dialogFactory.createConfirmDialog("GiHub", "Codenvy requests authorization through OAuth2 protocol",
-                                                                  new ConfirmCallback() {
-                                                                      @Override
-                                                                      public void accepted() {
-                                                                          showAuthWindow();
-                                                                      }
-                                                                  }, null).show();
-                            } else {
-                                eventBus.fireEvent(new ExceptionThrownEvent(exception));
-                                Notification notification = new Notification(exception.getMessage(), ERROR);
-                                notificationManager.showNotification(notification);
-                            }
+                        if (exception instanceof UnauthorizedException) {
+                            authorize();
+                        } else {
+                            eventBus.fireEvent(new ExceptionThrownEvent(exception));
+                            notificationManager.showError(exception.getMessage());
                         }
                     }
-                }
-                                              );
+                });
     }
 
-    private void showAuthWindow() {
-        String authUrl = baseUrl
-                         + "/oauth/authenticate?oauth_provider=github"
-                         + "&scope=user,repo,write:public_key&userId=" + userDescriptor.getId()
-                         + "&redirect_after_login="
-                         + Window.Location.getProtocol() + "//"
-                         + Window.Location.getHost() + "/ws/"
-                         + Config.getWorkspaceName();
-        view.showAuthWindow(authUrl, this);
+    private void authorize() {
+        showProcessing(true);
+        gitHubAuthenticator.authorize(new AsyncCallback<OAuthStatus>() {
+            @Override
+            public void onFailure(Throwable caught) {
+                showProcessing(false);
+            }
+
+            @Override
+            public void onSuccess(OAuthStatus result) {
+                showProcessing(false);
+                getUserRepos();
+            }
+        });
     }
 
     @Override
@@ -256,11 +214,6 @@ public class GithubImporterPagePresenter extends AbstractWizardPage<ImportProjec
     @Override
     public void onAccountChanged() {
         refreshProjectList();
-    }
-
-    @Override
-    public void onAuthenticated(@Nonnull OAuthStatus authStatus) {
-        getUserRepos(false);
     }
 
     /**

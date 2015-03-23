@@ -10,16 +10,17 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client.pull;
 
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.BranchSearcher;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.GitServiceClient;
@@ -35,8 +36,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
-import static org.eclipse.che.ide.api.notification.Notification.Type.INFO;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_LOCAL;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_REMOTE;
 
@@ -55,6 +54,7 @@ public class PullPresenter implements PullView.ActionDelegate {
     private final AppContext              appContext;
     private final NotificationManager     notificationManager;
     private final DtoUnmarshallerFactory  dtoUnmarshallerFactory;
+    private final DtoFactory              dtoFactory;
     private final BranchSearcher          branchSearcher;
     private       CurrentProject          project;
 
@@ -68,8 +68,10 @@ public class PullPresenter implements PullView.ActionDelegate {
                          GitLocalizationConstant constant,
                          NotificationManager notificationManager,
                          DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                         DtoFactory dtoFactory,
                          BranchSearcher branchSearcher) {
         this.view = view;
+        this.dtoFactory = dtoFactory;
         this.branchSearcher = branchSearcher;
         this.view.setDelegate(this);
         this.gitServiceClient = gitServiceClient;
@@ -109,8 +111,7 @@ public class PullPresenter implements PullView.ActionDelegate {
                                             String errorMessage =
                                                     exception.getMessage() != null ? exception.getMessage()
                                                                                    : constant.remoteListFailed();
-                                            Notification notification = new Notification(errorMessage, ERROR);
-                                            notificationManager.showNotification(notification);
+                                            notificationManager.showError(errorMessage);
                                             view.setEnablePullButton(false);
                                         }
                                     }
@@ -148,8 +149,7 @@ public class PullPresenter implements PullView.ActionDelegate {
                                             String errorMessage =
                                                     exception.getMessage() != null ? exception.getMessage()
                                                                                    : constant.branchesListFailed();
-                                            Notification notification = new Notification(errorMessage, ERROR);
-                                            notificationManager.showNotification(notification);
+                                            notificationManager.showError(errorMessage);
                                             view.setEnablePullButton(false);
                                         }
                                     }
@@ -171,8 +171,7 @@ public class PullPresenter implements PullView.ActionDelegate {
         gitServiceClient.pull(project.getRootProject(), getRefs(), remoteName, new AsyncRequestCallback<Void>() {
             @Override
             protected void onSuccess(Void aVoid) {
-                Notification notification = new Notification(constant.pullSuccess(remoteUrl), INFO);
-                notificationManager.showNotification(notification);
+                notificationManager.showInfo(constant.pullSuccess(remoteUrl));
                 refreshProject(openedEditors);
             }
 
@@ -214,13 +213,26 @@ public class PullPresenter implements PullView.ActionDelegate {
     /**
      * Handler some action whether some exception happened.
      *
-     * @param t
+     * @param throwable
      *         exception what happened
      */
-    private void handleError(@Nonnull Throwable t, @Nonnull String remoteUrl) {
-        String errorMessage = (t.getMessage() != null) ? t.getMessage() : constant.pullFail(remoteUrl);
-        Notification notification = new Notification(errorMessage, ERROR);
-        notificationManager.showNotification(notification);
+    private void handleError(@Nonnull Throwable throwable, @Nonnull String remoteUrl) {
+        String errorMessage = throwable.getMessage();
+        if (errorMessage == null) {
+            notificationManager.showError(constant.pullFail(remoteUrl));
+            return;
+        }
+
+        try {
+            errorMessage = dtoFactory.createDtoFromJson(errorMessage, ServiceError.class).getMessage();
+            if (errorMessage.equals("Unable get private ssh key")) {
+                notificationManager.showError(constant.messagesUnableGetSshKey());
+                return;
+            }
+            notificationManager.showError(errorMessage);
+        } catch (Exception e) {
+            notificationManager.showError(errorMessage);
+        }
     }
 
     /** {@inheritDoc} */

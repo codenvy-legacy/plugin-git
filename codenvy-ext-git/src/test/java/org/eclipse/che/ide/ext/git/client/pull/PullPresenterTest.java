@@ -14,7 +14,6 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
@@ -237,7 +236,7 @@ public class PullPresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(view).setEnablePullButton(eq(DISABLE_BUTTON));
     }
 
@@ -285,7 +284,7 @@ public class PullPresenterTest extends BaseTest {
         verify(view).close();
         verify(editorAgent).getOpenedEditors();
         verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (AsyncRequestCallback)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showInfo(anyString());
         verify(constant).pullSuccess(eq(REMOTE_URI));
         verify(appContext).getCurrentProject();
         verify(eventBus, times(2)).fireEvent(Matchers.<Event<GwtEvent>>anyObject());
@@ -312,7 +311,7 @@ public class PullPresenterTest extends BaseTest {
 
         verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (AsyncRequestCallback<Void>)anyObject());
         verify(view).close();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -336,7 +335,7 @@ public class PullPresenterTest extends BaseTest {
 
         verify(view).close();
         verify(service).pull(eq(rootProjectDescriptor), anyString(), eq(REPOSITORY_NAME), (AsyncRequestCallback)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(appContext).getCurrentProject();
         verify(eventBus, times(2)).fireEvent(Matchers.<Event<GwtEvent>>anyObject());
         verify(partPresenter).getEditorInput();

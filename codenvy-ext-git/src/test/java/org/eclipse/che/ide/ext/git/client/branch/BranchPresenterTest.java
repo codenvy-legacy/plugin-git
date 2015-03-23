@@ -14,12 +14,12 @@ import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.generic.FileNode;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.collections.StringMap;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
 import org.eclipse.che.ide.ext.git.client.GitOutputPartPresenter;
 import org.eclipse.che.ide.ext.git.shared.Branch;
@@ -54,7 +54,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link BranchPresenter} functionality.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 public class BranchPresenterTest extends BaseTest {
     public static final String  BRANCH_NAME   = "branchName";
@@ -79,13 +79,15 @@ public class BranchPresenterTest extends BaseTest {
     private WorkspaceAgent         workspaceAgent;
     @Mock
     private DialogFactory          dialogFactory;
+    @Mock
+    private DtoFactory             dtoFactory;
     private BranchPresenter        presenter;
 
     @Override
     public void disarm() {
         super.disarm();
 
-        presenter = new BranchPresenter(view, eventBus, editorAgent, service, constant, appContext, notificationManager,
+        presenter = new BranchPresenter(view, eventBus, dtoFactory, editorAgent, service, constant, appContext, notificationManager,
                                         dtoUnmarshallerFactory, gitConsole, workspaceAgent, dialogFactory);
 
         StringMap<EditorPartPresenter> partPresenterMap = Collections.createStringMap();
@@ -123,7 +125,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(view).showDialog();
         verify(view).setBranches(eq(branches));
         verify(service).branchList(eq(projectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(notificationManager, never()).showNotification((Notification)anyObject());
+        verify(notificationManager, never()).showError(anyString());
         verify(constant, never()).branchesListFailed();
     }
 
@@ -148,7 +150,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(view).setEnableRenameButton(eq(DISABLE_BUTTON));
         verify(view).showDialog();
         verify(service).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(constant).branchesListFailed();
     }
 
@@ -181,7 +183,7 @@ public class BranchPresenterTest extends BaseTest {
                                      (AsyncRequestCallback<String>)anyObject());
         verify(service, times(2))
                 .branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
-        verify(notificationManager, never()).showNotification((Notification)anyObject());
+        verify(notificationManager, never()).showError(anyString());
         verify(constant, never()).branchRenameFailed();
     }
 
@@ -211,7 +213,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(selectedBranch).getDisplayName();
         verify(service).branchRename(eq(rootProjectDescriptor), eq(BRANCH_NAME), eq(RETURNED_MESSAGE),
                                      (AsyncRequestCallback<String>)anyObject());
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(constant).branchRenameFailed();
     }
 
@@ -237,7 +239,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(service, times(2))
                 .branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(constant, never()).branchDeleteFailed();
-        verify(notificationManager, never()).showNotification((Notification)anyObject());
+        verify(notificationManager, never()).showError(anyString());
     }
 
     @Test
@@ -259,7 +261,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(selectedBranch).getName();
         verify(service).branchDelete(eq(rootProjectDescriptor), anyString(), eq(NEED_DELETING), (AsyncRequestCallback<String>)anyObject());
         verify(constant).branchDeleteFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -298,7 +300,7 @@ public class BranchPresenterTest extends BaseTest {
         verify(service, times(2)).branchList(eq(rootProjectDescriptor), eq(LIST_ALL), (AsyncRequestCallback<Array<Branch>>)anyObject());
         verify(appContext).getCurrentProject();
         verify(partPresenter).getEditorInput();
-        verify(notificationManager, never()).showNotification((Notification)anyObject());
+        verify(notificationManager, never()).showError(anyString());
         verify(constant, never()).branchCheckoutFailed();
     }
 
@@ -407,7 +409,7 @@ public class BranchPresenterTest extends BaseTest {
 
         verify(service).branchCreate(eq(rootProjectDescriptor), anyString(), anyString(), (AsyncRequestCallback<Branch>)anyObject());
         verify(constant).branchCreateFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test

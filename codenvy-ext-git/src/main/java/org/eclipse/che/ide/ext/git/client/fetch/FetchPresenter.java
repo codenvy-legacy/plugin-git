@@ -204,7 +204,9 @@ public class FetchPresenter implements FetchView.ActionDelegate {
             errorMessage = dtoFactory.createDtoFromJson(errorMessage, ServiceError.class).getMessage();
             if (errorMessage.equals("Unable get private ssh key")) {
                 notificationManager.showError(constant.messagesUnableGetSshKey());
+                return;
             }
+            notificationManager.showError(errorMessage);
         } catch (Exception e) {
             notificationManager.showError(errorMessage);
         }

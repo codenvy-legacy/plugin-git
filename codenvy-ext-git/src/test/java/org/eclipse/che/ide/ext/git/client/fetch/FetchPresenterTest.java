@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.ext.git.client.fetch;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.ext.git.client.BaseTest;
@@ -43,7 +42,7 @@ import static org.mockito.Mockito.when;
 /**
  * Testing {@link FetchPresenter} functionality.
  *
- * @author <a href="mailto:aplotnikov@codenvy.com">Andrey Plotnikov</a>
+ * @author Andrey Plotnikov
  */
 public class FetchPresenterTest extends BaseTest {
     public static final boolean NO_REMOVE_DELETE_REFS = false;
@@ -163,7 +162,7 @@ public class FetchPresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).branchesListFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(view).setEnableFetchButton(eq(DISABLE_BUTTON));
     }
 
@@ -215,7 +214,7 @@ public class FetchPresenterTest extends BaseTest {
         verify(service).fetch(eq(rootProjectDescriptor), eq(REPOSITORY_NAME), (List<String>)anyObject(),
                               eq(NO_REMOVE_DELETE_REFS), (RequestCallback<String>)anyObject());
         verify(view).close();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showInfo(anyString());
         verify(constant).fetchSuccess(eq(REMOTE_URI));
     }
 
@@ -245,7 +244,7 @@ public class FetchPresenterTest extends BaseTest {
                               eq(NO_REMOVE_DELETE_REFS), (RequestCallback<String>)anyObject());
         verify(view).close();
         verify(constant).fetchFail(eq(REMOTE_URI));
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test

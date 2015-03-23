@@ -10,18 +10,19 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client.branch;
 
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.app.CurrentProject;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.RefreshProjectTreeEvent;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.api.parts.PartStackType;
 import org.eclipse.che.ide.api.parts.WorkspaceAgent;
 import org.eclipse.che.ide.api.project.tree.VirtualFile;
 import org.eclipse.che.ide.collections.Array;
+import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.ext.git.client.GitLocalizationConstant;
 import org.eclipse.che.ide.ext.git.client.GitOutputPartPresenter;
 import org.eclipse.che.ide.ext.git.client.GitServiceClient;
@@ -40,7 +41,6 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.che.ide.api.notification.Notification.Type.ERROR;
 import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_ALL;
 
 /**
@@ -50,6 +50,7 @@ import static org.eclipse.che.ide.ext.git.shared.BranchListRequest.LIST_ALL;
  */
 @Singleton
 public class BranchPresenter implements BranchView.ActionDelegate {
+    private DtoFactory              dtoFactory;
     private DtoUnmarshallerFactory  dtoUnmarshallerFactory;
     private BranchView              view;
     private GitOutputPartPresenter  gitConsole;
@@ -68,6 +69,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
     @Inject
     public BranchPresenter(BranchView view,
                            EventBus eventBus,
+                           DtoFactory dtoFactory,
                            EditorAgent editorAgent,
                            GitServiceClient service,
                            GitLocalizationConstant constant,
@@ -78,6 +80,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                            WorkspaceAgent workspaceAgent,
                            DialogFactory dialogFactory) {
         this.view = view;
+        this.dtoFactory = dtoFactory;
         this.gitConsole = gitConsole;
         this.workspaceAgent = workspaceAgent;
         this.dialogFactory = dialogFactory;
@@ -125,8 +128,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                             protected void onFailure(Throwable exception) {
                                 String errorMessage =
                                         (exception.getMessage() != null) ? exception.getMessage() : constant.branchRenameFailed();
-                                Notification notification = new Notification(errorMessage, ERROR);
-                                notificationManager.showNotification(notification);
+                                notificationManager.showError(errorMessage);
                             }
                         });
                     }
@@ -146,9 +148,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
 
             @Override
             protected void onFailure(Throwable exception) {
-                String errorMessage = (exception.getMessage() != null) ? exception.getMessage() : constant.branchDeleteFailed();
-                Notification notification = new Notification(errorMessage, ERROR);
-                notificationManager.showNotification(notification);
+                handleError(exception);
             }
         });
     }
@@ -234,8 +234,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                                protected void onFailure(Throwable exception) {
                                    final String errorMessage =
                                            (exception.getMessage() != null) ? exception.getMessage() : constant.branchesListFailed();
-                                   Notification notification = new Notification(errorMessage, ERROR);
-                                   notificationManager.showNotification(notification);
+                                   notificationManager.showError(errorMessage);
                                }
                            }
                           );
@@ -260,8 +259,7 @@ public class BranchPresenter implements BranchView.ActionDelegate {
                                                  final String errorMessage = (exception.getMessage() != null)
                                                                              ? exception.getMessage()
                                                                              : constant.branchCreateFailed();
-                                                 Notification notification = new Notification(errorMessage, ERROR);
-                                                 notificationManager.showNotification(notification);
+                                                 notificationManager.showError(errorMessage);
                                              }
                                          }
                                         );
@@ -279,5 +277,28 @@ public class BranchPresenter implements BranchView.ActionDelegate {
         view.setEnableCheckoutButton(enabled);
         view.setEnableDeleteButton(true);
         view.setEnableRenameButton(true);
+    }
+
+    /**
+     * Handler some action whether some exception happened.
+     *
+     * @param throwable
+     *         exception what happened
+     */
+    void handleError(@Nonnull Throwable throwable) {
+        String errorMessage = throwable.getMessage();
+        if (errorMessage == null) {
+            notificationManager.showError(constant.branchDeleteFailed());
+            return;
+        }
+
+        try {
+            errorMessage = dtoFactory.createDtoFromJson(errorMessage, ServiceError.class).getMessage();
+            if (errorMessage.equals("Unable get private ssh key")) {
+                notificationManager.showError(constant.messagesUnableGetSshKey());
+            }
+        } catch (Exception e) {
+            notificationManager.showError(errorMessage);
+        }
     }
 }

@@ -13,7 +13,6 @@ package org.eclipse.che.ide.ext.github.client.importer.page;
 import org.eclipse.che.ide.api.mvp.View;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.ext.github.client.load.ProjectData;
-import org.eclipse.che.security.oauth.OAuthCallback;
 import com.google.inject.ImplementedBy;
 
 import javax.annotation.Nonnull;
@@ -137,9 +136,6 @@ public interface GithubImporterPageView extends View<GithubImporterPageView.Acti
 
     /** Reset the page. */
     void reset();
-
-    /** Show authorization window. */
-    void showAuthWindow(@Nonnull String authUrl, OAuthCallback callback);
 
     /**
      * Set the visibility state of the loader.

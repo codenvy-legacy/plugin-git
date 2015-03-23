@@ -13,23 +13,23 @@ package org.eclipse.che.ide.ext.github.client;
 import com.google.gwt.i18n.client.Messages;
 
 /**
- * @author <a href="mailto:evidolob@exoplatform.com">Evgen Vidolob</a>
+ * @author Evgen Vidolob
  */
 public interface GitHubLocalizationConstant extends Messages {
     // MESSAGES
     @Key("github.ssh.key.update.failed")
     String gitHubSshKeyUpdateFailed();
 
-    @Key("importProject.messageStartWithWhiteSpace")
+    @Key("importProject.message.startWithWhiteSpace")
     String importProjectMessageStartWithWhiteSpace();
 
-    @Key("importProject.messageNameRepoIncorrect")
+    @Key("importProject.message.nameRepoIncorrect")
     String importProjectMessageNameRepoIncorrect();
 
-    @Key("importProject.messageProtocolIncorrect")
+    @Key("importProject.message.protocolIncorrect")
     String importProjectMessageProtocolIncorrect();
 
-    @Key("importProject.messageHostIncorrect")
+    @Key("importProject.message.hostIncorrect")
     String importProjectMessageHostIncorrect();
 
     /*
@@ -37,6 +37,22 @@ public interface GitHubLocalizationConstant extends Messages {
      */
     @Key("import.github.account")
     String importFromGithubAccount();
+
+    //Authorization
+    @Key("authorization.title")
+    String authTitle();
+
+    @Key("authorization.message.authRequest")
+    String authMessageAuthRequest();
+
+    @Key("authorization.message.unableCreateSshKey")
+    String authMessageUnableCreateSshKey();
+
+    @Key("authorization.generateKeyLabel")
+    String authGenerateKeyLabel();
+
+    @Key("authorization.message.keyUploadSuccess")
+    String authMessageKeyUploadSuccess();
 
     /*
      * SamplesListGrid
@@ -54,9 +70,6 @@ public interface GitHubLocalizationConstant extends Messages {
     String githubSshKeyLabel();
 
     //GithubImporterPage
-    @Key("view.import.githubImporterPage.importerInfo")
-    String githubImporterPageImporterInfo();
-
     @Key("view.import.githubImporterPage.projectUrl")
     String githubImporterPageProjectUrl();
 

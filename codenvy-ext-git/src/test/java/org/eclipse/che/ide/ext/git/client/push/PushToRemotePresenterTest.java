@@ -11,7 +11,6 @@
 package org.eclipse.che.ide.ext.git.client.push;
 
 import org.eclipse.che.api.project.shared.dto.ProjectDescriptor;
-import org.eclipse.che.ide.api.notification.Notification;
 import org.eclipse.che.ide.collections.Array;
 import org.eclipse.che.ide.collections.Collections;
 import org.eclipse.che.ide.commons.exception.UnauthorizedException;
@@ -195,7 +194,7 @@ public class PushToRemotePresenterTest extends BaseTest {
 
 
         verify(constant).remoteBranchesListFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -215,7 +214,7 @@ public class PushToRemotePresenterTest extends BaseTest {
 
 
         verify(constant).failedGettingConfig();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -249,7 +248,7 @@ public class PushToRemotePresenterTest extends BaseTest {
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
 
         verify(constant).localBranchesListFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));
     }
 
@@ -267,7 +266,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         verify(service).remoteList(eq(rootProjectDescriptor), anyString(), eq(SHOW_ALL_INFORMATION),
                                    (AsyncRequestCallback<Array<Remote>>)anyObject());
         verify(constant).remoteListFailed();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
         verify(view).setEnablePushButton(eq(DISABLE_BUTTON));
     }
 
@@ -285,7 +284,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         verify(service).push(eq(rootProjectDescriptor), anyListOf(String.class), eq(REPOSITORY_NAME), eq(DISABLE_CHECK),
                              (AsyncRequestCallback<Void>)anyObject());
         verify(view).close();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showInfo(anyString());
         verify(constant).pushSuccess(eq(REPOSITORY_NAME));
     }
 
@@ -304,7 +303,7 @@ public class PushToRemotePresenterTest extends BaseTest {
                              (AsyncRequestCallback<Void>)anyObject());
         verify(view).close();
         verify(constant).pushFail();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -319,7 +318,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.handleError(mock(UnauthorizedException.class));
 
         verify(constant).messagesNotAuthorized();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -327,7 +326,7 @@ public class PushToRemotePresenterTest extends BaseTest {
         presenter.handleError(mock(Throwable.class));
 
         verify(constant).pushFail();
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test
@@ -338,7 +337,7 @@ public class PushToRemotePresenterTest extends BaseTest {
 
         presenter.handleError(exception);
 
-        verify(notificationManager).showNotification((Notification)anyObject());
+        verify(notificationManager).showError(anyString());
     }
 
     @Test

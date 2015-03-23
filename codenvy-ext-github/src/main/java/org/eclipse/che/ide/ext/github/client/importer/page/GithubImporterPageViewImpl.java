@@ -17,8 +17,6 @@ import org.eclipse.che.ide.ext.github.client.GitHubResources;
 import org.eclipse.che.ide.ext.github.client.load.ProjectData;
 
 import org.eclipse.che.ide.ui.Styles;
-import org.eclipse.che.security.oauth.JsOAuthWindow;
-import org.eclipse.che.security.oauth.OAuthCallback;
 import com.google.gwt.cell.client.ImageResourceCell;
 import com.google.gwt.cell.client.SafeHtmlCell;
 import com.google.gwt.dom.client.Style;
@@ -300,12 +298,6 @@ public class GithubImporterPageViewImpl extends Composite implements GithubImpor
     @Override
     public void setDelegate(@Nonnull ActionDelegate delegate) {
         this.delegate = delegate;
-    }
-
-    @Override
-    public void showAuthWindow(@Nonnull String authUrl, OAuthCallback callback) {
-        JsOAuthWindow authWindow = new JsOAuthWindow(authUrl, "error.url", 500, 980, callback);
-        authWindow.loginWithOAuth();
     }
 
     @Override

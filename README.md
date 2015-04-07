@@ -1,4 +1,2 @@
-plugin-git
-==========
-
-git and related functionality 
+#plugin-git
+This repository is deprecated. Visit https://github.com/codenvy/che-plugins
